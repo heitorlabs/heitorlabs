@@ -1,0 +1,1081 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+
+  :root{
+    --bg: #0A0A0D;
+    --panel: #17171C;
+    --panel-2: #1F1F26;
+    --line: #2C2C35;
+    --ink: #F5F4F7;
+    --muted: #8E8E99;
+    --cyan: #2FD1E0;
+    --violet: #8B5CF6;
+    --magenta: #E0399C;
+    --coral: #F2794A;
+    --teal: #2FD1E0;
+    --mustard: #E0399C;
+    --red: #E0475C;
+    --green: #3FCE8F;
+    --grad: linear-gradient(90deg, var(--cyan), var(--violet) 45%, var(--magenta) 75%, var(--coral));
+  }
+  *{box-sizing:border-box;}
+  #portal-root{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    padding:0 0 60px 0;
+  }
+  #portal-root .mono{font-family:'IBM Plex Mono',monospace;}
+  #portal-root h1,#portal-root h2,#portal-root h3{
+    font-family:'Space Grotesk',system-ui,sans-serif;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  #portal-root .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 28px;border-bottom:1px solid var(--line);
+    flex-wrap:wrap;gap:14px;
+  }
+  #portal-root .brand{display:flex;align-items:center;gap:12px;}
+  #portal-root .brand .mark{
+    width:40px;height:40px;border-radius:9px;overflow:hidden;
+    background:#000;box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+  #portal-root .brand .mark img{width:100%;height:100%;object-fit:cover;display:block;}
+  #portal-root .brand-text{font-family:'Space Grotesk';font-weight:700;font-size:18px;}
+  #portal-root .brand-sub{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono';letter-spacing:.04em;text-transform:uppercase;}
+  #portal-root nav{display:flex;gap:6px;background:var(--panel);padding:5px;border-radius:10px;border:1px solid var(--line);}
+  #portal-root nav button{
+    font-family:'Space Grotesk';font-size:13px;font-weight:700;
+    background:transparent;border:none;color:var(--muted);
+    padding:9px 16px;border-radius:7px;cursor:pointer;transition:.15s;
+  }
+  #portal-root nav button.active{background:var(--grad);color:#0A0A0D;}
+  #portal-root nav button:hover:not(.active){color:var(--ink);}
+  #portal-root main{max-width:1080px;margin:0 auto;padding:32px 28px;}
+  #portal-root .view{display:none;}
+  #portal-root .view.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  #portal-root .hero{margin-bottom:28px;}
+  #portal-root .eyebrow{font-family:'IBM Plex Mono';font-size:11px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:600;}
+  #portal-root .hero h1{font-size:30px;}
+  #portal-root .hero p{color:var(--muted);margin-top:8px;max-width:560px;line-height:1.5;font-size:14px;}
+
+  #portal-root .grid-products{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;
+  }
+  #portal-root .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  }
+  #portal-root .card .img{
+    height:140px;background:var(--panel-2);display:flex;align-items:center;justify-content:center;
+    background-size:cover;background-position:center;color:var(--muted);font-size:12px;font-family:'IBM Plex Mono';
+  }
+  #portal-root .card .body{padding:14px;}
+  #portal-root .tag{
+    display:inline-block;font-family:'IBM Plex Mono';font-size:10px;text-transform:uppercase;letter-spacing:.05em;
+    padding:3px 8px;border-radius:99px;margin-bottom:8px;
+  }
+  #portal-root .tag.teal{background:rgba(47,209,224,.16);color:var(--teal);}
+  #portal-root .tag.coral{background:rgba(242,121,74,.16);color:var(--coral);}
+  #portal-root .tag.mustard{background:rgba(224,57,156,.16);color:var(--mustard);}
+  #portal-root .card h3{font-size:15px;margin-bottom:4px;}
+  #portal-root .card .code{color:var(--muted);font-size:11px;font-family:'IBM Plex Mono';}
+  #portal-root .card .price{margin-top:10px;font-family:'IBM Plex Mono';font-size:13px;color:var(--ink);}
+  #portal-root .price .lbl{color:var(--muted);font-size:10px;display:block;text-transform:uppercase;letter-spacing:.04em;}
+
+  #portal-root .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px;}
+  #portal-root .field{margin-bottom:14px;}
+  #portal-root label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;}
+  #portal-root input, #portal-root select{
+    width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
+    padding:10px 12px;border-radius:8px;font-family:'Inter';font-size:14px;
+  }
+  #portal-root input:focus, #portal-root select:focus, #portal-root button:focus-visible{
+    outline:2px solid var(--teal);outline-offset:1px;
+  }
+  #portal-root .btn{
+    background:var(--grad);color:#0A0A0D;border:none;padding:11px 20px;border-radius:8px;
+    font-family:'Space Grotesk';font-weight:700;font-size:13px;cursor:pointer;
+  }
+  #portal-root .btn.secondary{background:transparent;border:1px solid var(--line);color:var(--ink);}
+  #portal-root .btn.danger{background:var(--red);color:#2A1210;}
+  #portal-root .btn.whatsapp{background:#3FA772;color:#0C2118;display:inline-flex;align-items:center;gap:7px;}
+  #portal-root .btn.whatsapp svg{width:14px;height:14px;fill:#0C2118;}
+  #portal-root .btn:disabled{opacity:.5;cursor:not-allowed;}
+  #portal-root .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+  #portal-root .row .field{flex:1;min-width:140px;}
+
+  #portal-root .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:22px 0;}
+  #portal-root .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;}
+  #portal-root .stat .n{font-family:'Space Grotesk';font-size:24px;font-weight:700;}
+  #portal-root .stat .l{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-family:'IBM Plex Mono';margin-top:4px;}
+  #portal-root .stat.accent-teal .n{color:var(--teal);}
+  #portal-root .stat.accent-coral .n{color:var(--coral);}
+  #portal-root .stat.accent-mustard .n{color:var(--mustard);}
+
+  #portal-root table{width:100%;border-collapse:collapse;font-size:13px;}
+  #portal-root .panel[style*="overflow-x:auto"]{-webkit-overflow-scrolling:touch;}
+  #portal-root th{
+    text-align:left;font-family:'IBM Plex Mono';font-size:10px;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);
+  }
+  #portal-root td{padding:9px 10px;border-bottom:1px solid var(--line);font-family:'IBM Plex Mono';font-size:12.5px;}
+  #portal-root tr:last-child td{border-bottom:none;}
+  #portal-root .badge{padding:3px 9px;border-radius:99px;font-size:10px;font-family:'IBM Plex Mono';text-transform:uppercase;}
+  #portal-root .badge.pago{background:rgba(63,206,143,.18);color:var(--green);}
+  #portal-root .badge.pendente{background:rgba(224,57,156,.18);color:var(--mustard);}
+  #portal-root .badge.atrasado{background:rgba(224,71,92,.18);color:var(--red);}
+  #portal-root .badge.entrega{background:rgba(47,209,224,.18);color:var(--teal);}
+  #portal-root .badge.devolucao{background:rgba(142,142,153,.18);color:var(--muted);}
+  #portal-root .badge.acerto{background:rgba(242,121,74,.18);color:var(--coral);}
+  #portal-root .badge.aprovado{background:rgba(63,206,143,.18);color:var(--green);}
+  #portal-root .badge.recusado{background:rgba(224,71,92,.18);color:var(--red);}
+
+  #portal-root .ticket{
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:12px;flex-wrap:wrap;
+  }
+  #portal-root .ticket .left{display:flex;flex-direction:column;gap:2px;}
+  #portal-root .ticket .id{font-family:'IBM Plex Mono';font-size:11px;color:var(--muted);}
+  #portal-root .ticket .desc{font-size:13px;}
+
+  #portal-root .empty{
+    text-align:center;padding:50px 20px;color:var(--muted);
+  }
+  #portal-root .empty .glyph{font-size:32px;margin-bottom:10px;}
+  #portal-root .msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;}
+  #portal-root .msg.ok{background:rgba(63,206,143,.15);color:var(--green);border:1px solid rgba(63,206,143,.3);}
+  #portal-root .msg.err{background:rgba(224,71,92,.15);color:var(--red);border:1px solid rgba(224,71,92,.3);}
+  #portal-root .divider{height:1px;background:var(--line);margin:26px 0;}
+
+  /* --- toque visual exclusivo da área do cliente --- */
+  #portal-root .client-glow{position:relative;}
+  #portal-root .client-glow::before, #portal-root .client-glow::after{
+    content:"";position:absolute;border-radius:50%;filter:blur(70px);opacity:.28;z-index:0;pointer-events:none;
+  }
+  #portal-root .client-glow::before{width:280px;height:280px;background:var(--cyan);top:-90px;left:-60px;}
+  #portal-root .client-glow::after{width:260px;height:260px;background:var(--magenta);top:-60px;left:180px;}
+  #portal-root .client-glow > *{position:relative;z-index:1;}
+
+  #portal-root .id-card{
+    display:flex;align-items:center;gap:16px;padding:18px 22px;border-radius:14px;
+    background:var(--panel);border:1px solid var(--line);margin-bottom:22px;
+  }
+  #portal-root .id-avatar{
+    width:52px;height:52px;border-radius:50%;flex-shrink:0;
+    background:var(--grad);display:flex;align-items:center;justify-content:center;padding:2px;
+  }
+  #portal-root .id-avatar span{
+    width:100%;height:100%;border-radius:50%;background:var(--bg);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk';font-weight:700;font-size:18px;color:var(--ink);
+  }
+  #portal-root .id-meta .name{font-family:'Space Grotesk';font-weight:700;font-size:19px;}
+  #portal-root .id-meta .code{font-family:'IBM Plex Mono';font-size:11px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-top:2px;}
+
+  #portal-root .stat{position:relative;overflow:hidden;}
+  #portal-root .stat::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--line);}
+  #portal-root .stat.accent-teal::before{background:var(--teal);}
+  #portal-root .stat.accent-coral::before{background:var(--coral);}
+  #portal-root .stat.accent-mustard::before{background:var(--mustard);}
+  #portal-root .stat .icon{width:18px;height:18px;margin-bottom:10px;opacity:.85;}
+  #portal-root .stat .icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.6;}
+  #portal-root .stat.accent-teal .icon{color:var(--teal);}
+  #portal-root .stat.accent-coral .icon{color:var(--coral);}
+  #portal-root .stat.accent-mustard .icon{color:var(--mustard);}
+  #portal-root .stat:not([class*="accent"]) .icon{color:var(--green);}
+
+  #portal-root .ticket{border-left:3px solid var(--line);}
+  #portal-root .ticket.t-entrega{border-left-color:var(--teal);}
+  #portal-root .ticket.t-devolucao{border-left-color:var(--muted);}
+  #portal-root .ticket.t-acerto{border-left-color:var(--coral);}
+  #portal-root .ticket .glyph{font-size:14px;margin-right:8px;opacity:.85;}
+  #portal-root .subnav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  #portal-root .subnav button{
+    font-family:'IBM Plex Mono';font-size:11px;text-transform:uppercase;letter-spacing:.04em;
+    background:var(--panel);border:1px solid var(--line);color:var(--muted);
+    padding:8px 12px;border-radius:7px;cursor:pointer;
+  }
+  #portal-root .subnav button.active{color:var(--ink);border-color:var(--teal);}
+  #portal-root .list-row{
+    display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);
+    font-size:13px;gap:10px;flex-wrap:wrap;
+  }
+  #portal-root .list-row:last-child{border-bottom:none;}
+  #portal-root .list-row .actions{display:flex;gap:6px;}
+  #portal-root .list-row .actions button{
+    background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
+    padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'IBM Plex Mono';
+  }
+  #portal-root .list-row .actions button:hover{color:var(--ink);}
+
+  /* --- capa de destaque com identidade da marca --- */
+  #portal-root .cover-banner{
+    position:relative;width:100%;min-height:180px;border-radius:16px;overflow:hidden;
+    background:radial-gradient(120% 140% at 50% 20%, #101014 0%, #050506 65%);
+    margin-bottom:26px;border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;padding:26px 20px;
+  }
+  #portal-root .cover-banner::before, #portal-root .cover-banner::after{
+    content:"";position:absolute;border-radius:50%;filter:blur(65px);opacity:.3;pointer-events:none;
+  }
+  #portal-root .cover-banner::before{width:240px;height:240px;background:var(--cyan);top:-90px;left:-60px;}
+  #portal-root .cover-banner::after{width:240px;height:240px;background:var(--magenta);bottom:-90px;right:-60px;}
+  #portal-root .cover-badge{
+    position:absolute;top:16px;left:18px;width:38px;height:38px;border-radius:10px;overflow:hidden;
+    box-shadow:0 0 0 1px rgba(255,255,255,.1);z-index:2;background:#000;
+  }
+  #portal-root .cover-badge img{width:100%;height:100%;object-fit:cover;display:block;}
+  #portal-root .cover-center{position:relative;z-index:1;text-align:center;max-width:520px;}
+  #portal-root .cover-eyebrow{
+    font-family:'IBM Plex Mono';font-size:10.5px;letter-spacing:.22em;color:var(--muted);
+    text-transform:uppercase;margin-bottom:12px;
+  }
+  #portal-root .cover-title{
+    font-family:'Space Grotesk';font-weight:700;font-size:36px;letter-spacing:-0.01em;line-height:1.1;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  #portal-root .cover-rule{width:56px;height:3px;background:var(--grad);border-radius:2px;margin:16px auto 0;}
+  #portal-root .cover-sub{margin-top:12px;font-size:12.5px;color:var(--muted);line-height:1.5;}
+
+  /* --- mais vendidos --- */
+  #portal-root .top-sellers{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:26px;}
+  #portal-root .seller-card{
+    display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:12px 16px;flex:1;min-width:220px;
+  }
+  #portal-root .seller-rank{
+    width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#0A0A0D;background:var(--line);
+  }
+  #portal-root .seller-card.rank-1 .seller-rank{background:var(--grad);}
+  #portal-root .seller-card.rank-2 .seller-rank{background:linear-gradient(90deg,var(--cyan),var(--violet));}
+  #portal-root .seller-card.rank-3 .seller-rank{background:linear-gradient(90deg,var(--violet),var(--magenta));}
+  #portal-root .seller-name{font-size:13px;font-weight:600;}
+  #portal-root .seller-count{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono';margin-top:2px;}
+
+  /* --- modal de pré-visualização --- */
+  #portal-root .modal-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;
+    z-index:50;padding:20px;
+  }
+  #portal-root .modal-backdrop.open{display:flex;}
+  #portal-root .modal-box{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:360px;width:100%;overflow:hidden;
+    position:relative;
+  }
+  #portal-root .modal-box .img{height:200px;background:var(--panel-2);background-size:cover;background-position:center;
+    display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;font-family:'IBM Plex Mono';}
+  #portal-root .modal-box .body{padding:18px;}
+  #portal-root .modal-close{
+    position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;
+    background:rgba(0,0,0,.5);border:none;color:#fff;font-size:16px;cursor:pointer;z-index:2;
+  }
+  #portal-root .prod-link{cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;}
+  #portal-root .prod-link:hover{text-decoration-color:var(--teal);color:var(--teal);}
+
+  #portal-root .footer-socials{display:flex;gap:16px;align-items:center;}
+  #portal-root .footer-socials a{color:var(--muted);font-size:12px;text-decoration:none;font-family:'IBM Plex Mono';display:inline-flex;align-items:center;gap:5px;}
+  #portal-root .footer-socials a:hover{color:var(--ink);}
+  @media(max-width:640px){
+    #portal-root .topbar{flex-direction:column;align-items:flex-start;padding:16px 18px;}
+    #portal-root nav{width:100%;overflow-x:auto;}
+    #portal-root main{padding:20px 16px;}
+    #portal-root .hero h1{font-size:23px;}
+    #portal-root .hero p{font-size:13px;}
+    #portal-root .cover-banner{min-height:140px;padding:20px 16px;}
+    #portal-root .cover-title{font-size:24px;}
+    #portal-root .cover-badge{width:32px;height:32px;top:12px;left:12px;}
+    #portal-root .cover-sub{font-size:11.5px;}
+    #portal-root .stat-row{grid-template-columns:repeat(2,1fr);gap:10px;}
+    #portal-root .stat{padding:12px;}
+    #portal-root .stat .n{font-size:19px;}
+    #portal-root .grid-products{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+    #portal-root .card .img{height:110px;}
+    #portal-root .panel{padding:16px;}
+    #portal-root table{font-size:11.5px;}
+    #portal-root th, #portal-root td{padding:7px 6px;}
+    #portal-root .id-card{padding:14px 16px;gap:12px;}
+    #portal-root .id-avatar{width:44px;height:44px;}
+    #portal-root .row{flex-direction:column;align-items:stretch;}
+    #portal-root .row .field{min-width:0;}
+    #portal-root .top-sellers{flex-direction:column;}
+    #portal-root .seller-card{min-width:0;}
+    #portal-root footer > div{flex-direction:column;align-items:flex-start;}
+    #portal-root .modal-box{max-width:100%;}
+  }
+  @media(max-width:400px){
+    #portal-root .stat-row{grid-template-columns:1fr 1fr;}
+    #portal-root th, #portal-root td{font-size:10.5px;}
+  }
+</style>
+
+<div id="portal-root">
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark"><img id="brand-logo-img" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQMDAwQDBAgEBAgQCwkLEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBD/wAARCAEqAVMDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD8qqKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAoooo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" alt="Logo HL 3D Solutions"></div>
+      <div>
+        <div class="brand-text">HL 3D Solutions</div>
+        <div class="brand-sub">Portal de consignação</div>
+      </div>
+    </div>
+    <nav>
+      <button data-view="portfolio" class="active">Portfólio</button>
+      <button data-view="client">Área do Cliente</button>
+      <button data-view="admin">Administrador</button>
+    </nav>
+  </div>
+
+  <main>
+    <!-- ===================== PORTFÓLIO ===================== -->
+    <section id="view-portfolio" class="view active">
+      <div class="hero">
+        <div class="cover-banner">
+          <div class="cover-badge"><img src="" id="hero-logo-img" alt="HL 3D Solutions"></div>
+          <div class="cover-center">
+            <div class="cover-eyebrow">HL 3D Solutions</div>
+            <div class="cover-title">Catálogo de Parceiros</div>
+            <div class="cover-rule"></div>
+            <div class="cover-sub">Chaveiros 3D, fidgets e itens sensoriais disponíveis para consignação. O valor exibido é o repasse combinado em contrato — você define o preço final de venda.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="top-sellers-wrap" style="display:none;">
+        <h3 style="margin-bottom:12px;font-size:14px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Mais vendidos</h3>
+        <div class="top-sellers" id="top-sellers"></div>
+      </div>
+
+      <div class="subnav" id="portfolio-filters"></div>
+
+      <div id="portfolio-loading" class="empty"><div class="glyph">◐</div>Carregando catálogo…</div>
+      <div id="portfolio-grid" class="grid-products" style="display:none;"></div>
+      <div id="portfolio-empty" class="empty" style="display:none;">
+        <div class="glyph">◇</div>Nenhum produto cadastrado ainda. Volte em breve.
+      </div>
+    </section>
+
+    <!-- ===================== ÁREA DO CLIENTE ===================== -->
+    <section id="view-client" class="view">
+      <div id="client-gate" class="client-glow">
+        <div class="hero">
+          <div class="cover-banner">
+            <div class="cover-badge"><img src="" class="hero-logo-clone" alt="HL 3D Solutions"></div>
+            <div class="cover-center">
+              <div class="cover-eyebrow">HL 3D Solutions</div>
+              <div class="cover-title">Área do Parceiro</div>
+              <div class="cover-rule"></div>
+              <div class="cover-sub">Digite o código de cliente informado no seu contrato de consignação para ver seu saldo, extrato e pagamentos.</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="max-width:380px;">
+          <div class="field">
+            <label>Código de cliente</label>
+            <input type="text" id="client-code-input" placeholder="Ex.: C001" class="mono" style="text-transform:uppercase;">
+          </div>
+          <div id="client-gate-msg"></div>
+          <button class="btn" id="client-access-btn">Acessar minha conta</button>
+        </div>
+      </div>
+
+      <div id="client-dashboard" class="client-glow" style="display:none;">
+        <div class="id-card">
+          <div class="id-avatar"><span id="client-avatar-letter">—</span></div>
+          <div class="id-meta">
+            <div class="name" id="client-name-display">—</div>
+            <div class="code" id="client-code-display">—</div>
+          </div>
+        </div>
+        <p style="color:var(--muted);margin:-8px 0 22px 0;font-size:13px;">Este é o seu extrato individual. Fale com a HL 3D Solutions se algum número parecer errado.</p>
+
+        <div class="stat-row">
+          <div class="stat accent-teal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>
+            <div class="n" id="stat-saldo">0</div><div class="l">Peças em sua posse</div></div>
+          <div class="stat accent-coral">
+            <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12h6M12 9v6"/></svg></div>
+            <div class="n" id="stat-devido">R$ 0</div><div class="l">Total devido</div></div>
+          <div class="stat accent-mustard">
+            <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
+            <div class="n" id="stat-pendente">R$ 0</div><div class="l">Pendente de pagamento</div></div>
+          <div class="stat">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+            <div class="n" id="stat-pago">R$ 0</div><div class="l">Já pago</div></div>
+        </div>
+
+        <h3 style="margin-bottom:12px;font-size:16px;">Saldo por produto</h3>
+        <div class="panel" style="padding:0;overflow-x:auto;">
+          <table>
+            <thead><tr><th>Produto</th><th>Entregue</th><th>Devolvido</th><th>Vendido</th><th>Em posse</th><th>Devido</th><th>Pago</th><th>Pendente</th></tr></thead>
+            <tbody id="client-product-table"></tbody>
+          </table>
+        </div>
+
+        <div class="divider"></div>
+        <h3 style="margin-bottom:12px;font-size:16px;">Solicitar reposição</h3>
+        <div class="panel" style="max-width:520px;">
+          <div class="row">
+            <div class="field"><label>Produto</label><select id="req-product"></select></div>
+            <div class="field"><label>Quantidade</label><input id="req-qty" type="number" min="1" placeholder="10"></div>
+          </div>
+          <div class="field"><label>Observação (opcional)</label><input id="req-note" placeholder="Ex.: preciso até sexta-feira"></div>
+          <div id="req-msg"></div>
+          <button class="btn" id="req-send-btn">Enviar pedido</button>
+        </div>
+
+        <div class="divider"></div>
+        <h3 style="margin-bottom:12px;font-size:16px;">Meus pedidos</h3>
+        <div id="client-requests"></div>
+
+        <div class="divider"></div>
+        <h3 style="margin-bottom:12px;font-size:16px;">Histórico de movimentações</h3>
+        <div id="client-history"></div>
+
+        <button class="btn secondary" id="client-logout-btn" style="margin-top:20px;">Sair</button>
+      </div>
+    </section>
+
+    <!-- ===================== ADMIN ===================== -->
+    <section id="view-admin" class="view">
+      <div id="admin-gate">
+        <div class="hero">
+          <div class="cover-banner">
+            <div class="cover-badge"><img src="" class="hero-logo-clone" alt="HL 3D Solutions"></div>
+            <div class="cover-center">
+              <div class="cover-eyebrow">Acesso restrito</div>
+              <div class="cover-title">Painel Administrativo</div>
+              <div class="cover-rule"></div>
+              <div class="cover-sub">Gerencie produtos, clientes, entregas, devoluções, acertos e pedidos de reposição.</div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="max-width:380px;">
+          <div class="field">
+            <label>Senha de administrador</label>
+            <input type="password" id="admin-pass-input" placeholder="••••••••">
+          </div>
+          <div id="admin-gate-msg"></div>
+          <button class="btn" id="admin-access-btn">Entrar</button>
+        </div>
+      </div>
+
+      <div id="admin-dashboard" style="display:none;">
+        <div class="hero">
+          <div class="eyebrow">Painel administrativo</div>
+          <h1>Gerenciar operação</h1>
+        </div>
+
+        <div class="subnav">
+          <button data-admin-tab="produtos" class="active">Produtos</button>
+          <button data-admin-tab="clientes">Clientes</button>
+          <button data-admin-tab="entregas">Lançar entrega</button>
+          <button data-admin-tab="devolucoes">Lançar devolução</button>
+          <button data-admin-tab="acertos">Lançar acerto</button>
+          <button data-admin-tab="pedidos">Pedidos de reposição <span id="pedidos-badge" class="badge pendente" style="display:none;margin-left:4px;">0</span></button>
+        </div>
+
+        <!-- PRODUTOS -->
+        <div class="admin-tab" data-tab="produtos">
+          <div class="panel" style="margin-bottom:20px;">
+            <h3 style="font-size:14px;margin-bottom:14px;">Novo produto</h3>
+            <div class="row">
+              <div class="field"><label>Código</label><input id="p-code" placeholder="P006"></div>
+              <div class="field" style="flex:2;"><label>Nome</label><input id="p-name" placeholder="Chaveiro 3D Foguete"></div>
+              <div class="field"><label>Categoria</label><input id="p-cat" placeholder="Chaveiro 3D"></div>
+              <div class="field"><label>Valor de repasse (R$)</label><input id="p-price" type="number" step="0.01" placeholder="8.00"></div>
+            </div>
+            <div class="row">
+              <div class="field" style="flex:2;"><label>URL da imagem (opcional)</label><input id="p-img" placeholder="https://..."></div>
+            </div>
+            <div id="p-msg"></div>
+            <button class="btn" id="p-add-btn">Adicionar produto</button>
+          </div>
+          <div class="panel"><h3 style="font-size:14px;margin-bottom:8px;">Catálogo atual</h3><div id="p-list"></div></div>
+        </div>
+
+        <!-- CLIENTES -->
+        <div class="admin-tab" data-tab="clientes" style="display:none;">
+          <div class="panel" style="margin-bottom:20px;">
+            <h3 style="font-size:14px;margin-bottom:14px;">Novo cliente</h3>
+            <div class="row">
+              <div class="field"><label>Código</label><input id="c-code" placeholder="C002"></div>
+              <div class="field" style="flex:2;"><label>Nome / Razão social</label><input id="c-name" placeholder="Nome da loja"></div>
+              <div class="field"><label>Contato</label><input id="c-contact" placeholder="(34) 90000-0000"></div>
+            </div>
+            <div id="c-msg"></div>
+            <button class="btn" id="c-add-btn">Adicionar cliente</button>
+          </div>
+          <div class="panel"><h3 style="font-size:14px;margin-bottom:8px;">Clientes cadastrados</h3><div id="c-list"></div></div>
+        </div>
+
+        <!-- ENTREGAS -->
+        <div class="admin-tab" data-tab="entregas" style="display:none;">
+          <div class="panel">
+            <h3 style="font-size:14px;margin-bottom:14px;">Registrar entrega (Anexo I)</h3>
+            <div class="row">
+              <div class="field"><label>Cliente</label><select id="e-client"></select></div>
+              <div class="field"><label>Produto</label><select id="e-product"></select></div>
+              <div class="field"><label>Quantidade</label><input id="e-qty" type="number" min="1" placeholder="10"></div>
+              <div class="field"><label>Data</label><input id="e-date" type="date"></div>
+            </div>
+            <div id="e-msg"></div>
+            <button class="btn" id="e-add-btn">Registrar entrega</button>
+          </div>
+          <div class="panel" style="margin-top:20px;"><h3 style="font-size:14px;margin-bottom:8px;">Últimas entregas</h3><div id="e-list"></div></div>
+        </div>
+
+        <!-- DEVOLUÇÕES -->
+        <div class="admin-tab" data-tab="devolucoes" style="display:none;">
+          <div class="panel">
+            <h3 style="font-size:14px;margin-bottom:14px;">Registrar devolução (Anexo II)</h3>
+            <div class="row">
+              <div class="field"><label>Cliente</label><select id="d-client"></select></div>
+              <div class="field"><label>Produto</label><select id="d-product"></select></div>
+              <div class="field"><label>Quantidade</label><input id="d-qty" type="number" min="1" placeholder="2"></div>
+              <div class="field"><label>Data</label><input id="d-date" type="date"></div>
+            </div>
+            <div class="row">
+              <div class="field"><label>Estado</label>
+                <select id="d-state"><option>Bom</option><option>Avariado</option></select>
+              </div>
+              <div class="field" style="flex:2;"><label>Observações</label><input id="d-obs" placeholder="Opcional"></div>
+            </div>
+            <div id="d-msg"></div>
+            <button class="btn" id="d-add-btn">Registrar devolução</button>
+          </div>
+          <div class="panel" style="margin-top:20px;"><h3 style="font-size:14px;margin-bottom:8px;">Últimas devoluções</h3><div id="d-list"></div></div>
+        </div>
+
+        <!-- ACERTOS -->
+        <div class="admin-tab" data-tab="acertos" style="display:none;">
+          <div class="panel">
+            <h3 style="font-size:14px;margin-bottom:14px;">Registrar acerto (Anexo III)</h3>
+            <div class="row">
+              <div class="field"><label>Cliente</label><select id="a-client"></select></div>
+              <div class="field"><label>Produto</label><select id="a-product"></select></div>
+              <div class="field"><label>Quantidade vendida</label><input id="a-qty" type="number" min="1" placeholder="8"></div>
+              <div class="field"><label>Data do acerto</label><input id="a-date" type="date"></div>
+            </div>
+            <div class="row">
+              <div class="field"><label>Status de pagamento</label>
+                <select id="a-status"><option>Pendente</option><option>Pago</option><option>Atrasado</option></select>
+              </div>
+              <div class="field"><label>Data de pagamento</label><input id="a-paydate" type="date"></div>
+            </div>
+            <div id="a-msg"></div>
+            <button class="btn" id="a-add-btn">Registrar acerto</button>
+          </div>
+          <div class="panel" style="margin-top:20px;"><h3 style="font-size:14px;margin-bottom:8px;">Últimos acertos</h3><div id="a-list"></div></div>
+        </div>
+
+        <!-- PEDIDOS -->
+        <div class="admin-tab" data-tab="pedidos" style="display:none;">
+          <div class="panel">
+            <h3 style="font-size:14px;margin-bottom:6px;">Pedidos de reposição enviados pelos clientes</h3>
+            <p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Aprovar um pedido registra a entrega automaticamente e some da fila.</p>
+            <div id="req-list"></div>
+          </div>
+        </div>
+
+        <button class="btn secondary" id="admin-logout-btn" style="margin-top:24px;">Sair do modo administrador</button>
+      </div>
+    </section>
+  </main>
+
+  <footer style="border-top:1px solid var(--line);padding:24px 28px;margin-top:20px;">
+    <div style="max-width:1080px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <div style="font-size:12px;color:var(--muted);font-family:'IBM Plex Mono';">HL 3D Solutions — Ideias ganham forma</div>
+      <div class="footer-socials">
+        <a href="https://instagram.com/hl3dsolutions" target="_blank" rel="noopener">📷 @hl3dsolutions</a>
+        <a href="https://wa.me/5534999416973" target="_blank" rel="noopener">💬 (34) 99941-6973</a>
+        <a href="mailto:hl3dsolutions@gmail.com">✉️ hl3dsolutions@gmail.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="modal-backdrop" id="product-modal">
+    <div class="modal-box">
+      <button class="modal-close" id="modal-close-btn">✕</button>
+      <div class="img" id="modal-img"></div>
+      <div class="body">
+        <span class="tag teal" id="modal-tag">Categoria</span>
+        <h3 id="modal-name" style="font-family:'Space Grotesk';font-size:17px;margin-bottom:4px;">—</h3>
+        <div class="code" id="modal-code" style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono';">—</div>
+        <div class="price" style="margin-top:12px;font-family:'IBM Plex Mono';font-size:14px;"><span class="lbl">Valor de repasse</span><span id="modal-price">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const ADMIN_PASSWORD = "oficina2026"; // altere aqui — esta é uma proteção simples, não é segurança de nível bancário
+  const ADMIN_WHATSAPP_NUMBER = "5534999416973"; // (34) 99941-6973
+  const ADMIN_EMAIL = "hl3dsolutions@gmail.com";
+
+  const root = document.getElementById('portal-root');
+  const fmtMoney = v => 'R$ ' + (Number(v)||0).toFixed(2).replace('.', ',');
+  const todayISO = () => new Date().toISOString().slice(0,10);
+  const fmtDate = iso => { if(!iso) return '—'; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; };
+
+  let PRODUCTS = [], CLIENTS = [], ENTREGAS = [], DEVOLUCOES = [], ACERTOS = [], PEDIDOS = [];
+  let currentClientCode = null;
+
+  async function loadAll(){
+    PRODUCTS = await getJSON('products', []);
+    CLIENTS = await getJSON('clients', []);
+    ENTREGAS = await getJSON('entregas', []);
+    DEVOLUCOES = await getJSON('devolucoes', []);
+    ACERTOS = await getJSON('acertos', []);
+    PEDIDOS = await getJSON('pedidos', []);
+
+    if(PRODUCTS.length === 0 && CLIENTS.length === 0){
+      // seed inicial de demonstração, consistente com o contrato e a planilha
+      PRODUCTS = [
+        {code:'P001', name:'Chaveiro 3D Personagem', category:'Chaveiro 3D', price:8.00, image:''},
+        {code:'P002', name:'Chaveiro 3D Nome Personalizado', category:'Chaveiro 3D', price:9.00, image:''},
+        {code:'P003', name:'Fidget Pop Simples', category:'Fidget', price:6.00, image:''},
+        {code:'P004', name:'Fidget Slider', category:'Fidget', price:7.50, image:''},
+        {code:'P005', name:'Brinquedo Sensorial Textura', category:'Sensorial', price:10.00, image:''},
+      ];
+      CLIENTS = [{code:'C001', name:'Maria Loja de Presentes', contact:'(34) 90000-0000'}];
+      ENTREGAS = [{id:'ENT-001', date:'2026-03-03', clientCode:'C001', productCode:'P001', qty:10}];
+      await saveAll();
+    }
+  }
+  async function saveAll(){
+    await setJSON('products', PRODUCTS);
+    await setJSON('clients', CLIENTS);
+    await setJSON('entregas', ENTREGAS);
+    await setJSON('devolucoes', DEVOLUCOES);
+    await setJSON('acertos', ACERTOS);
+    await setJSON('pedidos', PEDIDOS);
+  }
+  async function getJSON(key, fallback){
+    try{
+      const res = await window.storage.get(key, true);
+      return res ? JSON.parse(res.value) : fallback;
+    }catch(e){ return fallback; }
+  }
+  async function setJSON(key, value){
+    try{ await window.storage.set(key, JSON.stringify(value), true); }
+    catch(e){ console.error('Falha ao salvar', key, e); }
+  }
+
+  // ---------- navegação principal ----------
+  root.querySelectorAll('nav button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      root.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      root.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      document.getElementById('view-'+btn.dataset.view).classList.add('active');
+    });
+  });
+
+  // ---------- PORTFÓLIO ----------
+  let currentCategoryFilter = 'Todos';
+  const tagClass = { 'Chaveiro 3D':'teal', 'Fidget':'coral', 'Sensorial':'mustard' };
+
+  function renderPortfolioFilters(active){
+    const cats = ['Todos', ...Array.from(new Set(active.map(p=>p.category).filter(Boolean)))];
+    if(!cats.includes(currentCategoryFilter)) currentCategoryFilter = 'Todos';
+    document.getElementById('portfolio-filters').innerHTML = cats.map(c=>`
+      <button data-cat="${c}" class="${c===currentCategoryFilter?'active':''}">${c}</button>
+    `).join('');
+    document.querySelectorAll('#portfolio-filters button').forEach(b=>{
+      b.addEventListener('click', ()=>{ currentCategoryFilter = b.dataset.cat; renderPortfolio(); });
+    });
+  }
+
+  function renderTopSellers(){
+    const sold = {};
+    ACERTOS.forEach(a=>{ sold[a.productCode] = (sold[a.productCode]||0) + Number(a.qty); });
+    const ranked = Object.entries(sold).sort((a,b)=>b[1]-a[1]).slice(0,3)
+      .map(([code, qty])=>({ p: PRODUCTS.find(p=>p.code===code), qty })).filter(r=>r.p);
+    const wrap = document.getElementById('top-sellers-wrap');
+    if(ranked.length === 0){ wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    document.getElementById('top-sellers').innerHTML = ranked.map((r,i)=>`
+      <div class="seller-card rank-${i+1}">
+        <div class="seller-rank">${i+1}</div>
+        <div>
+          <div class="seller-name">${r.p.name}</div>
+          <div class="seller-count">${r.qty} vendidas</div>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderPortfolio(){
+    const grid = document.getElementById('portfolio-grid');
+    const loading = document.getElementById('portfolio-loading');
+    const empty = document.getElementById('portfolio-empty');
+    loading.style.display = 'none';
+    const active = PRODUCTS.filter(p => p.active !== false);
+    renderPortfolioFilters(active);
+    renderTopSellers();
+    const shown = currentCategoryFilter==='Todos' ? active : active.filter(p=>p.category===currentCategoryFilter);
+    if(shown.length === 0){ empty.style.display='block'; grid.style.display='none'; return; }
+    empty.style.display='none'; grid.style.display='grid';
+    grid.innerHTML = shown.map(p=>`
+      <div class="card">
+        <div class="img" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem imagem'}</div>
+        <div class="body">
+          <span class="tag ${tagClass[p.category] || 'teal'}">${p.category || 'Produto'}</span>
+          <h3>${p.name}</h3>
+          <div class="code">${p.code}</div>
+          <div class="price"><span class="lbl">Valor de repasse</span>${fmtMoney(p.price)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ---------- MODAL DE PRÉ-VISUALIZAÇÃO ----------
+  function openProductModal(code){
+    const p = PRODUCTS.find(p=>p.code===code);
+    if(!p) return;
+    document.getElementById('modal-img').style.backgroundImage = p.image ? `url('${p.image.replace(/'/g,"")}')` : '';
+    document.getElementById('modal-img').textContent = p.image ? '' : 'sem imagem';
+    document.getElementById('modal-tag').textContent = p.category || 'Produto';
+    document.getElementById('modal-tag').className = `tag ${tagClass[p.category] || 'teal'}`;
+    document.getElementById('modal-name').textContent = p.name;
+    document.getElementById('modal-code').textContent = p.code;
+    document.getElementById('modal-price').textContent = fmtMoney(p.price);
+    document.getElementById('product-modal').classList.add('open');
+  }
+  function closeProductModal(){ document.getElementById('product-modal').classList.remove('open'); }
+  window.hlOpenProduct = openProductModal;
+  document.getElementById('modal-close-btn').addEventListener('click', closeProductModal);
+  document.getElementById('product-modal').addEventListener('click', (e)=>{
+    if(e.target.id === 'product-modal') closeProductModal();
+  });
+
+  // ---------- cálculo de saldo ----------
+  function clientStats(code){
+    const products = PRODUCTS.map(p=>{
+      const entregue = ENTREGAS.filter(e=>e.clientCode===code && e.productCode===p.code).reduce((s,e)=>s+Number(e.qty),0);
+      const devolvido = DEVOLUCOES.filter(d=>d.clientCode===code && d.productCode===p.code).reduce((s,d)=>s+Number(d.qty),0);
+      const acertosDoProduto = ACERTOS.filter(a=>a.clientCode===code && a.productCode===p.code);
+      const vendido = acertosDoProduto.reduce((s,a)=>s+Number(a.qty),0);
+      const devido = acertosDoProduto.reduce((s,a)=>s+Number(a.qty)*Number(p.price),0);
+      const pago = acertosDoProduto.filter(a=>a.status==='Pago').reduce((s,a)=>s+Number(a.qty)*Number(p.price),0);
+      return { code:p.code, name:p.name, price:p.price, entregue, devolvido, vendido, saldo: entregue-devolvido-vendido, devido, pago, pendente: devido-pago };
+    }).filter(row => row.entregue>0 || row.devolvido>0 || row.vendido>0);
+    const totals = products.reduce((acc,r)=>({
+      saldo: acc.saldo+r.saldo, devido: acc.devido+r.devido, pago: acc.pago+r.pago, pendente: acc.pendente+r.pendente
+    }), {saldo:0,devido:0,pago:0,pendente:0});
+    return { products, totals };
+  }
+
+  function clientHistory(code){
+    const items = [
+      ...ENTREGAS.filter(e=>e.clientCode===code).map(e=>({type:'entrega', date:e.date, id:e.id, desc:`Entrega de ${e.qty}x ${productName(e.productCode)}`})),
+      ...DEVOLUCOES.filter(d=>d.clientCode===code).map(d=>({type:'devolucao', date:d.date, id:d.id, desc:`Devolução de ${d.qty}x ${productName(d.productCode)}`})),
+      ...ACERTOS.filter(a=>a.clientCode===code).map(a=>({type:'acerto', date:a.date, id:a.id, desc:`Acerto: ${a.qty}x ${productName(a.productCode)} — ${fmtMoney(a.qty*productPrice(a.productCode))}`, status:a.status})),
+    ];
+    return items.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+  }
+  function productName(code){ const p = PRODUCTS.find(p=>p.code===code); return p ? p.name : code; }
+  function productPrice(code){ const p = PRODUCTS.find(p=>p.code===code); return p ? Number(p.price) : 0; }
+
+  function whatsappLink(req){
+    const client = CLIENTS.find(c=>c.code===req.clientCode);
+    const clientLabel = client ? `${client.name} (${client.code})` : req.clientCode;
+    let text = `Novo pedido de reposição — ${req.id}\nCliente: ${clientLabel}\nProduto: ${productName(req.productCode)} (${req.productCode})\nQuantidade: ${req.qty}`;
+    if(req.note) text += `\nObservação: ${req.note}`;
+    return `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+  }
+  function whatsappBtn(req){
+    return `<a class="btn whatsapp" href="${whatsappLink(req)}" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5.1-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.4.1-.5.1-.1.2-.3.4-.4.1-.1.2-.2.2-.4.1-.1.1-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.2 1.6 2.5 4 3.5.6.2 1 .4 1.3.5.6.2 1.1.1 1.5.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2-.1-.1-.2-.2-.4-.3z"/></svg>
+      Avisar no WhatsApp</a>`;
+  }
+
+  // ---------- ÁREA DO CLIENTE ----------
+  document.getElementById('client-access-btn').addEventListener('click', ()=>{
+    const code = document.getElementById('client-code-input').value.trim().toUpperCase();
+    const msg = document.getElementById('client-gate-msg');
+    const client = CLIENTS.find(c=>c.code.toUpperCase()===code);
+    if(!client){ msg.innerHTML = '<div class="msg err">Código não encontrado. Confira o código informado no seu contrato.</div>'; return; }
+    msg.innerHTML = '';
+    currentClientCode = client.code;
+    document.getElementById('client-gate').style.display = 'none';
+    document.getElementById('client-dashboard').style.display = 'block';
+    document.getElementById('client-code-display').textContent = client.code;
+    document.getElementById('client-name-display').textContent = client.name;
+    document.getElementById('client-avatar-letter').textContent = (client.name||'?').trim().charAt(0).toUpperCase();
+
+    const { products, totals } = clientStats(client.code);
+    document.getElementById('stat-saldo').textContent = totals.saldo;
+    document.getElementById('stat-devido').textContent = fmtMoney(totals.devido);
+    document.getElementById('stat-pendente').textContent = fmtMoney(totals.pendente);
+    document.getElementById('stat-pago').textContent = fmtMoney(totals.pago);
+
+    const tbody = document.getElementById('client-product-table');
+    tbody.innerHTML = products.length ? products.map(r=>`
+      <tr><td class="mono prod-link" onclick="window.hlOpenProduct('${r.code}')">${r.name}</td><td>${r.entregue}</td><td>${r.devolvido}</td><td>${r.vendido}</td>
+      <td style="color:${r.saldo>0?'var(--teal)':'inherit'};font-weight:${r.saldo>0?'600':'400'};">${r.saldo}</td>
+      <td>${fmtMoney(r.devido)}</td><td>${fmtMoney(r.pago)}</td>
+      <td style="color:${r.pendente>0?'var(--mustard)':'inherit'};font-weight:${r.pendente>0?'600':'400'};">${fmtMoney(r.pendente)}</td></tr>
+    `).join('') : `<tr><td colspan="8" style="text-align:center;color:var(--muted);">Nenhuma movimentação registrada ainda.</td></tr>`;
+
+    document.getElementById('req-product').innerHTML = PRODUCTS.map(p=>`<option value="${p.code}">${p.code} — ${p.name}</option>`).join('') || '<option value="">Nenhum produto disponível</option>';
+    document.getElementById('req-qty').value = '';
+    document.getElementById('req-note').value = '';
+    document.getElementById('req-msg').innerHTML = '';
+    renderClientRequests(client.code);
+
+    const hist = clientHistory(client.code);
+    const badgeClass = { entrega:'entrega', devolucao:'devolucao', acerto:'acerto' };
+    const badgeLabel = { entrega:'Entrega', devolucao:'Devolução', acerto:'Acerto' };
+    const typeGlyph = { entrega:'▲', devolucao:'▼', acerto:'◆' };
+    document.getElementById('client-history').innerHTML = hist.length ? hist.map(h=>`
+      <div class="ticket t-${h.type}">
+        <div class="left">
+          <div class="desc"><span class="glyph">${typeGlyph[h.type]}</span>${h.desc}</div>
+          <div class="id">${h.id} · ${fmtDate(h.date)}</div>
+        </div>
+        <div>
+          <span class="badge ${badgeClass[h.type]}">${badgeLabel[h.type]}</span>
+          ${h.status ? `<span class="badge ${h.status.toLowerCase()}" style="margin-left:6px;">${h.status}</span>` : ''}
+        </div>
+      </div>`).join('') : `<div class="empty"><div class="glyph">◇</div>Sem movimentações por enquanto.</div>`;
+  });
+  document.getElementById('client-logout-btn').addEventListener('click', ()=>{
+    currentClientCode = null;
+    document.getElementById('client-dashboard').style.display = 'none';
+    document.getElementById('client-gate').style.display = 'block';
+    document.getElementById('client-code-input').value = '';
+  });
+
+  function renderClientRequests(code){
+    const mine = PEDIDOS.filter(r=>r.clientCode===code).slice().reverse();
+    const statusClass = { Pendente:'pendente', Aprovado:'aprovado', Recusado:'recusado' };
+    document.getElementById('client-requests').innerHTML = mine.length ? mine.map(r=>`
+      <div class="ticket">
+        <div class="left">
+          <div class="desc">${r.qty}x ${productName(r.productCode)}${r.note ? ' — ' + r.note : ''}</div>
+          <div class="id">${r.id} · ${fmtDate(r.date)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${r.status==='Pendente' ? whatsappBtn(r) : ''}
+          <span class="badge ${statusClass[r.status]}">${r.status}</span>
+        </div>
+      </div>`).join('') : `<div class="empty"><div class="glyph">◇</div>Você ainda não fez nenhum pedido.</div>`;
+  }
+
+  document.getElementById('req-send-btn').addEventListener('click', async ()=>{
+    const msg = document.getElementById('req-msg');
+    if(!currentClientCode){ return; }
+    const productCode = document.getElementById('req-product').value;
+    const qty = parseInt(document.getElementById('req-qty').value);
+    const note = document.getElementById('req-note').value.trim();
+    if(!productCode || !qty){ msg.innerHTML = '<div class="msg err">Escolha um produto e informe a quantidade.</div>'; return; }
+    const id = 'PED-' + String(PEDIDOS.length+1).padStart(3,'0');
+    const req = { id, date: todayISO(), clientCode: currentClientCode, productCode, qty, note, status:'Pendente' };
+    PEDIDOS.push(req);
+    await saveAll();
+    msg.innerHTML = `<div class="msg ok">Pedido enviado! Avise a Oficina Consignada agora para agilizar:</div>
+      <div style="margin-bottom:10px;">${whatsappBtn(req)}</div>`;
+    document.getElementById('req-qty').value = '';
+    document.getElementById('req-note').value = '';
+    renderClientRequests(currentClientCode);
+  });
+
+  // ---------- ADMIN GATE ----------
+  document.getElementById('admin-access-btn').addEventListener('click', ()=>{
+    const pass = document.getElementById('admin-pass-input').value;
+    const msg = document.getElementById('admin-gate-msg');
+    if(pass !== ADMIN_PASSWORD){ msg.innerHTML = '<div class="msg err">Senha incorreta.</div>'; return; }
+    msg.innerHTML = '';
+    document.getElementById('admin-gate').style.display = 'none';
+    document.getElementById('admin-dashboard').style.display = 'block';
+    refreshAdminSelects();
+    renderAdminLists();
+  });
+  document.getElementById('admin-logout-btn').addEventListener('click', ()=>{
+    document.getElementById('admin-dashboard').style.display = 'none';
+    document.getElementById('admin-gate').style.display = 'block';
+    document.getElementById('admin-pass-input').value = '';
+  });
+
+  root.querySelectorAll('[data-admin-tab]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      root.querySelectorAll('[data-admin-tab]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      root.querySelectorAll('.admin-tab').forEach(t=>t.style.display='none');
+      root.querySelector(`.admin-tab[data-tab="${btn.dataset.adminTab}"]`).style.display='block';
+    });
+  });
+
+  function refreshAdminSelects(){
+    const clientOpts = CLIENTS.map(c=>`<option value="${c.code}">${c.code} — ${c.name}</option>`).join('');
+    const productOpts = PRODUCTS.map(p=>`<option value="${p.code}">${p.code} — ${p.name}</option>`).join('');
+    ['e-client','d-client','a-client'].forEach(id=>document.getElementById(id).innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>');
+    ['e-product','d-product','a-product'].forEach(id=>document.getElementById(id).innerHTML = productOpts || '<option value="">Cadastre um produto primeiro</option>');
+    document.getElementById('e-date').value = todayISO();
+    document.getElementById('d-date').value = todayISO();
+    document.getElementById('a-date').value = todayISO();
+  }
+
+  function renderAdminLists(){
+    document.getElementById('p-list').innerHTML = PRODUCTS.length ? PRODUCTS.map(p=>`
+      <div class="list-row"><span class="mono">${p.code} — ${p.name} (${p.category}) — ${fmtMoney(p.price)}</span>
+      <span class="actions"><button data-del-product="${p.code}">Remover</button></span></div>
+    `).join('') : `<div class="empty">Nenhum produto cadastrado.</div>`;
+
+    document.getElementById('c-list').innerHTML = CLIENTS.length ? CLIENTS.map(c=>`
+      <div class="list-row"><span class="mono">${c.code} — ${c.name} — ${c.contact||'sem contato'}</span>
+      <span class="actions"><button data-del-client="${c.code}">Remover</button></span></div>
+    `).join('') : `<div class="empty">Nenhum cliente cadastrado.</div>`;
+
+    document.getElementById('e-list').innerHTML = ENTREGAS.slice().reverse().slice(0,8).map(e=>`
+      <div class="list-row"><span class="mono">${e.id} · ${fmtDate(e.date)} · ${e.clientCode} · ${e.qty}x ${productName(e.productCode)}</span></div>
+    `).join('') || `<div class="empty">Nenhuma entrega registrada.</div>`;
+
+    document.getElementById('d-list').innerHTML = DEVOLUCOES.slice().reverse().slice(0,8).map(d=>`
+      <div class="list-row"><span class="mono">${d.id} · ${fmtDate(d.date)} · ${d.clientCode} · ${d.qty}x ${productName(d.productCode)} · ${d.state}</span></div>
+    `).join('') || `<div class="empty">Nenhuma devolução registrada.</div>`;
+
+    document.getElementById('a-list').innerHTML = ACERTOS.slice().reverse().slice(0,8).map(a=>`
+      <div class="list-row"><span class="mono">${a.id} · ${fmtDate(a.date)} · ${a.clientCode} · ${a.qty}x ${productName(a.productCode)}</span>
+      <span class="badge ${a.status.toLowerCase()}">${a.status}</span></div>
+    `).join('') || `<div class="empty">Nenhum acerto registrado.</div>`;
+
+    const pendentes = PEDIDOS.filter(r=>r.status==='Pendente');
+    const badge = document.getElementById('pedidos-badge');
+    if(pendentes.length){ badge.style.display='inline-block'; badge.textContent = pendentes.length; }
+    else { badge.style.display='none'; }
+
+    const statusClass = { Pendente:'pendente', Aprovado:'aprovado', Recusado:'recusado' };
+    document.getElementById('req-list').innerHTML = PEDIDOS.length ? PEDIDOS.slice().reverse().map(r=>`
+      <div class="list-row">
+        <span class="mono">${r.id} · ${fmtDate(r.date)} · ${r.clientCode} · ${r.qty}x ${productName(r.productCode)}${r.note ? ' · "'+r.note+'"' : ''}</span>
+        <span class="actions">
+          <span class="badge ${statusClass[r.status]}" style="margin-right:6px;">${r.status}</span>
+          ${r.status==='Pendente' ? `<button data-approve-req="${r.id}">Aprovar</button><button data-refuse-req="${r.id}">Recusar</button>` : ''}
+        </span>
+      </div>
+    `).join('') : `<div class="empty">Nenhum pedido de reposição por enquanto.</div>`;
+
+    root.querySelectorAll('[data-approve-req]').forEach(b=>b.addEventListener('click', async ()=>{
+      const req = PEDIDOS.find(r=>r.id===b.dataset.approveReq);
+      if(!req) return;
+      const entId = 'ENT-' + String(ENTREGAS.length+1).padStart(3,'0');
+      ENTREGAS.push({ id: entId, date: todayISO(), clientCode: req.clientCode, productCode: req.productCode, qty: req.qty });
+      req.status = 'Aprovado';
+      await saveAll();
+      renderAdminLists();
+    }));
+    root.querySelectorAll('[data-refuse-req]').forEach(b=>b.addEventListener('click', async ()=>{
+      const req = PEDIDOS.find(r=>r.id===b.dataset.refuseReq);
+      if(!req) return;
+      req.status = 'Recusado';
+      await saveAll();
+      renderAdminLists();
+    }));
+
+    root.querySelectorAll('[data-del-product]').forEach(b=>b.addEventListener('click', async ()=>{
+      PRODUCTS = PRODUCTS.filter(p=>p.code!==b.dataset.delProduct);
+      await saveAll(); refreshAdminSelects(); renderAdminLists(); renderPortfolio();
+    }));
+    root.querySelectorAll('[data-del-client]').forEach(b=>b.addEventListener('click', async ()=>{
+      CLIENTS = CLIENTS.filter(c=>c.code!==b.dataset.delClient);
+      await saveAll(); refreshAdminSelects(); renderAdminLists();
+    }));
+  }
+
+  document.getElementById('p-add-btn').addEventListener('click', async ()=>{
+    const code = document.getElementById('p-code').value.trim().toUpperCase();
+    const name = document.getElementById('p-name').value.trim();
+    const category = document.getElementById('p-cat').value.trim();
+    const price = parseFloat(document.getElementById('p-price').value);
+    const image = document.getElementById('p-img').value.trim();
+    const msg = document.getElementById('p-msg');
+    if(!code || !name || isNaN(price)){ msg.innerHTML = '<div class="msg err">Preencha ao menos código, nome e valor.</div>'; return; }
+    if(PRODUCTS.some(p=>p.code===code)){ msg.innerHTML = '<div class="msg err">Já existe um produto com esse código.</div>'; return; }
+    PRODUCTS.push({code, name, category, price, image, active:true});
+    await saveAll();
+    msg.innerHTML = '<div class="msg ok">Produto adicionado.</div>';
+    ['p-code','p-name','p-cat','p-price','p-img'].forEach(id=>document.getElementById(id).value='');
+    refreshAdminSelects(); renderAdminLists(); renderPortfolio();
+  });
+
+  document.getElementById('c-add-btn').addEventListener('click', async ()=>{
+    const code = document.getElementById('c-code').value.trim().toUpperCase();
+    const name = document.getElementById('c-name').value.trim();
+    const contact = document.getElementById('c-contact').value.trim();
+    const msg = document.getElementById('c-msg');
+    if(!code || !name){ msg.innerHTML = '<div class="msg err">Preencha código e nome.</div>'; return; }
+    if(CLIENTS.some(c=>c.code===code)){ msg.innerHTML = '<div class="msg err">Já existe um cliente com esse código.</div>'; return; }
+    CLIENTS.push({code, name, contact, status:'Ativo'});
+    await saveAll();
+    msg.innerHTML = '<div class="msg ok">Cliente adicionado.</div>';
+    ['c-code','c-name','c-contact'].forEach(id=>document.getElementById(id).value='');
+    refreshAdminSelects(); renderAdminLists();
+  });
+
+  document.getElementById('e-add-btn').addEventListener('click', async ()=>{
+    const clientCode = document.getElementById('e-client').value;
+    const productCode = document.getElementById('e-product').value;
+    const qty = parseInt(document.getElementById('e-qty').value);
+    const date = document.getElementById('e-date').value;
+    const msg = document.getElementById('e-msg');
+    if(!clientCode || !productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto e quantidade.</div>'; return; }
+    const id = 'ENT-' + String(ENTREGAS.length+1).padStart(3,'0');
+    ENTREGAS.push({id, date, clientCode, productCode, qty});
+    await saveAll();
+    msg.innerHTML = '<div class="msg ok">Entrega registrada.</div>';
+    document.getElementById('e-qty').value = '';
+    renderAdminLists();
+  });
+
+  document.getElementById('d-add-btn').addEventListener('click', async ()=>{
+    const clientCode = document.getElementById('d-client').value;
+    const productCode = document.getElementById('d-product').value;
+    const qty = parseInt(document.getElementById('d-qty').value);
+    const date = document.getElementById('d-date').value;
+    const state = document.getElementById('d-state').value;
+    const obs = document.getElementById('d-obs').value.trim();
+    const msg = document.getElementById('d-msg');
+    if(!clientCode || !productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto e quantidade.</div>'; return; }
+    const id = 'DEV-' + String(DEVOLUCOES.length+1).padStart(3,'0');
+    DEVOLUCOES.push({id, date, clientCode, productCode, qty, state, obs});
+    await saveAll();
+    msg.innerHTML = '<div class="msg ok">Devolução registrada.</div>';
+    document.getElementById('d-qty').value = ''; document.getElementById('d-obs').value = '';
+    renderAdminLists();
+  });
+
+  document.getElementById('a-add-btn').addEventListener('click', async ()=>{
+    const clientCode = document.getElementById('a-client').value;
+    const productCode = document.getElementById('a-product').value;
+    const qty = parseInt(document.getElementById('a-qty').value);
+    const date = document.getElementById('a-date').value;
+    const status = document.getElementById('a-status').value;
+    const payDate = document.getElementById('a-paydate').value;
+    const msg = document.getElementById('a-msg');
+    if(!clientCode || !productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto e quantidade.</div>'; return; }
+    const id = 'ACT-' + String(ACERTOS.length+1).padStart(3,'0');
+    ACERTOS.push({id, date, clientCode, productCode, qty, status, payDate});
+    await saveAll();
+    msg.innerHTML = '<div class="msg ok">Acerto registrado.</div>';
+    document.getElementById('a-qty').value = '';
+    renderAdminLists();
+  });
+
+  // ---------- inicialização ----------
+  (async function init(){
+    const brandLogo = document.getElementById('brand-logo-img');
+    if(brandLogo){
+      const heroLogo = document.getElementById('hero-logo-img');
+      if(heroLogo) heroLogo.src = brandLogo.src;
+      document.querySelectorAll('.hero-logo-clone').forEach(img => img.src = brandLogo.src);
+    }
+    await loadAll();
+    renderPortfolio();
+  })();
+})();
+</script>
