@@ -236,14 +236,14 @@
   }
 
   /* --- botão flutuante de carrinho (celular) --- */
-  #portal-root #mobile-cart-fab{
+  #portal-root .mobile-cart-fab{
     display:none;position:fixed;bottom:22px;right:18px;z-index:45;
     width:54px;height:54px;border-radius:50%;background:var(--grad);
     align-items:center;justify-content:center;text-decoration:none;
     box-shadow:0 10px 28px rgba(0,0,0,.55);
   }
-  #portal-root #mobile-cart-fab svg{width:24px;height:24px;stroke:#0A0A0D;fill:none;stroke-width:2;}
-  #portal-root #mobile-cart-fab .fab-badge{
+  #portal-root .mobile-cart-fab svg{width:24px;height:24px;stroke:#0A0A0D;fill:none;stroke-width:2;}
+  #portal-root .mobile-cart-fab .fab-badge{
     position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;
     font-size:10px;font-weight:700;font-family:'IBM Plex Mono';border-radius:999px;
     padding:2px 6px;min-width:18px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.4);
@@ -255,7 +255,7 @@
     75%{transform:translateY(-3px) rotate(4deg);}
   }
   @media(max-width:900px){
-    #portal-root #mobile-cart-fab.show{display:flex;animation:cart-walk 1.8s ease-in-out infinite;}
+    #portal-root .mobile-cart-fab.show{display:flex;animation:cart-walk 1.8s ease-in-out infinite;}
   }
 
   #portal-root .ticket.t-entrega{border-left-color:var(--teal);}
@@ -540,9 +540,34 @@
             <div class="cover-eyebrow">HL 3D Solutions</div>
             <div class="cover-title">Peças Únicas, Feitas Pra Você</div>
             <div class="cover-rule"></div>
-            <div class="cover-sub">Chaveiros 3D, fidgets e itens sensoriais impressos com capricho. Escolha, veja em movimento e peça pelo WhatsApp — entrega rápida em Uberaba/MG e envio para todo o Brasil.</div>
+            <div class="cover-sub">Chaveiros 3D, fidgets, itens sensoriais e peças personalizadas sob medida, impressos com capricho. Escolha, veja em movimento e peça pelo WhatsApp — entrega rápida em Uberaba/MG e envio para todo o Brasil.</div>
           </div>
         </div>
+      </div>
+
+      <div id="public-mobile-cart-fab-wrap">
+        <a href="#public-cart-panel" id="mobile-public-cart-fab" class="mobile-cart-fab">
+          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293A1 1 0 0 0 5.414 17H17M17 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM9 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+          <span class="fab-badge" id="public-mobile-cart-fab-badge">0</span>
+        </a>
+      </div>
+
+      <div class="panel" id="public-cart-panel" style="display:none;margin-bottom:22px;scroll-margin-top:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <h4 style="font-family:'Space Grotesk';font-size:14px;margin:0;">🛒 Meu carrinho <span id="public-cart-count-badge" class="badge pendente" style="display:none;"></span></h4>
+        </div>
+        <div id="public-cart-items"></div>
+        <div class="row" id="public-cart-checkout-fields" style="display:none;margin-top:12px;">
+          <div class="field"><label>Seu nome</label><input id="public-cart-name" placeholder="Como podemos te chamar?"></div>
+          <div class="field"><label>Cidade de entrega</label>
+            <select id="public-cart-city">
+              <option value="uberaba">Uberaba - MG</option>
+              <option value="outra">Outra cidade</option>
+            </select>
+          </div>
+        </div>
+        <div id="public-cart-msg"></div>
+        <button class="btn whatsapp" id="public-cart-submit-btn" style="display:none;margin-top:10px;width:100%;justify-content:center;">Enviar pedido pelo WhatsApp</button>
       </div>
 
       <div id="top-sellers-wrap" style="display:none;">
@@ -600,7 +625,7 @@
           <div id="floating-cart-items"></div>
           <a href="#consig-catalog-section" class="floating-cart-link">Ver carrinho completo ↓</a>
         </div>
-        <a href="#consig-catalog-section" id="mobile-cart-fab">
+        <a href="#consig-catalog-section" id="mobile-cart-fab" class="mobile-cart-fab">
           <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293A1 1 0 0 0 5.414 17H17M17 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM9 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
           <span class="fab-badge" id="mobile-cart-fab-badge">0</span>
         </a>
@@ -736,6 +761,9 @@
               <div class="field" style="flex:2;"><label>URL da imagem principal (opcional)</label><input id="p-img" placeholder="https://..."></div>
               <div class="field" style="flex:2;"><label>URL do vídeo/GIF (opcional)</label><input id="p-video" placeholder="https://... (.mp4 ou .gif)"></div>
             </div>
+            <div class="row">
+              <div class="field" style="flex:1;"><label>Descrição / medidas (opcional)</label><input id="p-desc" placeholder="Ex.: 6cm de altura, resina flexível, base emborrachada"></div>
+            </div>
             <div class="row" style="align-items:center;">
               <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);cursor:pointer;">
                 <input type="checkbox" id="p-ondemand" style="width:16px;height:16px;">
@@ -756,6 +784,10 @@
               <div class="field"><label>Código</label><input id="c-code" placeholder="C002"></div>
               <div class="field" style="flex:2;"><label>Nome / Razão social</label><input id="c-name" placeholder="Nome da loja"></div>
               <div class="field"><label>Contato</label><input id="c-contact" placeholder="(34) 90000-0000"></div>
+            </div>
+            <div class="row">
+              <div class="field"><label>CPF/CNPJ</label><input id="c-document" placeholder="000.000.000-00"></div>
+              <div class="field" style="flex:2;"><label>Observação</label><input id="c-notes" placeholder="Ex.: prefere acerto quinzenal, ponto de referência..."></div>
             </div>
             <div id="c-msg"></div>
             <button class="btn" id="c-add-btn">Adicionar cliente</button>
@@ -887,25 +919,25 @@
         <span class="tag teal" id="modal-tag">Categoria</span>
         <h3 id="modal-name" style="font-family:'Space Grotesk';font-size:17px;margin-bottom:4px;">—</h3>
         <div class="code" id="modal-code" style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono';">—</div>
+        <div id="modal-description" style="color:var(--muted);font-size:12px;margin-top:8px;line-height:1.5;display:none;"></div>
         <div class="price" style="margin-top:12px;font-family:'IBM Plex Mono';font-size:14px;"><span class="lbl">Preço</span><span id="modal-public-price">—</span></div>
         <div class="price" id="modal-consignado-wrap" style="margin-top:6px;font-family:'IBM Plex Mono';font-size:14px;color:var(--teal);display:none;"><span class="lbl">Seu preço (consignado)</span><span id="modal-price">—</span></div>
 
         <div class="divider" style="margin:16px 0;"></div>
-        <h4 style="font-family:'Space Grotesk';font-size:13px;margin-bottom:10px;">Fazer pedido</h4>
-        <div class="field"><label>Seu nome</label><input id="modal-buyer-name" placeholder="Como podemos te chamar?"></div>
+        <h4 style="font-family:'Space Grotesk';font-size:13px;margin-bottom:10px;">Adicionar ao pedido</h4>
         <div class="row">
           <div class="field" id="modal-buyer-color-field" style="display:none;"><label>Cor</label><select id="modal-buyer-color"></select></div>
           <div class="field"><label>Quantidade</label><input id="modal-buyer-qty" type="number" min="1" value="1"></div>
         </div>
-        <div class="field">
-          <label>Cidade de entrega</label>
-          <select id="modal-buyer-city">
-            <option value="uberaba">Uberaba - MG</option>
-            <option value="outra">Outra cidade</option>
-          </select>
-        </div>
         <div id="modal-buy-msg"></div>
-        <button class="btn whatsapp" id="modal-buy-btn" style="width:100%;justify-content:center;">Fazer pedido pelo WhatsApp</button>
+        <button class="btn" id="modal-buy-btn" style="width:100%;justify-content:center;">+ Adicionar ao carrinho</button>
+        <div id="modal-post-add" style="display:none;margin-top:10px;">
+          <div class="msg ok" style="margin-bottom:8px;">Adicionado ao carrinho!</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn secondary" id="modal-keep-browsing-btn" style="flex:1;">Continuar comprando</button>
+            <button class="btn whatsapp" id="modal-finish-order-btn" style="flex:1;">Finalizar pedido</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1011,19 +1043,22 @@
     });
   }
 
-  function carouselCardHtml(r, rank, isTop){
+  function carouselCardHtml(r, rank, isTop, mode){
+    const clickAction = mode === 'consignado'
+      ? `window.hlAddToCart('${r.p.code}','${((r.p.colors||[])[0]?.name||'').replace(/'/g,"")}')`
+      : `window.hlOpenProduct('${r.p.code}')`;
     return `
-      <div class="carousel-card ${isTop ? 'top' : ''}" onclick="window.hlOpenProduct('${r.p.code}')">
+      <div class="carousel-card ${isTop ? 'top' : ''}" onclick="${clickAction}">
         <div class="carousel-rank">${rank}</div>
         <div class="carousel-img" style="${r.p.image ? `background-image:url('${r.p.image.replace(/'/g,"")}')` : ''}">${r.p.image ? '' : 'sem foto'}</div>
         <div class="carousel-body">
           <div class="carousel-name">${r.p.name}</div>
-          <div class="carousel-count">${r.qty} vendidas</div>
+          <div class="carousel-count">${mode === 'consignado' ? '+ Adicionar ao carrinho' : r.qty + ' vendidas'}</div>
         </div>
       </div>`;
   }
 
-  function renderTopSellers(wrapId, listId, moreWrapId, moreListId){
+  function renderTopSellers(wrapId, listId, moreWrapId, moreListId, mode){
     const sold = {};
     ACERTOS.forEach(a=>{ sold[a.productCode] = (sold[a.productCode]||0) + Number(a.qty); });
     const rankedAll = Object.entries(sold).sort((a,b)=>b[1]-a[1])
@@ -1035,7 +1070,7 @@
     if(!wrap) return;
     if(top5.length === 0){ wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
-    document.getElementById(listId).innerHTML = top5.map((r,i)=>carouselCardHtml(r, i+1, true)).join('');
+    document.getElementById(listId).innerHTML = top5.map((r,i)=>carouselCardHtml(r, i+1, true, mode)).join('');
 
     if(moreWrapId){
       const moreWrap = document.getElementById(moreWrapId);
@@ -1043,7 +1078,7 @@
         if(next5.length === 0){ moreWrap.style.display = 'none'; }
         else {
           moreWrap.style.display = 'block';
-          document.getElementById(moreListId).innerHTML = next5.map((r,i)=>carouselCardHtml(r, i+6, false)).join('');
+          document.getElementById(moreListId).innerHTML = next5.map((r,i)=>carouselCardHtml(r, i+6, false, mode)).join('');
         }
       }
     }
@@ -1135,6 +1170,9 @@
     document.getElementById('modal-tag').className = `tag ${tagClass[p.category] || 'teal'}`;
     document.getElementById('modal-name').textContent = p.name;
     document.getElementById('modal-code').textContent = p.code;
+    const descEl = document.getElementById('modal-description');
+    if(p.description){ descEl.textContent = p.description; descEl.style.display = 'block'; }
+    else { descEl.style.display = 'none'; }
     document.getElementById('modal-public-price').textContent = p.publicPrice!=null ? fmtMoney(p.publicPrice) : fmtMoney(p.price);
     document.getElementById('modal-consignado-wrap').style.display = 'none';
 
@@ -1163,9 +1201,10 @@
       colorSelect.innerHTML = '';
     }
     document.getElementById('modal-buyer-qty').value = 1;
-    document.getElementById('modal-buyer-city').value = 'uberaba';
     document.getElementById('modal-buy-msg').innerHTML = '';
     document.getElementById('modal-buy-btn').dataset.productCode = p.code;
+    document.getElementById('modal-buy-btn').style.display = 'block';
+    document.getElementById('modal-post-add').style.display = 'none';
     modalSelectedColor = null;
 
     document.getElementById('product-modal').classList.add('open');
@@ -1188,34 +1227,126 @@
     if(e.target.id === 'product-modal') closeProductModal();
   });
 
+  // ---------- CARRINHO DE COMPRAS (público em geral) ----------
+  let publicCart = [];
+
   document.getElementById('modal-buy-btn').addEventListener('click', ()=>{
     const msgEl = document.getElementById('modal-buy-msg');
     const code = document.getElementById('modal-buy-btn').dataset.productCode;
     const p = PRODUCTS.find(p=>p.code===code);
     if(!p) return;
-    const buyerName = document.getElementById('modal-buyer-name').value.trim();
     const qty = parseInt(document.getElementById('modal-buyer-qty').value) || 1;
-    const city = document.getElementById('modal-buyer-city').value;
     const colorField = document.getElementById('modal-buyer-color-field');
     const color = colorField.style.display !== 'none' ? document.getElementById('modal-buyer-color').value : '';
-    if(!buyerName){ msgEl.innerHTML = '<div class="msg err">Preencha seu nome antes de enviar.</div>'; return; }
 
-    const price = p.publicPrice!=null ? p.publicPrice : p.price;
+    const existing = publicCart.find(i=>i.productCode===code && i.color===color);
+    if(existing){ existing.qty += qty; }
+    else { publicCart.push({ productCode: code, color, qty }); }
+    renderPublicCart();
+
+    msgEl.innerHTML = '';
+    document.getElementById('modal-buy-btn').style.display = 'none';
+    document.getElementById('modal-post-add').style.display = 'block';
+  });
+  document.getElementById('modal-keep-browsing-btn').addEventListener('click', ()=>{
+    closeProductModal();
+  });
+  document.getElementById('modal-finish-order-btn').addEventListener('click', ()=>{
+    closeProductModal();
+    document.getElementById('public-cart-panel').scrollIntoView({ behavior:'smooth', block:'start' });
+    setTimeout(()=>{ const n = document.getElementById('public-cart-name'); if(n) n.focus(); }, 400);
+  });
+
+  function renderPublicCart(){
+    const totalQty = publicCart.reduce((s,i)=>s+i.qty,0);
+
+    const fab = document.getElementById('mobile-public-cart-fab');
+    if(fab){
+      if(totalQty > 0){
+        fab.classList.add('show');
+        document.getElementById('public-mobile-cart-fab-badge').textContent = totalQty;
+      } else {
+        fab.classList.remove('show');
+      }
+    }
+
+    const panel = document.getElementById('public-cart-panel');
+    const itemsWrap = document.getElementById('public-cart-items');
+    const checkoutFields = document.getElementById('public-cart-checkout-fields');
+    const submitBtn = document.getElementById('public-cart-submit-btn');
+    const badge = document.getElementById('public-cart-count-badge');
+    if(!panel) return;
+
+    if(publicCart.length === 0){
+      panel.style.display = 'none';
+      return;
+    }
+    panel.style.display = 'block';
+    badge.style.display = 'inline-block';
+    badge.textContent = totalQty;
+    checkoutFields.style.display = 'flex';
+    submitBtn.style.display = 'block';
+
+    itemsWrap.innerHTML = publicCart.map((item, idx)=>{
+      const p = PRODUCTS.find(p=>p.code===item.productCode);
+      const name = p ? p.name : item.productCode;
+      const price = p ? (p.publicPrice!=null ? Number(p.publicPrice) : Number(p.price)) : 0;
+      return `
+      <div class="ticket" style="margin-bottom:8px;">
+        <div class="left">
+          <div class="desc">${name}${item.color ? ' — '+item.color : ''}</div>
+          <div class="id">${fmtMoney(price)} cada</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button data-pcart-dec="${idx}" class="cart-qty-btn">−</button>
+          <span class="mono" style="min-width:20px;text-align:center;">${item.qty}</span>
+          <button data-pcart-inc="${idx}" class="cart-qty-btn">+</button>
+          <button data-pcart-remove="${idx}" class="cart-qty-btn" title="Remover">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    itemsWrap.querySelectorAll('[data-pcart-inc]').forEach(b=>b.addEventListener('click', ()=>{
+      publicCart[+b.dataset.pcartInc].qty += 1; renderPublicCart();
+    }));
+    itemsWrap.querySelectorAll('[data-pcart-dec]').forEach(b=>b.addEventListener('click', ()=>{
+      const idx = +b.dataset.pcartDec;
+      publicCart[idx].qty -= 1;
+      if(publicCart[idx].qty <= 0) publicCart.splice(idx,1);
+      renderPublicCart();
+    }));
+    itemsWrap.querySelectorAll('[data-pcart-remove]').forEach(b=>b.addEventListener('click', ()=>{
+      publicCart.splice(+b.dataset.pcartRemove,1); renderPublicCart();
+    }));
+  }
+
+  document.getElementById('public-cart-submit-btn').addEventListener('click', ()=>{
+    const msgEl = document.getElementById('public-cart-msg');
+    const buyerName = document.getElementById('public-cart-name').value.trim();
+    const city = document.getElementById('public-cart-city').value;
+    if(!buyerName){ msgEl.innerHTML = '<div class="msg err">Preencha seu nome antes de enviar.</div>'; return; }
+    if(publicCart.length === 0) return;
+
     let text = `Olá! Meu nome é ${buyerName} e tenho interesse em fazer um pedido:\n\n`;
-    text += `Produto: ${p.name} (${p.code})\n`;
-    if(color) text += `Cor: ${color}\n`;
-    text += `Quantidade: ${qty}\n`;
-    text += `Valor unitário: ${fmtMoney(price)}\n`;
+    publicCart.forEach(item=>{
+      const p = PRODUCTS.find(p=>p.code===item.productCode);
+      const name = p ? p.name : item.productCode;
+      const price = p ? (p.publicPrice!=null ? Number(p.publicPrice) : Number(p.price)) : 0;
+      text += `• ${item.qty}x ${name}${item.color ? ' ('+item.color+')' : ''} — ${fmtMoney(price)} cada\n`;
+    });
     if(city === 'uberaba'){
-      text += `Cidade: Uberaba - MG\nFrete: R$ 5,00 (entrega na cidade)\n`;
+      text += `\nCidade: Uberaba - MG\nFrete: R$ 5,00 (entrega na cidade)\n`;
     } else {
-      text += `Cidade: outra cidade (a combinar o frete)\n`;
+      text += `\nCidade: outra cidade (a combinar o frete)\n`;
     }
     text += `\nAguardo retorno, obrigado(a)!`;
 
     const link = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
     window.open(link, '_blank', 'noopener');
     msgEl.innerHTML = '<div class="msg ok">Pedido pronto! Se o WhatsApp não abriu automaticamente, verifique o bloqueio de pop-ups.</div>';
+    publicCart = [];
+    renderPublicCart();
+    document.getElementById('public-cart-name').value = '';
   });
 
   // ---------- cálculo de saldo ----------
@@ -1382,7 +1513,7 @@
   function renderConsignadoCatalog(){
     const grid = document.getElementById('consig-grid');
     if(!grid) return;
-    renderTopSellers('consig-top-sellers-wrap','consig-top-sellers','consig-top-sellers-more-wrap','consig-top-sellers-more');
+    renderTopSellers('consig-top-sellers-wrap','consig-top-sellers','consig-top-sellers-more-wrap','consig-top-sellers-more','consignado');
     const active = PRODUCTS.filter(p => p.active !== false);
     grid.innerHTML = active.map(p=>{
       const colors = p.colors || [];
@@ -1784,8 +1915,13 @@
     }));
 
     document.getElementById('c-list').innerHTML = CLIENTS.length ? CLIENTS.map(c=>`
-      <div class="list-row"><span class="mono">${c.code} — ${c.name} — ${c.contact||'sem contato'}</span>
-      <span class="actions"><button data-del-client="${c.code}">Remover</button></span></div>
+      <div class="list-row" style="flex-direction:column;align-items:stretch;gap:4px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <span class="mono">${c.code} — ${c.name} — ${c.contact||'sem contato'}${c.document ? ' · '+c.document : ''}</span>
+          <span class="actions"><button data-del-client="${c.code}">Remover</button></span>
+        </div>
+        ${c.notes ? `<div style="color:var(--muted);font-size:11px;">${c.notes}</div>` : ''}
+      </div>
     `).join('') : `<div class="empty">Nenhum cliente cadastrado.</div>`;
 
     document.getElementById('e-list').innerHTML = ENTREGAS.slice().reverse().slice(0,8).map(e=>`
@@ -1854,14 +1990,15 @@
     const price = parseFloat(document.getElementById('p-price').value);
     const image = document.getElementById('p-img').value.trim();
     const video = document.getElementById('p-video').value.trim();
+    const description = document.getElementById('p-desc').value.trim();
     const onDemand = document.getElementById('p-ondemand').checked;
     const msg = document.getElementById('p-msg');
     if(!code || !name || isNaN(price)){ msg.innerHTML = '<div class="msg err">Preencha ao menos código, nome e valor consignado.</div>'; return; }
     if(PRODUCTS.some(p=>p.code===code)){ msg.innerHTML = '<div class="msg err">Já existe um produto com esse código.</div>'; return; }
-    PRODUCTS.push({code, name, category, price, publicPrice: isNaN(publicPrice) ? null : publicPrice, image, video, onDemand, colors:[], gallery:[], active:true});
+    PRODUCTS.push({code, name, category, price, publicPrice: isNaN(publicPrice) ? null : publicPrice, image, video, description, onDemand, colors:[], gallery:[], active:true});
     await setJSON('products', PRODUCTS);
     msg.innerHTML = '<div class="msg ok">Produto adicionado.</div>';
-    ['p-code','p-name','p-cat','p-public-price','p-price','p-img','p-video'].forEach(id=>document.getElementById(id).value='');
+    ['p-code','p-name','p-cat','p-public-price','p-price','p-img','p-video','p-desc'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('p-ondemand').checked = false;
     refreshAdminSelects(); renderAdminLists(); renderPortfolio();
   });
@@ -1870,13 +2007,15 @@
     const code = document.getElementById('c-code').value.trim().toUpperCase();
     const name = document.getElementById('c-name').value.trim();
     const contact = document.getElementById('c-contact').value.trim();
+    const document_ = document.getElementById('c-document').value.trim();
+    const notes = document.getElementById('c-notes').value.trim();
     const msg = document.getElementById('c-msg');
     if(!code || !name){ msg.innerHTML = '<div class="msg err">Preencha código e nome.</div>'; return; }
     if(CLIENTS.some(c=>c.code===code)){ msg.innerHTML = '<div class="msg err">Já existe um cliente com esse código.</div>'; return; }
-    CLIENTS.push({code, name, contact, status:'Ativo'});
+    CLIENTS.push({code, name, contact, document: document_, notes, status:'Ativo'});
     await setJSON('clients', CLIENTS);
     msg.innerHTML = '<div class="msg ok">Cliente adicionado.</div>';
-    ['c-code','c-name','c-contact'].forEach(id=>document.getElementById(id).value='');
+    ['c-code','c-name','c-contact','c-document','c-notes'].forEach(id=>document.getElementById(id).value='');
     refreshAdminSelects(); renderAdminLists();
   });
 
