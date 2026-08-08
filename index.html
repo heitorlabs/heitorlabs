@@ -342,6 +342,42 @@
     #portal-root .cover-divider{margin:0 12px;}
     #portal-root .cover-sub{display:none;}
     #portal-root .cover-title{font-size:16px;}
+  }  /* --- variações de cor / estoque --- */
+  #portal-root .color-chips{display:flex;gap:6px;flex-wrap:wrap;}
+  #portal-root .color-chip{
+    display:inline-flex;align-items:center;gap:5px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:999px;padding:3px 4px 3px 10px;font-size:11px;font-family:'IBM Plex Mono';
+  }
+  #portal-root .color-chip.out{border-color:var(--red);color:var(--red);}
+  #portal-root .color-chip button{
+    background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:11px;
+    width:18px;height:18px;border-radius:50%;line-height:1;
+  }
+  #portal-root .color-chip button:hover{background:var(--line);color:var(--ink);}
+  #portal-root .color-add-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  #portal-root .color-add-row input{
+    background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
+    padding:6px 8px;border-radius:6px;font-size:12px;font-family:'Inter';
+  }
+  #portal-root .color-add-row button{
+    background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
+    padding:6px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'IBM Plex Mono';
+  }
+  #portal-root .portfolio-colors{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;}
+  #portal-root .color-pill{
+    font-size:10px;font-family:'IBM Plex Mono';background:var(--panel-2);border:1px solid var(--line);
+    border-radius:999px;padding:2px 8px;color:var(--muted);
+  }
+  #portal-root .color-pill.out{color:var(--red);border-color:rgba(224,71,92,.4);}
+
+  /* --- impressão do relatório --- */
+  @media print{
+    body *{visibility:hidden;}
+    #print-report, #print-report *{visibility:visible;}
+    #print-report{position:absolute;top:0;left:0;width:100%;padding:20px;color:#000;background:#fff;}
+    #print-report table{width:100%;border-collapse:collapse;}
+    #print-report th, #print-report td{border:1px solid #999;padding:6px 8px;color:#000;font-size:12px;}
+    #print-report h2, #print-report p{color:#000;}
   }
 </style>
 </head>
@@ -462,8 +498,10 @@
         <div class="panel" style="max-width:520px;">
           <div class="row">
             <div class="field"><label>Produto</label><select id="req-product"></select></div>
+            <div class="field"><label>Cor</label><select id="req-color"></select></div>
             <div class="field"><label>Quantidade</label><input id="req-qty" type="number" min="1" placeholder="10"></div>
           </div>
+          <div id="req-stock-hint" style="font-size:11px;color:var(--muted);margin:-6px 0 12px 0;"></div>
           <div class="field"><label>Observação (opcional)</label><input id="req-note" placeholder="Ex.: preciso até sexta-feira"></div>
           <div id="req-msg"></div>
           <button class="btn" id="req-send-btn">Enviar pedido</button>
@@ -522,6 +560,7 @@
           <button data-admin-tab="devolucoes">Lançar devolução</button>
           <button data-admin-tab="acertos">Lançar acerto</button>
           <button data-admin-tab="pedidos">Pedidos de reposição <span id="pedidos-badge" class="badge pendente" style="display:none;margin-left:4px;">0</span></button>
+          <button data-admin-tab="relatorio">Relatório</button>
         </div>
 
         <!-- PRODUTOS -->
@@ -565,6 +604,7 @@
             <div class="row">
               <div class="field"><label>Cliente</label><select id="e-client"></select></div>
               <div class="field"><label>Produto</label><select id="e-product"></select></div>
+              <div class="field"><label>Cor</label><select id="e-color"></select></div>
               <div class="field"><label>Quantidade</label><input id="e-qty" type="number" min="1" placeholder="10"></div>
               <div class="field"><label>Data</label><input id="e-date" type="date"></div>
             </div>
@@ -581,6 +621,7 @@
             <div class="row">
               <div class="field"><label>Cliente</label><select id="d-client"></select></div>
               <div class="field"><label>Produto</label><select id="d-product"></select></div>
+              <div class="field"><label>Cor</label><select id="d-color"></select></div>
               <div class="field"><label>Quantidade</label><input id="d-qty" type="number" min="1" placeholder="2"></div>
               <div class="field"><label>Data</label><input id="d-date" type="date"></div>
             </div>
@@ -590,6 +631,7 @@
               </div>
               <div class="field" style="flex:2;"><label>Observações</label><input id="d-obs" placeholder="Opcional"></div>
             </div>
+            <p style="color:var(--muted);font-size:11px;margin:-6px 0 12px 0;">Devoluções em "Bom" estado com cor selecionada voltam automaticamente ao estoque dessa cor.</p>
             <div id="d-msg"></div>
             <button class="btn" id="d-add-btn">Registrar devolução</button>
           </div>
@@ -603,6 +645,7 @@
             <div class="row">
               <div class="field"><label>Cliente</label><select id="a-client"></select></div>
               <div class="field"><label>Produto</label><select id="a-product"></select></div>
+              <div class="field"><label>Cor</label><select id="a-color"></select></div>
               <div class="field"><label>Quantidade vendida</label><input id="a-qty" type="number" min="1" placeholder="8"></div>
               <div class="field"><label>Data do acerto</label><input id="a-date" type="date"></div>
             </div>
@@ -629,6 +672,25 @@
               <button class="btn secondary" id="req-refresh-btn" style="white-space:nowrap;">↻ Atualizar</button>
             </div>
             <div id="req-list"></div>
+          </div>
+        </div>
+
+        <!-- RELATÓRIO -->
+        <div class="admin-tab" data-tab="relatorio" style="display:none;">
+          <div class="panel">
+            <h3 style="font-size:14px;margin-bottom:6px;">Relatório de conferência</h3>
+            <p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Gera uma lista dos itens em posse do lojista escolhido, por cor, para conferência física.</p>
+            <div class="row">
+              <div class="field"><label>Lojista</label><select id="rep-client"></select></div>
+            </div>
+            <button class="btn" id="rep-generate-btn">Gerar relatório</button>
+          </div>
+          <div class="panel" id="rep-preview-wrap" style="display:none;margin-top:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+              <h3 style="font-size:14px;">Pré-visualização</h3>
+              <button class="btn" id="rep-print-btn">🖨 Imprimir</button>
+            </div>
+            <div id="print-report"></div>
           </div>
         </div>
 
@@ -787,7 +849,11 @@
     const shown = currentCategoryFilter==='Todos' ? active : active.filter(p=>p.category===currentCategoryFilter);
     if(shown.length === 0){ empty.style.display='block'; grid.style.display='none'; return; }
     empty.style.display='none'; grid.style.display='grid';
-    grid.innerHTML = shown.map(p=>`
+    grid.innerHTML = shown.map(p=>{
+      const colors = p.colors || [];
+      const colorsHtml = colors.length ? `<div class="portfolio-colors">${colors.map(c=>`
+        <span class="color-pill ${Number(c.stock)<=0?'out':''}">${c.name}${Number(c.stock)<=0?' • esgotado':''}</span>`).join('')}</div>` : '';
+      return `
       <div class="card">
         <div class="img" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem imagem'}</div>
         <div class="body">
@@ -795,8 +861,10 @@
           <h3>${p.name}</h3>
           <div class="code">${p.code}</div>
           <div class="price"><span class="lbl">Valor de repasse</span>${fmtMoney(p.price)}</div>
+          ${colorsHtml}
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   // ---------- MODAL DE PRÉ-VISUALIZAÇÃO ----------
@@ -847,10 +915,68 @@
   function productName(code){ const p = PRODUCTS.find(p=>p.code===code); return p ? p.name : code; }
   function productPrice(code){ const p = PRODUCTS.find(p=>p.code===code); return p ? Number(p.price) : 0; }
 
+  function buildClientReport(clientCode){
+    const client = CLIENTS.find(c=>c.code===clientCode);
+    if(!client) return null;
+    const rows = [];
+    PRODUCTS.forEach(p=>{
+      const colorsUsed = new Set();
+      [...ENTREGAS, ...DEVOLUCOES, ...ACERTOS].forEach(x=>{
+        if(x.clientCode===clientCode && x.productCode===p.code) colorsUsed.add(x.color || '—');
+      });
+      colorsUsed.forEach(color=>{
+        const matchColor = x => (x.color || '—') === color;
+        const entregue = ENTREGAS.filter(e=>e.clientCode===clientCode && e.productCode===p.code && matchColor(e)).reduce((s,e)=>s+Number(e.qty),0);
+        const devolvido = DEVOLUCOES.filter(d=>d.clientCode===clientCode && d.productCode===p.code && matchColor(d)).reduce((s,d)=>s+Number(d.qty),0);
+        const vendido = ACERTOS.filter(a=>a.clientCode===clientCode && a.productCode===p.code && matchColor(a)).reduce((s,a)=>s+Number(a.qty),0);
+        const saldo = entregue - devolvido - vendido;
+        if(saldo > 0) rows.push({ code:p.code, name:p.name, color, saldo });
+      });
+    });
+    rows.sort((a,b)=> a.name.localeCompare(b.name) || a.color.localeCompare(b.color));
+    return { client, rows };
+  }
+
+  function renderClientReport(clientCode){
+    const wrap = document.getElementById('rep-preview-wrap');
+    const container = document.getElementById('print-report');
+    const report = buildClientReport(clientCode);
+    if(!report){ wrap.style.display = 'none'; return; }
+    const { client, rows } = report;
+    const total = rows.reduce((s,r)=>s+r.saldo, 0);
+    const rowsHtml = rows.length ? rows.map(r=>`
+      <tr><td>${r.code}</td><td>${r.name}</td><td>${r.color}</td><td style="text-align:center;">${r.saldo}</td><td></td></tr>
+    `).join('') : `<tr><td colspan="5" style="text-align:center;">Nenhum item em posse deste lojista no momento.</td></tr>`;
+    container.innerHTML = `
+      <h2 style="font-family:'Space Grotesk';margin-bottom:4px;">HL 3D Solutions — Relatório de Conferência</h2>
+      <p style="margin:0 0 4px 0;"><strong>Lojista:</strong> ${client.name} (${client.code})</p>
+      <p style="margin:0 0 16px 0;"><strong>Data:</strong> ${fmtDate(todayISO())} &nbsp;·&nbsp; <strong>Total de itens em posse:</strong> ${total}</p>
+      <table>
+        <thead><tr><th>Código</th><th>Produto</th><th>Cor</th><th>Qtd. em posse</th><th>Conferido (✓)</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <p style="margin-top:30px;">Assinatura do lojista: _______________________________________ &nbsp;&nbsp; Data: ______ / ______ / ______</p>
+    `;
+    wrap.style.display = 'block';
+  }
+
+  document.getElementById('rep-generate-btn').addEventListener('click', async ()=>{
+    await refreshData();
+    const clientCode = document.getElementById('rep-client').value;
+    if(!clientCode) return;
+    renderClientReport(clientCode);
+  });
+  document.getElementById('rep-print-btn').addEventListener('click', ()=>{
+    window.print();
+  });
+
   function whatsappLink(req){
     const client = CLIENTS.find(c=>c.code===req.clientCode);
     const clientLabel = client ? `${client.name} (${client.code})` : req.clientCode;
-    let text = `Novo pedido de reposição — ${req.id}\nCliente: ${clientLabel}\nProduto: ${productName(req.productCode)} (${req.productCode})\nQuantidade: ${req.qty}`;
+    const titulo = req.type === 'producao' ? 'Novo pedido de PRODUÇÃO' : 'Novo pedido de reposição';
+    let text = `${titulo} — ${req.id}\nCliente: ${clientLabel}\nProduto: ${productName(req.productCode)} (${req.productCode})`;
+    if(req.color) text += `\nCor: ${req.color}`;
+    text += `\nQuantidade: ${req.qty}`;
     if(req.note) text += `\nObservação: ${req.note}`;
     return `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
   }
@@ -892,6 +1018,8 @@
     document.getElementById('req-qty').value = '';
     document.getElementById('req-note').value = '';
     document.getElementById('req-msg').innerHTML = '';
+    updateColorSelect('req-product','req-color',{showStock:true});
+    updateReqButtonState();
     renderClientRequests(client.code);
 
     const hist = clientHistory(client.code);
@@ -923,10 +1051,11 @@
     document.getElementById('client-requests').innerHTML = mine.length ? mine.map(r=>`
       <div class="ticket">
         <div class="left">
-          <div class="desc">${r.qty}x ${productName(r.productCode)}${r.note ? ' — ' + r.note : ''}</div>
+          <div class="desc">${r.qty}x ${productName(r.productCode)}${r.color ? ' — '+r.color : ''}${r.note ? ' — ' + r.note : ''}</div>
           <div class="id">${r.id} · ${fmtDate(r.date)}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
+          ${r.type==='producao' ? '<span class="badge acerto">Produção</span>' : ''}
           ${r.status==='Pendente' ? whatsappBtn(r) : ''}
           <span class="badge ${statusClass[r.status]}">${r.status}</span>
         </div>
@@ -937,18 +1066,42 @@
     const msg = document.getElementById('req-msg');
     if(!currentClientCode){ return; }
     const productCode = document.getElementById('req-product').value;
+    const colorName = document.getElementById('req-color').value;
     const qty = parseInt(document.getElementById('req-qty').value);
     const note = document.getElementById('req-note').value.trim();
     if(!productCode || !qty){ msg.innerHTML = '<div class="msg err">Escolha um produto e informe a quantidade.</div>'; return; }
+
+    // busca dados frescos para checar estoque na hora do pedido
+    PRODUCTS = await getJSON('products', PRODUCTS);
+    const p = PRODUCTS.find(p=>p.code===productCode);
+    let type = 'reposicao';
+    if(p && p.colors && p.colors.length){
+      if(!colorName){ msg.innerHTML = '<div class="msg err">Escolha uma cor.</div>'; return; }
+      const c = p.colors.find(c=>c.name===colorName);
+      const stock = c ? Number(c.stock) : 0;
+      if(c && qty <= stock){
+        c.stock = stock - qty;
+        await setJSON('products', PRODUCTS);
+        type = 'reposicao';
+      } else {
+        type = 'producao';
+      }
+    }
+
     PEDIDOS = await getJSON('pedidos', PEDIDOS);
     const id = 'PED-' + String(PEDIDOS.length+1).padStart(3,'0');
-    const req = { id, date: todayISO(), clientCode: currentClientCode, productCode, qty, note, status:'Pendente' };
+    const req = { id, date: todayISO(), clientCode: currentClientCode, productCode, color: colorName, qty, note, status:'Pendente', type };
     PEDIDOS.push(req);
     await setJSON('pedidos', PEDIDOS);
-    msg.innerHTML = `<div class="msg ok">Pedido enviado! Avise a Oficina Consignada agora para agilizar:</div>
+    const successMsg = type === 'producao'
+      ? 'Pedido de produção enviado! Como não há estoque suficiente dessa cor, avise a Oficina Consignada:'
+      : 'Pedido enviado! Avise a Oficina Consignada agora para agilizar:';
+    msg.innerHTML = `<div class="msg ok">${successMsg}</div>
       <div style="margin-bottom:10px;">${whatsappBtn(req)}</div>`;
     document.getElementById('req-qty').value = '';
     document.getElementById('req-note').value = '';
+    updateReqButtonState();
+    renderPortfolio();
     renderClientRequests(currentClientCode);
   });
 
@@ -994,17 +1147,129 @@
     const clientOpts = CLIENTS.map(c=>`<option value="${c.code}">${c.code} — ${c.name}</option>`).join('');
     const productOpts = PRODUCTS.map(p=>`<option value="${p.code}">${p.code} — ${p.name}</option>`).join('');
     ['e-client','d-client','a-client'].forEach(id=>document.getElementById(id).innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>');
+    document.getElementById('rep-client').innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>';
     ['e-product','d-product','a-product'].forEach(id=>document.getElementById(id).innerHTML = productOpts || '<option value="">Cadastre um produto primeiro</option>');
     document.getElementById('e-date').value = todayISO();
     document.getElementById('d-date').value = todayISO();
     document.getElementById('a-date').value = todayISO();
+    updateColorSelect('e-product','e-color');
+    updateColorSelect('d-product','d-color');
+    updateColorSelect('a-product','a-color');
+  }
+
+  function updateColorSelect(productSelectId, colorSelectId, opts){
+    opts = opts || {};
+    const code = document.getElementById(productSelectId).value;
+    const p = PRODUCTS.find(p=>p.code===code);
+    const colors = (p && p.colors) || [];
+    const sel = document.getElementById(colorSelectId);
+    if(colors.length === 0){
+      sel.innerHTML = '<option value="">— sem variação de cor —</option>';
+      return;
+    }
+    sel.innerHTML = colors.map(c=>{
+      const stockLabel = opts.showStock ? ` (${c.stock} em estoque)` : '';
+      return `<option value="${c.name}">${c.name}${stockLabel}</option>`;
+    }).join('');
+  }
+  ['e-product','d-product','a-product'].forEach(id=>{
+    document.getElementById(id).addEventListener('change', ()=>{
+      updateColorSelect(id, id.replace('-product','-color'));
+    });
+  });
+  document.getElementById('req-product').addEventListener('change', ()=>{
+    updateColorSelect('req-product','req-color',{showStock:true});
+    updateReqButtonState();
+  });
+  document.getElementById('req-color').addEventListener('change', updateReqButtonState);
+  document.getElementById('req-qty').addEventListener('input', updateReqButtonState);
+  function updateReqButtonState(){
+    const code = document.getElementById('req-product').value;
+    const colorName = document.getElementById('req-color').value;
+    const qty = parseInt(document.getElementById('req-qty').value) || 0;
+    const p = PRODUCTS.find(p=>p.code===code);
+    const btn = document.getElementById('req-send-btn');
+    const hint = document.getElementById('req-stock-hint');
+    if(p && p.colors && p.colors.length && colorName){
+      const c = p.colors.find(c=>c.name===colorName);
+      const stock = c ? Number(c.stock) : 0;
+      if(qty > 0 && qty > stock){
+        btn.textContent = 'Solicitar Produção';
+        hint.textContent = stock > 0
+          ? `Só há ${stock} em estoque nessa cor — o pedido será registrado como produção.`
+          : 'Sem estoque disponível nessa cor — o pedido será registrado como produção.';
+      } else {
+        btn.textContent = 'Enviar pedido';
+        hint.textContent = stock ? `${stock} em estoque nessa cor.` : '';
+      }
+    } else {
+      btn.textContent = 'Enviar pedido';
+      hint.textContent = '';
+    }
   }
 
   function renderAdminLists(){
-    document.getElementById('p-list').innerHTML = PRODUCTS.length ? PRODUCTS.map(p=>`
-      <div class="list-row"><span class="mono">${p.code} — ${p.name} (${p.category}) — ${fmtMoney(p.price)}</span>
-      <span class="actions"><button data-del-product="${p.code}">Remover</button></span></div>
-    `).join('') : `<div class="empty">Nenhum produto cadastrado.</div>`;
+    document.getElementById('p-list').innerHTML = PRODUCTS.length ? PRODUCTS.map(p=>{
+      const colors = p.colors || [];
+      const colorChips = colors.map(c=>`
+        <span class="color-chip ${Number(c.stock)<=0?'out':''}">
+          ${c.name} · <strong>${c.stock}</strong>
+          <button data-adj-color="${p.code}|${c.name}|-1" title="Diminuir 1 do estoque">−</button>
+          <button data-adj-color="${p.code}|${c.name}|1" title="Aumentar 1 no estoque">+</button>
+          <button data-del-color="${p.code}|${c.name}" title="Remover esta cor">✕</button>
+        </span>`).join('');
+      return `
+      <div class="list-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <span class="mono">${p.code} — ${p.name} (${p.category}) — ${fmtMoney(p.price)}</span>
+          <button data-del-product="${p.code}">Remover produto</button>
+        </div>
+        ${colors.length ? `<div class="color-chips">${colorChips}</div>` : `<div style="color:var(--muted);font-size:11px;">Sem variações de cor cadastradas — este item não usa controle de estoque.</div>`}
+        <div class="color-add-row">
+          <input type="text" placeholder="Nova cor (ex: Azul)" data-color-name-input="${p.code}">
+          <input type="number" min="0" placeholder="Estoque inicial" data-color-stock-input="${p.code}">
+          <button data-add-color="${p.code}">+ Adicionar cor</button>
+        </div>
+      </div>`;
+    }).join('') : `<div class="empty">Nenhum produto cadastrado.</div>`;
+
+    root.querySelectorAll('[data-add-color]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const code = btn.dataset.addColor;
+      const nameInput = root.querySelector(`[data-color-name-input="${code}"]`);
+      const stockInput = root.querySelector(`[data-color-stock-input="${code}"]`);
+      const name = nameInput.value.trim();
+      const stock = Math.max(0, parseInt(stockInput.value) || 0);
+      if(!name) return;
+      PRODUCTS = await getJSON('products', PRODUCTS);
+      const p = PRODUCTS.find(p=>p.code===code);
+      if(!p) return;
+      p.colors = p.colors || [];
+      if(p.colors.some(c=>c.name.toLowerCase()===name.toLowerCase())){
+        alert('Essa cor já existe para este produto.'); return;
+      }
+      p.colors.push({name, stock});
+      await setJSON('products', PRODUCTS);
+      refreshAdminSelects(); renderAdminLists(); renderPortfolio();
+    }));
+    root.querySelectorAll('[data-adj-color]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const [code, colorName, delta] = btn.dataset.adjColor.split('|');
+      PRODUCTS = await getJSON('products', PRODUCTS);
+      const p = PRODUCTS.find(p=>p.code===code);
+      const c = p && (p.colors||[]).find(c=>c.name===colorName);
+      if(!c) return;
+      c.stock = Math.max(0, Number(c.stock) + parseInt(delta));
+      await setJSON('products', PRODUCTS);
+      refreshAdminSelects(); renderAdminLists(); renderPortfolio();
+    }));
+    root.querySelectorAll('[data-del-color]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const [code, colorName] = btn.dataset.delColor.split('|');
+      PRODUCTS = await getJSON('products', PRODUCTS);
+      const p = PRODUCTS.find(p=>p.code===code);
+      if(!p) return;
+      p.colors = (p.colors||[]).filter(c=>c.name!==colorName);
+      await setJSON('products', PRODUCTS);
+      refreshAdminSelects(); renderAdminLists(); renderPortfolio();
+    }));
 
     document.getElementById('c-list').innerHTML = CLIENTS.length ? CLIENTS.map(c=>`
       <div class="list-row"><span class="mono">${c.code} — ${c.name} — ${c.contact||'sem contato'}</span>
@@ -1012,15 +1277,15 @@
     `).join('') : `<div class="empty">Nenhum cliente cadastrado.</div>`;
 
     document.getElementById('e-list').innerHTML = ENTREGAS.slice().reverse().slice(0,8).map(e=>`
-      <div class="list-row"><span class="mono">${e.id} · ${fmtDate(e.date)} · ${e.clientCode} · ${e.qty}x ${productName(e.productCode)}</span></div>
+      <div class="list-row"><span class="mono">${e.id} · ${fmtDate(e.date)} · ${e.clientCode} · ${e.qty}x ${productName(e.productCode)}${e.color ? ' ('+e.color+')' : ''}</span></div>
     `).join('') || `<div class="empty">Nenhuma entrega registrada.</div>`;
 
     document.getElementById('d-list').innerHTML = DEVOLUCOES.slice().reverse().slice(0,8).map(d=>`
-      <div class="list-row"><span class="mono">${d.id} · ${fmtDate(d.date)} · ${d.clientCode} · ${d.qty}x ${productName(d.productCode)} · ${d.state}</span></div>
+      <div class="list-row"><span class="mono">${d.id} · ${fmtDate(d.date)} · ${d.clientCode} · ${d.qty}x ${productName(d.productCode)}${d.color ? ' ('+d.color+')' : ''} · ${d.state}</span></div>
     `).join('') || `<div class="empty">Nenhuma devolução registrada.</div>`;
 
     document.getElementById('a-list').innerHTML = ACERTOS.slice().reverse().slice(0,8).map(a=>`
-      <div class="list-row"><span class="mono">${a.id} · ${fmtDate(a.date)} · ${a.clientCode} · ${a.qty}x ${productName(a.productCode)}</span>
+      <div class="list-row"><span class="mono">${a.id} · ${fmtDate(a.date)} · ${a.clientCode} · ${a.qty}x ${productName(a.productCode)}${a.color ? ' ('+a.color+')' : ''}</span>
       <span class="badge ${a.status.toLowerCase()}">${a.status}</span></div>
     `).join('') || `<div class="empty">Nenhum acerto registrado.</div>`;
 
@@ -1032,8 +1297,9 @@
     const statusClass = { Pendente:'pendente', Aprovado:'aprovado', Recusado:'recusado' };
     document.getElementById('req-list').innerHTML = PEDIDOS.length ? PEDIDOS.slice().reverse().map(r=>`
       <div class="list-row">
-        <span class="mono">${r.id} · ${fmtDate(r.date)} · ${r.clientCode} · ${r.qty}x ${productName(r.productCode)}${r.note ? ' · "'+r.note+'"' : ''}</span>
+        <span class="mono">${r.id} · ${fmtDate(r.date)} · ${r.clientCode} · ${r.qty}x ${productName(r.productCode)}${r.color ? ' ('+r.color+')' : ''}${r.note ? ' · "'+r.note+'"' : ''}</span>
         <span class="actions">
+          ${r.type==='producao' ? '<span class="badge acerto" style="margin-right:6px;">Produção</span>' : ''}
           <span class="badge ${statusClass[r.status]}" style="margin-right:6px;">${r.status}</span>
           ${r.status==='Pendente' ? `<button data-approve-req="${r.id}">Aprovar</button><button data-refuse-req="${r.id}">Recusar</button>` : ''}
         </span>
@@ -1044,7 +1310,7 @@
       const req = PEDIDOS.find(r=>r.id===b.dataset.approveReq);
       if(!req) return;
       const entId = 'ENT-' + String(ENTREGAS.length+1).padStart(3,'0');
-      ENTREGAS.push({ id: entId, date: todayISO(), clientCode: req.clientCode, productCode: req.productCode, qty: req.qty });
+      ENTREGAS.push({ id: entId, date: todayISO(), clientCode: req.clientCode, productCode: req.productCode, color: req.color||'', qty: req.qty });
       req.status = 'Aprovado';
       await setJSON('entregas', ENTREGAS);
       await setJSON('pedidos', PEDIDOS);
@@ -1101,13 +1367,14 @@
   document.getElementById('e-add-btn').addEventListener('click', async ()=>{
     const clientCode = document.getElementById('e-client').value;
     const productCode = document.getElementById('e-product').value;
+    const color = document.getElementById('e-color').value;
     const qty = parseInt(document.getElementById('e-qty').value);
     const date = document.getElementById('e-date').value;
     const msg = document.getElementById('e-msg');
     if(!clientCode || !productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto e quantidade.</div>'; return; }
     ENTREGAS = await getJSON('entregas', ENTREGAS);
     const id = 'ENT-' + String(ENTREGAS.length+1).padStart(3,'0');
-    ENTREGAS.push({id, date, clientCode, productCode, qty});
+    ENTREGAS.push({id, date, clientCode, productCode, color, qty});
     await setJSON('entregas', ENTREGAS);
     msg.innerHTML = '<div class="msg ok">Entrega registrada.</div>';
     document.getElementById('e-qty').value = '';
@@ -1117,6 +1384,7 @@
   document.getElementById('d-add-btn').addEventListener('click', async ()=>{
     const clientCode = document.getElementById('d-client').value;
     const productCode = document.getElementById('d-product').value;
+    const color = document.getElementById('d-color').value;
     const qty = parseInt(document.getElementById('d-qty').value);
     const date = document.getElementById('d-date').value;
     const state = document.getElementById('d-state').value;
@@ -1125,9 +1393,22 @@
     if(!clientCode || !productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto e quantidade.</div>'; return; }
     DEVOLUCOES = await getJSON('devolucoes', DEVOLUCOES);
     const id = 'DEV-' + String(DEVOLUCOES.length+1).padStart(3,'0');
-    DEVOLUCOES.push({id, date, clientCode, productCode, qty, state, obs});
+    DEVOLUCOES.push({id, date, clientCode, productCode, color, qty, state, obs});
     await setJSON('devolucoes', DEVOLUCOES);
-    msg.innerHTML = '<div class="msg ok">Devolução registrada.</div>';
+
+    let stockMsg = '';
+    if(color && state === 'Bom'){
+      PRODUCTS = await getJSON('products', PRODUCTS);
+      const p = PRODUCTS.find(p=>p.code===productCode);
+      const c = p && p.colors ? p.colors.find(c=>c.name===color) : null;
+      if(c){
+        c.stock = Number(c.stock) + qty;
+        await setJSON('products', PRODUCTS);
+        stockMsg = ` ${qty} unidade(s) voltaram ao estoque da cor ${color}.`;
+        renderPortfolio();
+      }
+    }
+    msg.innerHTML = `<div class="msg ok">Devolução registrada.${stockMsg}</div>`;
     document.getElementById('d-qty').value = ''; document.getElementById('d-obs').value = '';
     renderAdminLists();
   });
@@ -1135,6 +1416,7 @@
   document.getElementById('a-add-btn').addEventListener('click', async ()=>{
     const clientCode = document.getElementById('a-client').value;
     const productCode = document.getElementById('a-product').value;
+    const color = document.getElementById('a-color').value;
     const qty = parseInt(document.getElementById('a-qty').value);
     const date = document.getElementById('a-date').value;
     const status = document.getElementById('a-status').value;
@@ -1143,7 +1425,7 @@
     if(!clientCode || !productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto e quantidade.</div>'; return; }
     ACERTOS = await getJSON('acertos', ACERTOS);
     const id = 'ACT-' + String(ACERTOS.length+1).padStart(3,'0');
-    ACERTOS.push({id, date, clientCode, productCode, qty, status, payDate});
+    ACERTOS.push({id, date, clientCode, productCode, color, qty, status, payDate});
     await setJSON('acertos', ACERTOS);
     msg.innerHTML = '<div class="msg ok">Acerto registrado.</div>';
     document.getElementById('a-qty').value = '';
