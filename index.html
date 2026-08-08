@@ -27,7 +27,7 @@
     --grad: linear-gradient(90deg, var(--cyan), var(--violet) 45%, var(--magenta) 75%, var(--coral));
   }
   *{box-sizing:border-box;}
-  html, body{margin:0;padding:0;background:var(--bg);}
+  html, body{margin:0;padding:0;background:var(--bg);scroll-behavior:smooth;}
   #portal-root{
     background:var(--bg);
     color:var(--ink);
@@ -94,6 +94,12 @@
   #portal-root .card .code{color:var(--muted);font-size:11px;font-family:'IBM Plex Mono';}
   #portal-root .card .price{margin-top:10px;font-family:'IBM Plex Mono';font-size:13px;color:var(--ink);}
   #portal-root .price .lbl{color:var(--muted);font-size:10px;display:block;text-transform:uppercase;letter-spacing:.04em;}
+  #portal-root .price-buy-row{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:10px;}
+  #portal-root .price-buy-row .price{margin-top:0;font-size:18px;font-weight:700;font-family:'Space Grotesk';}
+  #portal-root .buy-btn{
+    padding:8px 14px;font-size:12px;border-radius:8px;flex-shrink:0;
+    box-shadow:0 4px 16px rgba(139,92,246,.35);
+  }
 
   #portal-root .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px;}
   #portal-root .field{margin-bottom:14px;}
@@ -198,6 +204,60 @@
   #portal-root .stat:not([class*="accent"]) .icon{color:var(--green);}
 
   #portal-root .ticket{border-left:3px solid var(--line);}
+  #portal-root .cart-qty-btn{
+    background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
+    width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:13px;line-height:1;
+  }
+  #portal-root .cart-qty-btn:hover{border-color:var(--teal);}
+
+  /* --- mini carrinho flutuante --- */
+  #portal-root #floating-cart{
+    display:none;position:fixed;top:110px;right:24px;width:250px;max-height:min(60vh,480px);
+    overflow-y:auto;background:var(--panel);border:1px solid var(--teal);border-radius:14px;
+    padding:14px;box-shadow:0 16px 36px rgba(0,0,0,.5);z-index:40;
+  }
+  #portal-root .floating-cart-header{
+    display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
+    font-family:'Space Grotesk';font-weight:700;font-size:13px;
+  }
+  #portal-root .floating-cart-item{
+    display:flex;justify-content:space-between;align-items:center;gap:8px;
+    font-size:11.5px;padding:7px 0;border-bottom:1px solid var(--line);
+  }
+  #portal-root .floating-cart-item:last-child{border-bottom:none;}
+  #portal-root .floating-cart-item .fci-qty{color:var(--teal);font-family:'IBM Plex Mono';flex-shrink:0;}
+  #portal-root .floating-cart-link{
+    display:block;text-align:center;margin-top:10px;font-size:11px;color:var(--teal);
+    text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:8px;font-family:'IBM Plex Mono';
+  }
+  #portal-root .floating-cart-link:hover{border-color:var(--teal);}
+  @media(max-width:900px){
+    #portal-root #floating-cart{display:none !important;}
+  }
+
+  /* --- botão flutuante de carrinho (celular) --- */
+  #portal-root #mobile-cart-fab{
+    display:none;position:fixed;bottom:22px;right:18px;z-index:45;
+    width:54px;height:54px;border-radius:50%;background:var(--grad);
+    align-items:center;justify-content:center;text-decoration:none;
+    box-shadow:0 10px 28px rgba(0,0,0,.55);
+  }
+  #portal-root #mobile-cart-fab svg{width:24px;height:24px;stroke:#0A0A0D;fill:none;stroke-width:2;}
+  #portal-root #mobile-cart-fab .fab-badge{
+    position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;
+    font-size:10px;font-weight:700;font-family:'IBM Plex Mono';border-radius:999px;
+    padding:2px 6px;min-width:18px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.4);
+  }
+  @keyframes cart-walk{
+    0%,100%{transform:translateY(0) rotate(0deg);}
+    25%{transform:translateY(-6px) rotate(-4deg);}
+    50%{transform:translateY(0) rotate(0deg);}
+    75%{transform:translateY(-3px) rotate(4deg);}
+  }
+  @media(max-width:900px){
+    #portal-root #mobile-cart-fab.show{display:flex;animation:cart-walk 1.8s ease-in-out infinite;}
+  }
+
   #portal-root .ticket.t-entrega{border-left-color:var(--teal);}
   #portal-root .ticket.t-devolucao{border-left-color:var(--muted);}
   #portal-root .ticket.t-acerto{border-left-color:var(--coral);}
@@ -265,21 +325,59 @@
   #portal-root .cover-rule{width:44px;height:3px;background:var(--grad);border-radius:2px;margin:14px 0 0;}
   #portal-root .cover-sub{margin-top:12px;font-size:12.5px;color:var(--muted);line-height:1.5;max-width:380px;}
 
-  /* --- mais vendidos --- */
-  #portal-root .top-sellers{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:26px;}
-  #portal-root .seller-card{
-    display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);
-    border-radius:12px;padding:12px 16px;flex:1;min-width:220px;
+  /* --- mais vendidos: carrossel de destaque --- */
+  #portal-root .carousel-row{
+    display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;margin-bottom:18px;
+    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
   }
-  #portal-root .seller-rank{
-    width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
-    font-family:'Space Grotesk';font-weight:700;font-size:13px;color:#0A0A0D;background:var(--line);
+  #portal-root .carousel-row::-webkit-scrollbar{height:6px;}
+  #portal-root .carousel-row::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+  #portal-root .carousel-card{
+    flex:0 0 138px;scroll-snap-align:start;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    overflow:hidden;cursor:pointer;transition:transform .2s ease, border-color .2s ease;position:relative;
   }
-  #portal-root .seller-card.rank-1 .seller-rank{background:var(--grad);}
-  #portal-root .seller-card.rank-2 .seller-rank{background:linear-gradient(90deg,var(--cyan),var(--violet));}
-  #portal-root .seller-card.rank-3 .seller-rank{background:linear-gradient(90deg,var(--violet),var(--magenta));}
-  #portal-root .seller-name{font-size:13px;font-weight:600;}
-  #portal-root .seller-count{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono';margin-top:2px;}
+  #portal-root .carousel-card:hover{transform:translateY(-3px);border-color:var(--teal);}
+  #portal-root .carousel-img{
+    width:100%;height:138px;background-size:cover;background-position:center;background-color:var(--panel-2);
+    display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:9px;font-family:'IBM Plex Mono';
+  }
+  #portal-root .carousel-rank{
+    position:absolute;top:8px;left:8px;width:24px;height:24px;border-radius:50%;z-index:2;
+    display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:11px;color:#0A0A0D;
+    background:var(--line);box-shadow:0 2px 8px rgba(0,0,0,.35);
+  }
+  #portal-root .carousel-card.top .carousel-rank{background:var(--grad);}
+  #portal-root .carousel-body{padding:9px 10px;}
+  #portal-root .carousel-name{font-size:11.5px;font-weight:600;line-height:1.25;margin-bottom:2px;}
+  #portal-root .carousel-count{font-size:10px;color:var(--muted);font-family:'IBM Plex Mono';}
+  #portal-root .carousel-subtitle{
+    font-size:11px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;
+    color:var(--muted);margin:0 0 10px 0;
+  }
+
+  /* --- catálogo em lista compacta --- */
+  #portal-root .portfolio-list{display:flex;flex-direction:column;gap:10px;}
+  #portal-root .portfolio-list-row{
+    display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:10px 14px;transition:.15s;
+  }
+  #portal-root .portfolio-list-row:hover{border-color:var(--teal);}
+  #portal-root .portfolio-list-thumb{
+    width:56px;height:56px;border-radius:9px;background:var(--panel-2);flex-shrink:0;
+    background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;
+    color:var(--muted);font-size:8px;font-family:'IBM Plex Mono';text-align:center;line-height:1.2;
+  }
+  #portal-root .portfolio-list-info{flex:1;min-width:0;}
+  #portal-root .portfolio-list-info h4{font-size:14px;margin:0 0 3px 0;font-family:'Space Grotesk';font-weight:700;}
+  #portal-root .portfolio-list-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  #portal-root .portfolio-list-price{
+    font-family:'Space Grotesk';font-weight:700;font-size:15px;flex-shrink:0;text-align:right;white-space:nowrap;
+  }
+  #portal-root .portfolio-list-row .buy-btn{padding:7px 12px;font-size:11px;}
+  @media(max-width:520px){
+    #portal-root .portfolio-list-row{flex-wrap:wrap;}
+    #portal-root .portfolio-list-price{order:3;width:100%;text-align:left;margin-top:4px;}
+  }
 
   /* --- modal de pré-visualização --- */
   #portal-root .modal-backdrop{
@@ -288,17 +386,38 @@
   }
   #portal-root .modal-backdrop.open{display:flex;}
   #portal-root .modal-box{
-    background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:360px;width:100%;overflow:hidden;
-    position:relative;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:400px;width:100%;overflow:hidden;
+    position:relative;max-height:90vh;overflow-y:auto;
   }
   #portal-root .modal-box .img{height:200px;background:var(--panel-2);background-size:cover;background-position:center;
     display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;font-family:'IBM Plex Mono';}
   #portal-root .modal-box .body{padding:18px;}
+  #portal-root #modal-gallery-strip{display:flex;gap:6px;padding:10px 18px 0 18px;overflow-x:auto;}
+  #portal-root .modal-thumb{
+    width:48px;height:48px;flex-shrink:0;border-radius:8px;background-size:cover;background-position:center;
+    background-color:var(--panel-2);border:2px solid var(--line);cursor:pointer;transition:border-color .15s;
+  }
+  #portal-root .modal-thumb.active{border-color:var(--teal);}
+  #portal-root .modal-thumb:hover{border-color:var(--teal);}
   #portal-root .modal-close{
     position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;
     background:rgba(0,0,0,.5);border:none;color:#fff;font-size:16px;cursor:pointer;z-index:2;
   }
   #portal-root .prod-link{cursor:pointer;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;}
+  #portal-root .jump-link{
+    font-family:'IBM Plex Mono';font-size:11px;color:var(--teal);text-decoration:none;
+    border:1px solid var(--line);border-radius:999px;padding:6px 12px;white-space:nowrap;flex-shrink:0;
+  }
+  #portal-root .jump-link:hover{border-color:var(--teal);background:rgba(47,209,224,.08);}
+  #portal-root .margin-hint{
+    font-size:10.5px;color:var(--mustard);margin-top:6px;font-family:'IBM Plex Mono';
+  }
+  #portal-root .qty-picker{
+    display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);
+  }
+  #portal-root .qty-picker label{
+    font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-family:'IBM Plex Mono';margin-right:auto;
+  }
   #portal-root .prod-link:hover{text-decoration-color:var(--teal);color:var(--teal);}
 
   #portal-root .footer-socials{display:flex;gap:16px;align-items:center;}
@@ -330,8 +449,9 @@
     #portal-root .id-avatar{width:44px;height:44px;}
     #portal-root .row{flex-direction:column;align-items:stretch;}
     #portal-root .row .field{min-width:0;}
-    #portal-root .top-sellers{flex-direction:column;}
-    #portal-root .seller-card{min-width:0;}
+    #portal-root .carousel-card{flex-basis:112px;}
+    #portal-root .carousel-img{height:112px;}
+    #portal-root .carousel-name{font-size:10.5px;}
     #portal-root footer > div{flex-direction:column;align-items:flex-start;}
     #portal-root .modal-box{max-width:100%;}
   }
@@ -366,9 +486,16 @@
   #portal-root .portfolio-colors{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;}
   #portal-root .color-pill{
     font-size:10px;font-family:'IBM Plex Mono';background:var(--panel-2);border:1px solid var(--line);
-    border-radius:999px;padding:2px 8px;color:var(--muted);
+    border-radius:999px;padding:2px 8px;color:var(--muted);cursor:pointer;
   }
+  #portal-root .color-pill:hover{border-color:var(--teal);color:var(--ink);}
   #portal-root .color-pill.out{color:var(--red);border-color:rgba(224,71,92,.4);}
+  #portal-root .video-badge{
+    position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.65);color:#fff;
+    font-size:10px;font-family:'IBM Plex Mono';padding:3px 8px;border-radius:999px;
+    display:flex;align-items:center;gap:4px;
+  }
+  #portal-root .card .img{position:relative;}
 
   /* --- impressão do relatório --- */
   @media print{
@@ -394,7 +521,7 @@
     </div>
     <nav>
       <button data-view="portfolio" class="active">Portfólio</button>
-      <button data-view="client">Área do Cliente</button>
+      <button data-view="client">Área do Parceiro</button>
       <button data-view="admin">Administrador</button>
     </nav>
   </div>
@@ -411,16 +538,20 @@
           <div class="cover-divider"></div>
           <div class="cover-center">
             <div class="cover-eyebrow">HL 3D Solutions</div>
-            <div class="cover-title">Catálogo de Parceiros</div>
+            <div class="cover-title">Peças Únicas, Feitas Pra Você</div>
             <div class="cover-rule"></div>
-            <div class="cover-sub">Chaveiros 3D, fidgets e itens sensoriais disponíveis para consignação. O valor exibido é o repasse combinado em contrato — você define o preço final de venda.</div>
+            <div class="cover-sub">Chaveiros 3D, fidgets e itens sensoriais impressos com capricho. Escolha, veja em movimento e peça pelo WhatsApp — entrega rápida em Uberaba/MG e envio para todo o Brasil.</div>
           </div>
         </div>
       </div>
 
       <div id="top-sellers-wrap" style="display:none;">
-        <h3 style="margin-bottom:12px;font-size:14px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Mais vendidos</h3>
-        <div class="top-sellers" id="top-sellers"></div>
+        <h3 style="margin-bottom:12px;font-size:14px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Top 5 mais vendidos</h3>
+        <div class="carousel-row" id="top-sellers"></div>
+        <div id="top-sellers-more-wrap" style="display:none;">
+          <div class="carousel-subtitle">6º ao 10º mais vendidos</div>
+          <div class="carousel-row" id="top-sellers-more"></div>
+        </div>
       </div>
 
       <div class="subnav" id="portfolio-filters"></div>
@@ -446,13 +577,13 @@
               <div class="cover-eyebrow">HL 3D Solutions</div>
               <div class="cover-title">Área do Parceiro</div>
               <div class="cover-rule"></div>
-              <div class="cover-sub">Digite o código de cliente informado no seu contrato de consignação para ver seu saldo, extrato e pagamentos.</div>
+              <div class="cover-sub">Digite o código de parceiro informado no seu contrato de consignação para ver seu saldo, extrato e pagamentos.</div>
             </div>
           </div>
         </div>
         <div class="panel" style="max-width:380px;">
           <div class="field">
-            <label>Código de cliente</label>
+            <label>Código de parceiro</label>
             <input type="text" id="client-code-input" placeholder="Ex.: C001" class="mono" style="text-transform:uppercase;">
           </div>
           <div id="client-gate-msg"></div>
@@ -461,6 +592,18 @@
       </div>
 
       <div id="client-dashboard" class="client-glow" style="display:none;">
+        <div id="floating-cart">
+          <div class="floating-cart-header">
+            <span>🛒 Carrinho</span>
+            <span id="floating-cart-badge" class="badge pendente">0</span>
+          </div>
+          <div id="floating-cart-items"></div>
+          <a href="#consig-catalog-section" class="floating-cart-link">Ver carrinho completo ↓</a>
+        </div>
+        <a href="#consig-catalog-section" id="mobile-cart-fab">
+          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293A1 1 0 0 0 5.414 17H17M17 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM9 21a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+          <span class="fab-badge" id="mobile-cart-fab-badge">0</span>
+        </a>
         <div class="id-card">
           <div class="id-avatar"><span id="client-avatar-letter">—</span></div>
           <div class="id-meta">
@@ -468,7 +611,10 @@
             <div class="code" id="client-code-display">—</div>
           </div>
         </div>
-        <p style="color:var(--muted);margin:-8px 0 22px 0;font-size:13px;">Este é o seu extrato individual. Fale com a HL 3D Solutions se algum número parecer errado.</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:-8px 0 22px 0;">
+          <p style="color:var(--muted);font-size:13px;margin:0;">Este é o seu extrato individual. Fale com a HL 3D Solutions se algum número parecer errado.</p>
+          <a href="#consig-catalog-section" class="jump-link">Ir direto ao catálogo ↓</a>
+        </div>
 
         <div class="stat-row">
           <div class="stat accent-teal">
@@ -494,26 +640,36 @@
         </div>
 
         <div class="divider"></div>
-        <h3 style="margin-bottom:12px;font-size:16px;">Solicitar reposição</h3>
-        <div class="panel" style="max-width:520px;">
-          <div class="row">
-            <div class="field"><label>Produto</label><select id="req-product"></select></div>
-            <div class="field"><label>Cor</label><select id="req-color"></select></div>
-            <div class="field"><label>Quantidade</label><input id="req-qty" type="number" min="1" placeholder="10"></div>
-          </div>
-          <div id="req-stock-hint" style="font-size:11px;color:var(--muted);margin:-6px 0 12px 0;"></div>
-          <div class="field"><label>Observação (opcional)</label><input id="req-note" placeholder="Ex.: preciso até sexta-feira"></div>
-          <div id="req-msg"></div>
-          <button class="btn" id="req-send-btn">Enviar pedido</button>
-        </div>
-
-        <div class="divider"></div>
         <h3 style="margin-bottom:12px;font-size:16px;">Meus pedidos</h3>
         <div id="client-requests"></div>
 
         <div class="divider"></div>
         <h3 style="margin-bottom:12px;font-size:16px;">Histórico de movimentações</h3>
         <div id="client-history"></div>
+
+        <div class="divider" id="consig-catalog-section" style="scroll-margin-top:20px;"></div>
+        <h3 style="margin-bottom:4px;font-size:16px;">Catálogo (preço de repasse)</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:16px;">Seu preço combinado em contrato ao lado do preço praticado ao público — veja sua margem em cada item. Toque numa cor para adicionar ao carrinho de reposição. Não fica visível ao público em geral.</p>
+
+        <div class="panel" id="cart-panel" style="margin-bottom:22px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <h4 style="font-family:'Space Grotesk';font-size:14px;margin:0;">🛒 Carrinho de reposição <span id="cart-count-badge" class="badge pendente" style="display:none;"></span></h4>
+          </div>
+          <div id="cart-items"><div class="empty" style="padding:20px;"><div class="glyph">◇</div>Toque numa cor do catálogo abaixo para adicionar itens aqui.</div></div>
+          <div class="field" id="cart-note-field" style="display:none;margin-top:12px;"><label>Observação (opcional)</label><input id="cart-note" placeholder="Ex.: preciso até sexta-feira"></div>
+          <div id="cart-msg"></div>
+          <button class="btn" id="cart-submit-btn" style="display:none;margin-top:10px;">Enviar pedido de reposição</button>
+        </div>
+
+        <div id="consig-top-sellers-wrap" style="display:none;">
+          <h4 style="margin-bottom:10px;font-size:12px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Top 5 mais vendidos</h4>
+          <div class="carousel-row" id="consig-top-sellers"></div>
+          <div id="consig-top-sellers-more-wrap" style="display:none;">
+            <div class="carousel-subtitle">6º ao 10º mais vendidos</div>
+            <div class="carousel-row" id="consig-top-sellers-more"></div>
+          </div>
+        </div>
+        <div class="grid-products" id="consig-grid"></div>
 
         <button class="btn secondary" id="client-logout-btn" style="margin-top:20px;">Sair</button>
       </div>
@@ -571,10 +727,20 @@
               <div class="field"><label>Código</label><input id="p-code" placeholder="P006"></div>
               <div class="field" style="flex:2;"><label>Nome</label><input id="p-name" placeholder="Chaveiro 3D Foguete"></div>
               <div class="field"><label>Categoria</label><input id="p-cat" placeholder="Chaveiro 3D"></div>
-              <div class="field"><label>Valor de repasse (R$)</label><input id="p-price" type="number" step="0.01" placeholder="8.00"></div>
             </div>
             <div class="row">
-              <div class="field" style="flex:2;"><label>URL da imagem (opcional)</label><input id="p-img" placeholder="https://..."></div>
+              <div class="field"><label>Preço ao público (R$)</label><input id="p-public-price" type="number" step="0.01" placeholder="25.00"></div>
+              <div class="field"><label>Preço consignado — repasse (R$)</label><input id="p-price" type="number" step="0.01" placeholder="8.00"></div>
+            </div>
+            <div class="row">
+              <div class="field" style="flex:2;"><label>URL da imagem principal (opcional)</label><input id="p-img" placeholder="https://..."></div>
+              <div class="field" style="flex:2;"><label>URL do vídeo/GIF (opcional)</label><input id="p-video" placeholder="https://... (.mp4 ou .gif)"></div>
+            </div>
+            <div class="row" style="align-items:center;">
+              <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);cursor:pointer;">
+                <input type="checkbox" id="p-ondemand" style="width:16px;height:16px;">
+                Item personalizado feito só sob encomenda (sem controle de estoque, sempre aparece como "Sob encomenda")
+              </label>
             </div>
             <div id="p-msg"></div>
             <button class="btn" id="p-add-btn">Adicionar produto</button>
@@ -714,11 +880,32 @@
     <div class="modal-box">
       <button class="modal-close" id="modal-close-btn">✕</button>
       <div class="img" id="modal-img"></div>
+      <video id="modal-video" muted loop autoplay playsinline style="display:none;width:100%;height:200px;object-fit:cover;background:#000;"></video>
+      <img id="modal-video-gif" style="display:none;width:100%;height:200px;object-fit:cover;background:#000;">
+      <div id="modal-gallery-strip" style="display:none;"></div>
       <div class="body">
         <span class="tag teal" id="modal-tag">Categoria</span>
         <h3 id="modal-name" style="font-family:'Space Grotesk';font-size:17px;margin-bottom:4px;">—</h3>
         <div class="code" id="modal-code" style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono';">—</div>
-        <div class="price" style="margin-top:12px;font-family:'IBM Plex Mono';font-size:14px;"><span class="lbl">Valor de repasse</span><span id="modal-price">—</span></div>
+        <div class="price" style="margin-top:12px;font-family:'IBM Plex Mono';font-size:14px;"><span class="lbl">Preço</span><span id="modal-public-price">—</span></div>
+        <div class="price" id="modal-consignado-wrap" style="margin-top:6px;font-family:'IBM Plex Mono';font-size:14px;color:var(--teal);display:none;"><span class="lbl">Seu preço (consignado)</span><span id="modal-price">—</span></div>
+
+        <div class="divider" style="margin:16px 0;"></div>
+        <h4 style="font-family:'Space Grotesk';font-size:13px;margin-bottom:10px;">Fazer pedido</h4>
+        <div class="field"><label>Seu nome</label><input id="modal-buyer-name" placeholder="Como podemos te chamar?"></div>
+        <div class="row">
+          <div class="field" id="modal-buyer-color-field" style="display:none;"><label>Cor</label><select id="modal-buyer-color"></select></div>
+          <div class="field"><label>Quantidade</label><input id="modal-buyer-qty" type="number" min="1" value="1"></div>
+        </div>
+        <div class="field">
+          <label>Cidade de entrega</label>
+          <select id="modal-buyer-city">
+            <option value="uberaba">Uberaba - MG</option>
+            <option value="outra">Outra cidade</option>
+          </select>
+        </div>
+        <div id="modal-buy-msg"></div>
+        <button class="btn whatsapp" id="modal-buy-btn" style="width:100%;justify-content:center;">Fazer pedido pelo WhatsApp</button>
       </div>
     </div>
   </div>
@@ -742,6 +929,7 @@
 
   let PRODUCTS = [], CLIENTS = [], ENTREGAS = [], DEVOLUCOES = [], ACERTOS = [], PEDIDOS = [];
   let currentClientCode = null;
+  let modalSelectedColor = null;
 
   async function loadAll(){
     PRODUCTS = await getJSON('products', []);
@@ -802,6 +990,9 @@
       btn.classList.add('active');
       root.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
       document.getElementById('view-'+btn.dataset.view).classList.add('active');
+      if(btn.dataset.view === 'client' && currentClientCode){
+        openClientDashboard(currentClientCode);
+      }
     });
   });
 
@@ -820,22 +1011,43 @@
     });
   }
 
-  function renderTopSellers(){
+  function carouselCardHtml(r, rank, isTop){
+    return `
+      <div class="carousel-card ${isTop ? 'top' : ''}" onclick="window.hlOpenProduct('${r.p.code}')">
+        <div class="carousel-rank">${rank}</div>
+        <div class="carousel-img" style="${r.p.image ? `background-image:url('${r.p.image.replace(/'/g,"")}')` : ''}">${r.p.image ? '' : 'sem foto'}</div>
+        <div class="carousel-body">
+          <div class="carousel-name">${r.p.name}</div>
+          <div class="carousel-count">${r.qty} vendidas</div>
+        </div>
+      </div>`;
+  }
+
+  function renderTopSellers(wrapId, listId, moreWrapId, moreListId){
     const sold = {};
     ACERTOS.forEach(a=>{ sold[a.productCode] = (sold[a.productCode]||0) + Number(a.qty); });
-    const ranked = Object.entries(sold).sort((a,b)=>b[1]-a[1]).slice(0,3)
+    const rankedAll = Object.entries(sold).sort((a,b)=>b[1]-a[1])
       .map(([code, qty])=>({ p: PRODUCTS.find(p=>p.code===code), qty })).filter(r=>r.p);
-    const wrap = document.getElementById('top-sellers-wrap');
-    if(ranked.length === 0){ wrap.style.display = 'none'; return; }
+    const top5 = rankedAll.slice(0,5);
+    const next5 = rankedAll.slice(5,10);
+
+    const wrap = document.getElementById(wrapId);
+    if(!wrap) return;
+    if(top5.length === 0){ wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
-    document.getElementById('top-sellers').innerHTML = ranked.map((r,i)=>`
-      <div class="seller-card rank-${i+1}">
-        <div class="seller-rank">${i+1}</div>
-        <div>
-          <div class="seller-name">${r.p.name}</div>
-          <div class="seller-count">${r.qty} vendidas</div>
-        </div>
-      </div>`).join('');
+    document.getElementById(listId).innerHTML = top5.map((r,i)=>carouselCardHtml(r, i+1, true)).join('');
+
+    if(moreWrapId){
+      const moreWrap = document.getElementById(moreWrapId);
+      if(moreWrap){
+        if(next5.length === 0){ moreWrap.style.display = 'none'; }
+        else {
+          moreWrap.style.display = 'block';
+          document.getElementById(moreListId).innerHTML = next5.map((r,i)=>carouselCardHtml(r, i+6, false)).join('');
+        }
+      }
+    }
+    return top5.map(r=>r.p.code);
   }
 
   function renderPortfolio(){
@@ -845,46 +1057,165 @@
     loading.style.display = 'none';
     const active = PRODUCTS.filter(p => p.active !== false);
     renderPortfolioFilters(active);
-    renderTopSellers();
+    const topCodes = renderTopSellers('top-sellers-wrap','top-sellers','top-sellers-more-wrap','top-sellers-more') || [];
     const shown = currentCategoryFilter==='Todos' ? active : active.filter(p=>p.category===currentCategoryFilter);
     if(shown.length === 0){ empty.style.display='block'; grid.style.display='none'; return; }
-    empty.style.display='none'; grid.style.display='grid';
-    grid.innerHTML = shown.map(p=>{
+    empty.style.display='none'; grid.style.display='block';
+    // no filtro "Todos" os mais vendidos já aparecem em destaque acima, então não repete na lista
+    const listItems = currentCategoryFilter==='Todos' ? shown.filter(p=>!topCodes.includes(p.code)) : shown;
+    grid.innerHTML = `<div class="portfolio-list">${listItems.map(p=>{
       const colors = p.colors || [];
       const colorsHtml = colors.length ? `<div class="portfolio-colors">${colors.map(c=>`
-        <span class="color-pill ${Number(c.stock)<=0?'out':''}">${c.name}${Number(c.stock)<=0?' • esgotado':''}</span>`).join('')}</div>` : '';
+        <button type="button" class="color-pill ${Number(c.stock)<=0?'out':''}" onclick="event.stopPropagation();window.hlSwapImage('${p.code}','${c.name.replace(/'/g,"")}')">${c.name}${Number(c.stock)<=0?' • esgotado':''}</button>`).join('')}</div>` : '';
+      const displayPrice = p.publicPrice!=null ? p.publicPrice : p.price;
       return `
-      <div class="card">
-        <div class="img" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem imagem'}</div>
-        <div class="body">
-          <span class="tag ${tagClass[p.category] || 'teal'}">${p.category || 'Produto'}</span>
-          <h3>${p.name}</h3>
-          <div class="code">${p.code}</div>
-          <div class="price"><span class="lbl">Valor de repasse</span>${fmtMoney(p.price)}</div>
-          ${colorsHtml}
+      <div class="portfolio-list-row" onclick="window.hlOpenProduct('${p.code}')">
+        <div class="portfolio-list-thumb" id="card-img-${p.code}" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem foto'}</div>
+        <div class="portfolio-list-info">
+          <h4>${p.name}${p.video ? ' <span class="video-badge" style="position:static;display:inline-flex;">▶</span>' : ''}</h4>
+          <div class="portfolio-list-meta">
+            <span class="tag ${tagClass[p.category] || 'teal'}">${p.category || 'Produto'}</span>
+            ${p.onDemand ? '<span class="badge acerto">Sob encomenda</span>' : ''}
+            ${colorsHtml}
+          </div>
         </div>
+        <div class="portfolio-list-price">${fmtMoney(displayPrice)}</div>
+        <button type="button" class="btn buy-btn" onclick="event.stopPropagation();window.hlOpenProduct('${p.code}')">Comprar</button>
       </div>`;
-    }).join('');
+    }).join('')}</div>`;
   }
+
+  window.hlSwapImage = function(code, colorName){
+    const p = PRODUCTS.find(p=>p.code===code);
+    if(!p) return;
+    const c = (p.colors||[]).find(c=>c.name===colorName);
+    const img = (c && c.image) ? c.image : p.image;
+    const el = document.getElementById('card-img-'+code);
+    if(!el) return;
+    const videoBadge = p.video ? '<span class="video-badge">▶ vídeo</span>' : '';
+    if(img){
+      el.style.backgroundImage = `url('${img.replace(/'/g,"")}')`;
+      el.innerHTML = videoBadge;
+    } else {
+      el.style.backgroundImage = '';
+      el.innerHTML = 'sem imagem' + videoBadge;
+    }
+    modalSelectedColor = colorName;
+  };
 
   // ---------- MODAL DE PRÉ-VISUALIZAÇÃO ----------
   function openProductModal(code){
     const p = PRODUCTS.find(p=>p.code===code);
     if(!p) return;
-    document.getElementById('modal-img').style.backgroundImage = p.image ? `url('${p.image.replace(/'/g,"")}')` : '';
-    document.getElementById('modal-img').textContent = p.image ? '' : 'sem imagem';
+    const modalImg = document.getElementById('modal-img');
+    const modalVideo = document.getElementById('modal-video');
+    const modalGif = document.getElementById('modal-video-gif');
+    modalVideo.style.display = 'none'; modalVideo.pause(); modalVideo.removeAttribute('src');
+    modalGif.style.display = 'none'; modalGif.removeAttribute('src');
+    modalImg.style.display = 'flex';
+
+    if(p.video){
+      const isGif = /\.gif($|\?)/i.test(p.video);
+      if(isGif){
+        modalGif.src = p.video;
+        modalGif.style.display = 'block';
+        modalImg.style.display = 'none';
+      } else {
+        modalVideo.src = p.video;
+        modalVideo.style.display = 'block';
+        modalImg.style.display = 'none';
+        modalVideo.play().catch(()=>{});
+      }
+    } else {
+      modalImg.style.backgroundImage = p.image ? `url('${p.image.replace(/'/g,"")}')` : '';
+      modalImg.textContent = p.image ? '' : 'sem imagem';
+    }
+
     document.getElementById('modal-tag').textContent = p.category || 'Produto';
     document.getElementById('modal-tag').className = `tag ${tagClass[p.category] || 'teal'}`;
     document.getElementById('modal-name').textContent = p.name;
     document.getElementById('modal-code').textContent = p.code;
-    document.getElementById('modal-price').textContent = fmtMoney(p.price);
+    document.getElementById('modal-public-price').textContent = p.publicPrice!=null ? fmtMoney(p.publicPrice) : fmtMoney(p.price);
+    document.getElementById('modal-consignado-wrap').style.display = 'none';
+
+    // galeria de fotos secundárias
+    const galleryStrip = document.getElementById('modal-gallery-strip');
+    const allPhotos = [p.image, ...(p.gallery || [])].filter(Boolean);
+    if(allPhotos.length > 1 && !p.video){
+      galleryStrip.style.display = 'flex';
+      galleryStrip.innerHTML = allPhotos.map((url, i)=>`
+        <div class="modal-thumb ${i===0?'active':''}" style="background-image:url('${url.replace(/'/g,"")}')" onclick="window.hlModalThumbClick(this,'${url.replace(/'/g,"")}')"></div>
+      `).join('');
+    } else {
+      galleryStrip.style.display = 'none';
+      galleryStrip.innerHTML = '';
+    }
+
+    // formulário de pedido
+    const colors = p.colors || [];
+    const colorField = document.getElementById('modal-buyer-color-field');
+    const colorSelect = document.getElementById('modal-buyer-color');
+    if(colors.length){
+      colorField.style.display = 'block';
+      colorSelect.innerHTML = colors.map(c=>`<option value="${c.name}" ${c.name===modalSelectedColor?'selected':''}>${c.name}</option>`).join('');
+    } else {
+      colorField.style.display = 'none';
+      colorSelect.innerHTML = '';
+    }
+    document.getElementById('modal-buyer-qty').value = 1;
+    document.getElementById('modal-buyer-city').value = 'uberaba';
+    document.getElementById('modal-buy-msg').innerHTML = '';
+    document.getElementById('modal-buy-btn').dataset.productCode = p.code;
+    modalSelectedColor = null;
+
     document.getElementById('product-modal').classList.add('open');
   }
-  function closeProductModal(){ document.getElementById('product-modal').classList.remove('open'); }
+  function closeProductModal(){
+    document.getElementById('product-modal').classList.remove('open');
+    const modalVideo = document.getElementById('modal-video');
+    modalVideo.pause();
+  }
   window.hlOpenProduct = openProductModal;
+  window.hlModalThumbClick = function(el, url){
+    const modalImg = document.getElementById('modal-img');
+    modalImg.style.backgroundImage = `url('${url}')`;
+    modalImg.textContent = '';
+    document.querySelectorAll('#modal-gallery-strip .modal-thumb').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+  };
   document.getElementById('modal-close-btn').addEventListener('click', closeProductModal);
   document.getElementById('product-modal').addEventListener('click', (e)=>{
     if(e.target.id === 'product-modal') closeProductModal();
+  });
+
+  document.getElementById('modal-buy-btn').addEventListener('click', ()=>{
+    const msgEl = document.getElementById('modal-buy-msg');
+    const code = document.getElementById('modal-buy-btn').dataset.productCode;
+    const p = PRODUCTS.find(p=>p.code===code);
+    if(!p) return;
+    const buyerName = document.getElementById('modal-buyer-name').value.trim();
+    const qty = parseInt(document.getElementById('modal-buyer-qty').value) || 1;
+    const city = document.getElementById('modal-buyer-city').value;
+    const colorField = document.getElementById('modal-buyer-color-field');
+    const color = colorField.style.display !== 'none' ? document.getElementById('modal-buyer-color').value : '';
+    if(!buyerName){ msgEl.innerHTML = '<div class="msg err">Preencha seu nome antes de enviar.</div>'; return; }
+
+    const price = p.publicPrice!=null ? p.publicPrice : p.price;
+    let text = `Olá! Meu nome é ${buyerName} e tenho interesse em fazer um pedido:\n\n`;
+    text += `Produto: ${p.name} (${p.code})\n`;
+    if(color) text += `Cor: ${color}\n`;
+    text += `Quantidade: ${qty}\n`;
+    text += `Valor unitário: ${fmtMoney(price)}\n`;
+    if(city === 'uberaba'){
+      text += `Cidade: Uberaba - MG\nFrete: R$ 5,00 (entrega na cidade)\n`;
+    } else {
+      text += `Cidade: outra cidade (a combinar o frete)\n`;
+    }
+    text += `\nAguardo retorno, obrigado(a)!`;
+
+    const link = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+    window.open(link, '_blank', 'noopener');
+    msgEl.innerHTML = '<div class="msg ok">Pedido pronto! Se o WhatsApp não abriu automaticamente, verifique o bloqueio de pop-ups.</div>';
   });
 
   // ---------- cálculo de saldo ----------
@@ -987,13 +1318,25 @@
   }
 
   // ---------- ÁREA DO CLIENTE ----------
-  document.getElementById('client-access-btn').addEventListener('click', ()=>{
-    const code = document.getElementById('client-code-input').value.trim().toUpperCase();
-    const msg = document.getElementById('client-gate-msg');
-    const client = CLIENTS.find(c=>c.code.toUpperCase()===code);
-    if(!client){ msg.innerHTML = '<div class="msg err">Código não encontrado. Confira o código informado no seu contrato.</div>'; return; }
-    msg.innerHTML = '';
+  const CLIENT_SESSION_KEY = 'hl_client_code';
+
+  function unlockClient(code){
+    const client = CLIENTS.find(c=>c.code.toUpperCase()===String(code).toUpperCase());
+    if(!client) return false;
     currentClientCode = client.code;
+    try{ localStorage.setItem(CLIENT_SESSION_KEY, client.code); }catch(e){}
+    renderPortfolio();
+    return true;
+  }
+  function lockClient(){
+    currentClientCode = null;
+    try{ localStorage.removeItem(CLIENT_SESSION_KEY); }catch(e){}
+    renderPortfolio();
+  }
+
+  function openClientDashboard(code){
+    const client = CLIENTS.find(c=>c.code===code);
+    if(!client) return;
     document.getElementById('client-gate').style.display = 'none';
     document.getElementById('client-dashboard').style.display = 'block';
     document.getElementById('client-code-display').textContent = client.code;
@@ -1014,12 +1357,6 @@
       <td style="color:${r.pendente>0?'var(--mustard)':'inherit'};font-weight:${r.pendente>0?'600':'400'};">${fmtMoney(r.pendente)}</td></tr>
     `).join('') : `<tr><td colspan="8" style="text-align:center;color:var(--muted);">Nenhuma movimentação registrada ainda.</td></tr>`;
 
-    document.getElementById('req-product').innerHTML = PRODUCTS.map(p=>`<option value="${p.code}">${p.code} — ${p.name}</option>`).join('') || '<option value="">Nenhum produto disponível</option>';
-    document.getElementById('req-qty').value = '';
-    document.getElementById('req-note').value = '';
-    document.getElementById('req-msg').innerHTML = '';
-    updateColorSelect('req-product','req-color',{showStock:true});
-    updateReqButtonState();
     renderClientRequests(client.code);
 
     const hist = clientHistory(client.code);
@@ -1037,9 +1374,204 @@
           ${h.status ? `<span class="badge ${h.status.toLowerCase()}" style="margin-left:6px;">${h.status}</span>` : ''}
         </div>
       </div>`).join('') : `<div class="empty"><div class="glyph">◇</div>Sem movimentações por enquanto.</div>`;
+
+    renderConsignadoCatalog();
+    renderCart();
+  }
+
+  function renderConsignadoCatalog(){
+    const grid = document.getElementById('consig-grid');
+    if(!grid) return;
+    renderTopSellers('consig-top-sellers-wrap','consig-top-sellers','consig-top-sellers-more-wrap','consig-top-sellers-more');
+    const active = PRODUCTS.filter(p => p.active !== false);
+    grid.innerHTML = active.map(p=>{
+      const colors = p.colors || [];
+      const colorsHtml = colors.length
+        ? `<div class="portfolio-colors">${colors.map(c=>`
+            <button type="button" class="color-pill ${(!p.onDemand && Number(c.stock)<=0)?'out':''}" onclick="window.hlAddToCart('${p.code}','${c.name.replace(/'/g,"")}')">+ ${c.name}${(!p.onDemand && Number(c.stock)<=0)?' • sem estoque':''}</button>`).join('')}</div>`
+        : `<button type="button" class="btn secondary" style="margin-top:8px;padding:6px 12px;font-size:11px;" onclick="window.hlAddToCart('${p.code}','')">+ ${p.onDemand ? 'Encomendar' : 'Adicionar ao carrinho'}</button>`;
+      const publicPrice = p.publicPrice != null ? Number(p.publicPrice) : null;
+      const margin = publicPrice != null ? publicPrice - Number(p.price) : null;
+      const marginHtml = margin != null
+        ? `<div class="margin-hint">Lucro possível: ${fmtMoney(margin)} (revendendo pelo preço ao público)</div>`
+        : '';
+      pickerQty[p.code] = pickerQty[p.code] || 1;
+      return `
+      <div class="card">
+        <div class="img" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem imagem'}</div>
+        <div class="body">
+          <span class="tag ${tagClass[p.category] || 'teal'}">${p.category || 'Produto'}</span>
+          ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
+          <h3>${p.name}</h3>
+          <div class="code">${p.code}</div>
+          <div class="price"><span class="lbl">Preço ao público</span>${publicPrice != null ? fmtMoney(publicPrice) : '—'}</div>
+          <div class="price" style="margin-top:6px;color:var(--teal);"><span class="lbl">Seu preço (repasse)</span>${fmtMoney(p.price)}</div>
+          ${marginHtml}
+          <div class="qty-picker">
+            <label>Qtd. a adicionar</label>
+            <button type="button" class="cart-qty-btn" onclick="window.hlAdjustPicker('${p.code}',-1)">−</button>
+            <span class="mono" id="picker-qty-${p.code}">${pickerQty[p.code]}</span>
+            <button type="button" class="cart-qty-btn" onclick="window.hlAdjustPicker('${p.code}',1)">+</button>
+          </div>
+          ${colorsHtml}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ---------- CARRINHO DE REPOSIÇÃO ----------
+  let reposicaoCart = [];
+  let pickerQty = {};
+
+  window.hlAdjustPicker = function(code, delta){
+    const current = pickerQty[code] || 1;
+    pickerQty[code] = Math.max(1, current + delta);
+    const el = document.getElementById('picker-qty-'+code);
+    if(el) el.textContent = pickerQty[code];
+  };
+
+  window.hlAddToCart = function(code, color){
+    const qtyToAdd = pickerQty[code] || 1;
+    const existing = reposicaoCart.find(i=>i.productCode===code && i.color===color);
+    if(existing){ existing.qty += qtyToAdd; }
+    else { reposicaoCart.push({ productCode: code, color, qty: qtyToAdd }); }
+    renderCart();
+  };
+
+  function renderCart(){
+    const wrap = document.getElementById('cart-items');
+    const noteField = document.getElementById('cart-note-field');
+    const submitBtn = document.getElementById('cart-submit-btn');
+    const badge = document.getElementById('cart-count-badge');
+    if(!wrap) return;
+    renderFloatingCart();
+    if(reposicaoCart.length === 0){
+      wrap.innerHTML = `<div class="empty" style="padding:20px;"><div class="glyph">◇</div>Toque numa cor do catálogo abaixo para adicionar itens aqui.</div>`;
+      noteField.style.display = 'none';
+      submitBtn.style.display = 'none';
+      badge.style.display = 'none';
+      return;
+    }
+    badge.style.display = 'inline-block';
+    badge.textContent = reposicaoCart.reduce((s,i)=>s+i.qty,0);
+    wrap.innerHTML = reposicaoCart.map((item,idx)=>{
+      const p = PRODUCTS.find(p=>p.code===item.productCode);
+      const name = p ? p.name : item.productCode;
+      const c = p && p.colors ? p.colors.find(c=>c.name===item.color) : null;
+      const stock = c ? Number(c.stock) : null;
+      const willBeProducao = (p && p.onDemand) || (stock != null && item.qty > stock);
+      return `
+      <div class="ticket" style="margin-bottom:8px;">
+        <div class="left">
+          <div class="desc">${name}${item.color ? ' — '+item.color : ''} ${willBeProducao ? '<span class="badge acerto" style="margin-left:4px;">'+((p&&p.onDemand)?'Sob encomenda':'Produção')+'</span>' : ''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button data-cart-dec="${idx}" class="cart-qty-btn">−</button>
+          <span class="mono" style="min-width:20px;text-align:center;">${item.qty}</span>
+          <button data-cart-inc="${idx}" class="cart-qty-btn">+</button>
+          <button data-cart-remove="${idx}" class="cart-qty-btn" title="Remover">✕</button>
+        </div>
+      </div>`;
+    }).join('');
+    noteField.style.display = 'block';
+    submitBtn.style.display = 'inline-block';
+
+    wrap.querySelectorAll('[data-cart-inc]').forEach(b=>b.addEventListener('click', ()=>{
+      reposicaoCart[+b.dataset.cartInc].qty += 1; renderCart();
+    }));
+    wrap.querySelectorAll('[data-cart-dec]').forEach(b=>b.addEventListener('click', ()=>{
+      const idx = +b.dataset.cartDec;
+      reposicaoCart[idx].qty -= 1;
+      if(reposicaoCart[idx].qty <= 0) reposicaoCart.splice(idx,1);
+      renderCart();
+    }));
+    wrap.querySelectorAll('[data-cart-remove]').forEach(b=>b.addEventListener('click', ()=>{
+      reposicaoCart.splice(+b.dataset.cartRemove,1); renderCart();
+    }));
+  }
+
+  function renderFloatingCart(){
+    const totalQty = reposicaoCart.reduce((s,i)=>s+i.qty,0);
+
+    const fab = document.getElementById('mobile-cart-fab');
+    if(fab){
+      if(totalQty > 0){
+        fab.classList.add('show');
+        document.getElementById('mobile-cart-fab-badge').textContent = totalQty;
+      } else {
+        fab.classList.remove('show');
+      }
+    }
+
+    const el = document.getElementById('floating-cart');
+    if(!el) return;
+    if(reposicaoCart.length === 0){ el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    document.getElementById('floating-cart-badge').textContent = totalQty;
+    document.getElementById('floating-cart-items').innerHTML = reposicaoCart.map(item=>{
+      const p = PRODUCTS.find(p=>p.code===item.productCode);
+      const name = p ? p.name : item.productCode;
+      return `<div class="floating-cart-item"><span>${name}${item.color ? ' ('+item.color+')' : ''}</span><span class="fci-qty">×${item.qty}</span></div>`;
+    }).join('');
+  }
+
+  document.getElementById('cart-submit-btn').addEventListener('click', async ()=>{
+    if(!currentClientCode || reposicaoCart.length===0) return;
+    const msg = document.getElementById('cart-msg');
+    const note = document.getElementById('cart-note').value.trim();
+    const btn = document.getElementById('cart-submit-btn');
+    btn.disabled = true; btn.textContent = 'Enviando…';
+
+    PRODUCTS = await getJSON('products', PRODUCTS);
+    PEDIDOS = await getJSON('pedidos', PEDIDOS);
+    const createdReqs = [];
+    for(const item of reposicaoCart){
+      const p = PRODUCTS.find(p=>p.code===item.productCode);
+      let type = 'reposicao';
+      if(p && p.onDemand){
+        type = 'producao';
+      } else if(p && item.color){
+        const c = (p.colors||[]).find(c=>c.name===item.color);
+        const stock = c ? Number(c.stock) : 0;
+        if(c && item.qty <= stock){ c.stock = stock - item.qty; type = 'reposicao'; }
+        else { type = 'producao'; }
+      }
+      const id = 'PED-' + String(PEDIDOS.length + createdReqs.length + 1).padStart(3,'0');
+      const req = { id, date: todayISO(), clientCode: currentClientCode, productCode: item.productCode, color: item.color, qty: item.qty, note, status:'Pendente', type };
+      PEDIDOS.push(req);
+      createdReqs.push(req);
+    }
+    await setJSON('products', PRODUCTS);
+    await setJSON('pedidos', PEDIDOS);
+
+    const client = CLIENTS.find(c=>c.code===currentClientCode);
+    const clientLabel = client ? `${client.name} (${client.code})` : currentClientCode;
+    let text = `Pedido de reposição — ${clientLabel}\n\n`;
+    createdReqs.forEach(r=>{
+      text += `• ${r.qty}x ${productName(r.productCode)}${r.color ? ' ('+r.color+')' : ''}${r.type==='producao' ? ' [PRODUÇÃO]' : ''}\n`;
+    });
+    if(note) text += `\nObservação: ${note}`;
+    const link = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+
+    msg.innerHTML = `<div class="msg ok">Pedido enviado! Avise a HL 3D Solutions agora para agilizar:</div>
+      <div style="margin:10px 0;"><a class="btn whatsapp" href="${link}" target="_blank" rel="noopener">Avisar no WhatsApp</a></div>`;
+    reposicaoCart = [];
+    document.getElementById('cart-note').value = '';
+    renderCart();
+    renderConsignadoCatalog();
+    renderClientRequests(currentClientCode);
+    btn.disabled = false; btn.textContent = 'Enviar pedido de reposição';
+  });
+
+  document.getElementById('client-access-btn').addEventListener('click', ()=>{
+    const code = document.getElementById('client-code-input').value.trim().toUpperCase();
+    const msg = document.getElementById('client-gate-msg');
+    if(!unlockClient(code)){ msg.innerHTML = '<div class="msg err">Código não encontrado. Confira o código informado no seu contrato.</div>'; return; }
+    msg.innerHTML = '';
+    openClientDashboard(currentClientCode);
   });
   document.getElementById('client-logout-btn').addEventListener('click', ()=>{
-    currentClientCode = null;
+    lockClient();
     document.getElementById('client-dashboard').style.display = 'none';
     document.getElementById('client-gate').style.display = 'block';
     document.getElementById('client-code-input').value = '';
@@ -1061,49 +1593,6 @@
         </div>
       </div>`).join('') : `<div class="empty"><div class="glyph">◇</div>Você ainda não fez nenhum pedido.</div>`;
   }
-
-  document.getElementById('req-send-btn').addEventListener('click', async ()=>{
-    const msg = document.getElementById('req-msg');
-    if(!currentClientCode){ return; }
-    const productCode = document.getElementById('req-product').value;
-    const colorName = document.getElementById('req-color').value;
-    const qty = parseInt(document.getElementById('req-qty').value);
-    const note = document.getElementById('req-note').value.trim();
-    if(!productCode || !qty){ msg.innerHTML = '<div class="msg err">Escolha um produto e informe a quantidade.</div>'; return; }
-
-    // busca dados frescos para checar estoque na hora do pedido
-    PRODUCTS = await getJSON('products', PRODUCTS);
-    const p = PRODUCTS.find(p=>p.code===productCode);
-    let type = 'reposicao';
-    if(p && p.colors && p.colors.length){
-      if(!colorName){ msg.innerHTML = '<div class="msg err">Escolha uma cor.</div>'; return; }
-      const c = p.colors.find(c=>c.name===colorName);
-      const stock = c ? Number(c.stock) : 0;
-      if(c && qty <= stock){
-        c.stock = stock - qty;
-        await setJSON('products', PRODUCTS);
-        type = 'reposicao';
-      } else {
-        type = 'producao';
-      }
-    }
-
-    PEDIDOS = await getJSON('pedidos', PEDIDOS);
-    const id = 'PED-' + String(PEDIDOS.length+1).padStart(3,'0');
-    const req = { id, date: todayISO(), clientCode: currentClientCode, productCode, color: colorName, qty, note, status:'Pendente', type };
-    PEDIDOS.push(req);
-    await setJSON('pedidos', PEDIDOS);
-    const successMsg = type === 'producao'
-      ? 'Pedido de produção enviado! Como não há estoque suficiente dessa cor, avise a Oficina Consignada:'
-      : 'Pedido enviado! Avise a Oficina Consignada agora para agilizar:';
-    msg.innerHTML = `<div class="msg ok">${successMsg}</div>
-      <div style="margin-bottom:10px;">${whatsappBtn(req)}</div>`;
-    document.getElementById('req-qty').value = '';
-    document.getElementById('req-note').value = '';
-    updateReqButtonState();
-    renderPortfolio();
-    renderClientRequests(currentClientCode);
-  });
 
   // ---------- ADMIN GATE ----------
   document.getElementById('admin-access-btn').addEventListener('click', async ()=>{
@@ -1177,68 +1666,91 @@
       updateColorSelect(id, id.replace('-product','-color'));
     });
   });
-  document.getElementById('req-product').addEventListener('change', ()=>{
-    updateColorSelect('req-product','req-color',{showStock:true});
-    updateReqButtonState();
-  });
-  document.getElementById('req-color').addEventListener('change', updateReqButtonState);
-  document.getElementById('req-qty').addEventListener('input', updateReqButtonState);
-  function updateReqButtonState(){
-    const code = document.getElementById('req-product').value;
-    const colorName = document.getElementById('req-color').value;
-    const qty = parseInt(document.getElementById('req-qty').value) || 0;
-    const p = PRODUCTS.find(p=>p.code===code);
-    const btn = document.getElementById('req-send-btn');
-    const hint = document.getElementById('req-stock-hint');
-    if(p && p.colors && p.colors.length && colorName){
-      const c = p.colors.find(c=>c.name===colorName);
-      const stock = c ? Number(c.stock) : 0;
-      if(qty > 0 && qty > stock){
-        btn.textContent = 'Solicitar Produção';
-        hint.textContent = stock > 0
-          ? `Só há ${stock} em estoque nessa cor — o pedido será registrado como produção.`
-          : 'Sem estoque disponível nessa cor — o pedido será registrado como produção.';
-      } else {
-        btn.textContent = 'Enviar pedido';
-        hint.textContent = stock ? `${stock} em estoque nessa cor.` : '';
-      }
-    } else {
-      btn.textContent = 'Enviar pedido';
-      hint.textContent = '';
-    }
-  }
 
   function renderAdminLists(){
     document.getElementById('p-list').innerHTML = PRODUCTS.length ? PRODUCTS.map(p=>{
       const colors = p.colors || [];
+      const gallery = p.gallery || [];
       const colorChips = colors.map(c=>`
         <span class="color-chip ${Number(c.stock)<=0?'out':''}">
-          ${c.name} · <strong>${c.stock}</strong>
+          ${c.image ? '📷 ' : ''}${c.name} · <strong>${c.stock}</strong>
           <button data-adj-color="${p.code}|${c.name}|-1" title="Diminuir 1 do estoque">−</button>
           <button data-adj-color="${p.code}|${c.name}|1" title="Aumentar 1 no estoque">+</button>
           <button data-del-color="${p.code}|${c.name}" title="Remover esta cor">✕</button>
         </span>`).join('');
+      const galleryChips = gallery.map((url,gi)=>`
+        <span class="color-chip">📷 Foto ${gi+1}
+          <button data-del-gallery="${p.code}|${gi}" title="Remover esta foto">✕</button>
+        </span>`).join('');
+      const priceLine = `Público: ${p.publicPrice!=null ? fmtMoney(p.publicPrice) : '—'} · Consignado: ${fmtMoney(p.price)}`;
       return `
       <div class="list-row" style="flex-direction:column;align-items:stretch;gap:8px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-          <span class="mono">${p.code} — ${p.name} (${p.category}) — ${fmtMoney(p.price)}</span>
-          <button data-del-product="${p.code}">Remover produto</button>
+          <span class="mono">${p.code} — ${p.name} (${p.category}) — ${priceLine}${p.video ? ' · 🎬' : ''}${p.onDemand ? ' · <span class="badge acerto">Sob encomenda</span>' : ''}</span>
+          <span class="actions">
+            <button data-toggle-ondemand="${p.code}">${p.onDemand ? 'Desmarcar sob encomenda' : 'Marcar sob encomenda'}</button>
+            <button data-del-product="${p.code}">Remover produto</button>
+          </span>
         </div>
         ${colors.length ? `<div class="color-chips">${colorChips}</div>` : `<div style="color:var(--muted);font-size:11px;">Sem variações de cor cadastradas — este item não usa controle de estoque.</div>`}
         <div class="color-add-row">
           <input type="text" placeholder="Nova cor (ex: Azul)" data-color-name-input="${p.code}">
           <input type="number" min="0" placeholder="Estoque inicial" data-color-stock-input="${p.code}">
+          <input type="text" placeholder="URL da foto desta cor (opcional)" data-color-image-input="${p.code}" style="flex:1;min-width:160px;">
           <button data-add-color="${p.code}">+ Adicionar cor</button>
+        </div>
+        <div style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px;">
+          <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-family:'IBM Plex Mono';margin-bottom:6px;">Fotos secundárias (galeria)</div>
+          ${gallery.length ? `<div class="color-chips" style="margin-bottom:8px;">${galleryChips}</div>` : ''}
+          <div class="color-add-row">
+            <input type="text" placeholder="URL de foto adicional" data-gallery-input="${p.code}" style="flex:1;min-width:200px;">
+            <button data-add-gallery="${p.code}">+ Adicionar foto</button>
+          </div>
         </div>
       </div>`;
     }).join('') : `<div class="empty">Nenhum produto cadastrado.</div>`;
+
+    root.querySelectorAll('[data-toggle-ondemand]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const code = btn.dataset.toggleOndemand;
+      PRODUCTS = await getJSON('products', PRODUCTS);
+      const p = PRODUCTS.find(p=>p.code===code);
+      if(!p) return;
+      p.onDemand = !p.onDemand;
+      await setJSON('products', PRODUCTS);
+      renderAdminLists(); renderPortfolio();
+    }));
+
+    root.querySelectorAll('[data-add-gallery]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const code = btn.dataset.addGallery;
+      const input = root.querySelector(`[data-gallery-input="${code}"]`);
+      const url = input.value.trim();
+      if(!url) return;
+      PRODUCTS = await getJSON('products', PRODUCTS);
+      const p = PRODUCTS.find(p=>p.code===code);
+      if(!p) return;
+      p.gallery = p.gallery || [];
+      p.gallery.push(url);
+      await setJSON('products', PRODUCTS);
+      renderAdminLists(); renderPortfolio();
+    }));
+    root.querySelectorAll('[data-del-gallery]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const [code, idxStr] = btn.dataset.delGallery.split('|');
+      PRODUCTS = await getJSON('products', PRODUCTS);
+      const p = PRODUCTS.find(p=>p.code===code);
+      if(!p) return;
+      p.gallery = (p.gallery||[]).filter((_,i)=>i!==Number(idxStr));
+      await setJSON('products', PRODUCTS);
+      renderAdminLists(); renderPortfolio();
+    }));
 
     root.querySelectorAll('[data-add-color]').forEach(btn=>btn.addEventListener('click', async ()=>{
       const code = btn.dataset.addColor;
       const nameInput = root.querySelector(`[data-color-name-input="${code}"]`);
       const stockInput = root.querySelector(`[data-color-stock-input="${code}"]`);
+      const imageInput = root.querySelector(`[data-color-image-input="${code}"]`);
       const name = nameInput.value.trim();
       const stock = Math.max(0, parseInt(stockInput.value) || 0);
+      const image = imageInput.value.trim();
       if(!name) return;
       PRODUCTS = await getJSON('products', PRODUCTS);
       const p = PRODUCTS.find(p=>p.code===code);
@@ -1247,7 +1759,7 @@
       if(p.colors.some(c=>c.name.toLowerCase()===name.toLowerCase())){
         alert('Essa cor já existe para este produto.'); return;
       }
-      p.colors.push({name, stock});
+      p.colors.push({name, stock, image});
       await setJSON('products', PRODUCTS);
       refreshAdminSelects(); renderAdminLists(); renderPortfolio();
     }));
@@ -1338,15 +1850,19 @@
     const code = document.getElementById('p-code').value.trim().toUpperCase();
     const name = document.getElementById('p-name').value.trim();
     const category = document.getElementById('p-cat').value.trim();
+    const publicPrice = parseFloat(document.getElementById('p-public-price').value);
     const price = parseFloat(document.getElementById('p-price').value);
     const image = document.getElementById('p-img').value.trim();
+    const video = document.getElementById('p-video').value.trim();
+    const onDemand = document.getElementById('p-ondemand').checked;
     const msg = document.getElementById('p-msg');
-    if(!code || !name || isNaN(price)){ msg.innerHTML = '<div class="msg err">Preencha ao menos código, nome e valor.</div>'; return; }
+    if(!code || !name || isNaN(price)){ msg.innerHTML = '<div class="msg err">Preencha ao menos código, nome e valor consignado.</div>'; return; }
     if(PRODUCTS.some(p=>p.code===code)){ msg.innerHTML = '<div class="msg err">Já existe um produto com esse código.</div>'; return; }
-    PRODUCTS.push({code, name, category, price, image, active:true});
+    PRODUCTS.push({code, name, category, price, publicPrice: isNaN(publicPrice) ? null : publicPrice, image, video, onDemand, colors:[], gallery:[], active:true});
     await setJSON('products', PRODUCTS);
     msg.innerHTML = '<div class="msg ok">Produto adicionado.</div>';
-    ['p-code','p-name','p-cat','p-price','p-img'].forEach(id=>document.getElementById(id).value='');
+    ['p-code','p-name','p-cat','p-public-price','p-price','p-img','p-video'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('p-ondemand').checked = false;
     refreshAdminSelects(); renderAdminLists(); renderPortfolio();
   });
 
@@ -1439,6 +1955,12 @@
       document.querySelectorAll('.cover-logo-full').forEach(img => img.src = brandLogo.src);
     }
     await loadAll();
+    try{
+      const savedCode = localStorage.getItem(CLIENT_SESSION_KEY);
+      if(savedCode){
+        if(!unlockClient(savedCode)){ localStorage.removeItem(CLIENT_SESSION_KEY); }
+      }
+    }catch(e){}
     renderPortfolio();
   })();
 })();
