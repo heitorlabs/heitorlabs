@@ -273,6 +273,13 @@
   #portal-root .ticket.t-acerto{border-left-color:var(--coral);}
   #portal-root .ticket .glyph{font-size:14px;margin-right:8px;opacity:.85;}
   #portal-root .subnav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  #portal-root .search-wrap{margin-bottom:14px;}
+  #portal-root .search-input{
+    width:100%;background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    padding:12px 16px;border-radius:10px;font-size:14px;font-family:'Inter';
+  }
+  #portal-root .search-input::placeholder{color:var(--muted);}
+  #portal-root .search-input:focus{outline:none;border-color:var(--teal);}
   #portal-root .subnav button{
     font-family:'IBM Plex Mono';font-size:11px;text-transform:uppercase;letter-spacing:.04em;
     background:var(--panel);border:1px solid var(--line);color:var(--muted);
@@ -399,16 +406,53 @@
     background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:400px;width:100%;overflow:hidden;
     position:relative;max-height:90vh;overflow-y:auto;
   }
-  #portal-root .modal-box .img{height:200px;background:var(--panel-2);background-size:cover;background-position:center;
-    display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;font-family:'IBM Plex Mono';}
   #portal-root .modal-box .body{padding:18px;}
-  #portal-root #modal-gallery-strip{display:flex;gap:6px;padding:10px 18px 0 18px;overflow-x:auto;}
-  #portal-root .modal-thumb{
-    width:48px;height:48px;flex-shrink:0;border-radius:8px;background-size:cover;background-position:center;
-    background-color:var(--panel-2);border:2px solid var(--line);cursor:pointer;transition:border-color .15s;
+
+  /* --- carrossel de fotos/vídeo do produto --- */
+  #portal-root .carousel{position:relative;width:100%;height:280px;background:#000;overflow:hidden;}
+  #portal-root .carousel-track{
+    display:flex;height:100%;transition:transform .3s ease;
   }
-  #portal-root .modal-thumb.active{border-color:var(--teal);}
-  #portal-root .modal-thumb:hover{border-color:var(--teal);}
+  #portal-root .carousel-slide{
+    flex:0 0 100%;height:100%;display:flex;align-items:center;justify-content:center;position:relative;
+    background:var(--panel-2);
+  }
+  #portal-root .carousel-slide img, #portal-root .carousel-slide video{
+    width:100%;height:100%;object-fit:contain;background:#000;
+  }
+  #portal-root .carousel-slide .slide-placeholder{color:var(--muted);font-size:12px;font-family:'IBM Plex Mono';}
+  #portal-root .carousel-slide .play-overlay{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;cursor:pointer;
+    background:rgba(0,0,0,.15);
+  }
+  #portal-root .carousel-slide .play-overlay .play-circle{
+    width:56px;height:56px;border-radius:50%;background:rgba(0,0,0,.55);border:2px solid #fff;
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;
+  }
+  #portal-root .carousel-arrow{
+    position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;
+    background:rgba(0,0,0,.5);border:none;color:#fff;font-size:20px;cursor:pointer;z-index:3;
+    display:flex;align-items:center;justify-content:center;line-height:1;
+  }
+  #portal-root .carousel-arrow:hover{background:rgba(0,0,0,.75);}
+  #portal-root .carousel-arrow.left{left:8px;}
+  #portal-root .carousel-arrow.right{right:8px;}
+  #portal-root .carousel-arrow.hidden{display:none;}
+  #portal-root .carousel-dots{
+    position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:3;
+  }
+  #portal-root .carousel-dot{
+    width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.4);cursor:pointer;transition:background .15s;
+  }
+  #portal-root .carousel-dot.active{background:#fff;}
+
+  /* --- lightbox de vídeo em tela cheia --- */
+  #portal-root .lightbox-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;
+    z-index:60;
+  }
+  #portal-root .lightbox-backdrop.open{display:flex;}
+  #portal-root .lightbox-backdrop .modal-close{top:16px;right:16px;width:36px;height:36px;font-size:18px;}
   #portal-root .modal-close{
     position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;
     background:rgba(0,0,0,.5);border:none;color:#fff;font-size:16px;cursor:pointer;z-index:2;
@@ -589,6 +633,10 @@
         </div>
       </div>
 
+      <div class="search-wrap">
+        <input type="text" id="portfolio-search" placeholder="🔍 Buscar por nome, código ou categoria..." class="search-input">
+      </div>
+
       <div class="subnav" id="portfolio-filters"></div>
 
       <div id="portfolio-loading" class="empty"><div class="glyph">◐</div>Carregando catálogo…</div>
@@ -709,6 +757,9 @@
             <div class="carousel-row" id="consig-top-sellers-more"></div>
           </div>
         </div>
+        <div class="search-wrap">
+          <input type="text" id="consig-search" placeholder="🔍 Buscar por nome, código ou categoria..." class="search-input">
+        </div>
         <div class="grid-products" id="consig-grid"></div>
 
         <button class="btn secondary" id="client-logout-btn" style="margin-top:20px;">Sair</button>
@@ -765,9 +816,25 @@
           <div class="panel" style="margin-bottom:20px;">
             <h3 style="font-size:14px;margin-bottom:14px;" id="p-form-title">Novo produto</h3>
             <div class="row">
-              <div class="field"><label>Código</label><input id="p-code" placeholder="P006"></div>
+              <div class="field"><label>Prefixo</label>
+                <select id="p-prefix">
+                  <option value="">— escolher —</option>
+                  <option value="CHA">CHA — Chaveiros</option>
+                  <option value="TOY">TOY — Brinquedos</option>
+                  <option value="FID">FID — Fidgets</option>
+                  <option value="PET">PET — Pets / Mascotes</option>
+                  <option value="FLX">FLX — Flexíveis / Articulados</option>
+                  <option value="DEC">DEC — Decoração</option>
+                  <option value="UTI">UTI — Utilidades</option>
+                  <option value="PER">PER — Personalizados sob encomenda</option>
+                  <option value="COL">COL — Colecionáveis</option>
+                  <option value="ORN">ORN — Vasos / Ornamentos</option>
+                </select>
+              </div>
+              <div class="field"><label>Código</label><input id="p-code" placeholder="CHA0001"></div>
               <div class="field" style="flex:2;"><label>Nome</label><input id="p-name" placeholder="Chaveiro 3D Foguete"></div>
             </div>
+            <p style="color:var(--muted);font-size:11px;margin:-8px 0 12px 0;">Escolher um prefixo já sugere o próximo número livre — mas você pode digitar ou editar o código livremente.</p>
             <div class="field">
               <label>Categorias (filtros) — clique numa existente ou digite uma nova</label>
               <div id="p-cat-selected" class="color-chips" style="margin-bottom:8px;"></div>
@@ -984,10 +1051,12 @@
   <div class="modal-backdrop" id="product-modal">
     <div class="modal-box">
       <button class="modal-close" id="modal-close-btn">✕</button>
-      <div class="img" id="modal-img"></div>
-      <video id="modal-video" muted loop autoplay playsinline style="display:none;width:100%;height:200px;object-fit:cover;background:#000;"></video>
-      <img id="modal-video-gif" style="display:none;width:100%;height:200px;object-fit:cover;background:#000;">
-      <div id="modal-gallery-strip" style="display:none;"></div>
+      <div class="carousel" id="modal-carousel">
+        <div class="carousel-track" id="modal-carousel-track"></div>
+        <button class="carousel-arrow left" id="modal-carousel-prev" aria-label="Anterior">‹</button>
+        <button class="carousel-arrow right" id="modal-carousel-next" aria-label="Próximo">›</button>
+        <div class="carousel-dots" id="modal-carousel-dots"></div>
+      </div>
       <div class="body">
         <div id="modal-tags" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;"></div>
         <h3 id="modal-name" style="font-family:'Space Grotesk';font-size:17px;margin-bottom:4px;">—</h3>
@@ -1013,6 +1082,12 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="lightbox-backdrop" id="video-lightbox">
+    <button class="modal-close" id="lightbox-close-btn">✕</button>
+    <video id="lightbox-video" controls autoplay playsinline style="max-width:92vw;max-height:88vh;background:#000;display:none;"></video>
+    <img id="lightbox-gif" style="max-width:92vw;max-height:88vh;background:#000;display:none;">
   </div>
 </div>
 
@@ -1077,6 +1152,13 @@
       KNOWN_CATEGORIES = [...set];
       if(KNOWN_CATEGORIES.length) await setJSON('categories', KNOWN_CATEGORIES);
     }
+    // adiciona as categorias sugeridas que ainda não existem na lista, sem duplicar
+    const suggestedCategories = ['Chaveiros','Brinquedos','Fidgets','Pets / Mascotes','Flexíveis / Articulados','Decoração','Utilidades','Personalizados sob encomenda','Colecionáveis','Vasos / Ornamentos'];
+    const missingCategories = suggestedCategories.filter(c=>!KNOWN_CATEGORIES.includes(c));
+    if(missingCategories.length){
+      KNOWN_CATEGORIES = [...KNOWN_CATEGORIES, ...missingCategories];
+      await setJSON('categories', KNOWN_CATEGORIES);
+    }
   }
   async function refreshData(){
     PRODUCTS = await getJSON('products', PRODUCTS);
@@ -1125,6 +1207,8 @@
 
   // ---------- PORTFÓLIO ----------
   let currentCategoryFilter = 'Todos';
+  let portfolioSearchQuery = '';
+  let consigSearchQuery = '';
   const tagClass = { 'Chaveiro 3D':'teal', 'Fidget':'coral', 'Sensorial':'mustard' };
   const TAG_PALETTE = ['teal','coral','mustard'];
   function tagColorFor(cat){
@@ -1194,6 +1278,16 @@
     return top5.map(r=>r.p.code);
   }
 
+  function normalizeSearch(s){
+    return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  }
+  function matchesSearch(p, query){
+    if(!query) return true;
+    const q = normalizeSearch(query);
+    const haystack = normalizeSearch([p.name, p.code, ...getCategories(p)].join(' '));
+    return haystack.includes(q);
+  }
+
   function renderPortfolio(){
     const grid = document.getElementById('portfolio-grid');
     const loading = document.getElementById('portfolio-loading');
@@ -1203,10 +1297,17 @@
     renderPortfolioFilters(active);
     const topCodes = renderTopSellers('top-sellers-wrap','top-sellers','top-sellers-more-wrap','top-sellers-more') || [];
     const shown = currentCategoryFilter==='Todos' ? active : active.filter(p=>getCategories(p).includes(currentCategoryFilter));
-    if(shown.length === 0){ empty.style.display='block'; grid.style.display='none'; return; }
+    const searched = shown.filter(p=>matchesSearch(p, portfolioSearchQuery));
+    if(searched.length === 0){
+      empty.style.display='block'; grid.style.display='none';
+      empty.innerHTML = portfolioSearchQuery
+        ? `<div class="glyph">◇</div>Nenhum produto encontrado para "${portfolioSearchQuery}".`
+        : `<div class="glyph">◇</div>Nenhum produto nesta categoria ainda.`;
+      return;
+    }
     empty.style.display='none'; grid.style.display='block';
-    // no filtro "Todos" os mais vendidos já aparecem em destaque acima, então não repete na lista
-    const listItems = currentCategoryFilter==='Todos' ? shown.filter(p=>!topCodes.includes(p.code)) : shown;
+    // no filtro "Todos" sem busca ativa, os mais vendidos já aparecem em destaque acima, então não repete na lista
+    const listItems = (currentCategoryFilter==='Todos' && !portfolioSearchQuery) ? searched.filter(p=>!topCodes.includes(p.code)) : searched;
     grid.innerHTML = `<div class="portfolio-list">${listItems.map(p=>{
       const colors = p.colors || [];
       const colorsHtml = colors.length ? `<div class="portfolio-colors">${colors.map(c=>`
@@ -1229,6 +1330,11 @@
     }).join('')}</div>`;
   }
 
+  document.getElementById('portfolio-search').addEventListener('input', (e)=>{
+    portfolioSearchQuery = e.target.value.trim();
+    renderPortfolio();
+  });
+
   window.hlSwapImage = function(code, colorName){
     const p = PRODUCTS.find(p=>p.code===code);
     if(!p) return;
@@ -1248,32 +1354,130 @@
   };
 
   // ---------- MODAL DE PRÉ-VISUALIZAÇÃO ----------
+  let carouselItems = [];
+  let carouselIndex = 0;
+
+  function renderCarousel(){
+    const track = document.getElementById('modal-carousel-track');
+    const dotsWrap = document.getElementById('modal-carousel-dots');
+    const prevBtn = document.getElementById('modal-carousel-prev');
+    const nextBtn = document.getElementById('modal-carousel-next');
+
+    track.innerHTML = carouselItems.map(item=>{
+      if(item.type === 'video'){
+        return `<div class="carousel-slide" data-type="video">
+          <video src="${item.url}" muted loop autoplay playsinline></video>
+          <div class="play-overlay" onclick="window.hlOpenLightbox()"><div class="play-circle">▶</div></div>
+        </div>`;
+      }
+      if(item.type === 'gif'){
+        return `<div class="carousel-slide" data-type="gif">
+          <img src="${item.url}">
+          <div class="play-overlay" onclick="window.hlOpenLightbox()"><div class="play-circle">▶</div></div>
+        </div>`;
+      }
+      if(item.type === 'image'){
+        return `<div class="carousel-slide"><img src="${item.url}"></div>`;
+      }
+      return `<div class="carousel-slide"><span class="slide-placeholder">sem imagem</span></div>`;
+    }).join('');
+
+    dotsWrap.innerHTML = carouselItems.length > 1
+      ? carouselItems.map((_,i)=>`<div class="carousel-dot ${i===carouselIndex?'active':''}" data-idx="${i}"></div>`).join('')
+      : '';
+    dotsWrap.querySelectorAll('.carousel-dot').forEach(dot=>{
+      dot.addEventListener('click', ()=>{ carouselIndex = Number(dot.dataset.idx); updateCarouselPosition(); });
+    });
+
+    const showArrows = carouselItems.length > 1;
+    prevBtn.classList.toggle('hidden', !showArrows);
+    nextBtn.classList.toggle('hidden', !showArrows);
+
+    updateCarouselPosition();
+  }
+
+  function updateCarouselPosition(){
+    const track = document.getElementById('modal-carousel-track');
+    track.style.transform = `translateX(-${carouselIndex * 100}%)`;
+    document.querySelectorAll('#modal-carousel-dots .carousel-dot').forEach((dot,i)=>{
+      dot.classList.toggle('active', i === carouselIndex);
+    });
+    // pausa vídeos que não estão visíveis, garante que o visível esteja tocando
+    document.querySelectorAll('#modal-carousel-track video').forEach((v,i)=>{
+      if(i === carouselIndex){ v.play().catch(()=>{}); } else { v.pause(); }
+    });
+  }
+
+  document.getElementById('modal-carousel-prev').addEventListener('click', ()=>{
+    carouselIndex = (carouselIndex - 1 + carouselItems.length) % carouselItems.length;
+    updateCarouselPosition();
+  });
+  document.getElementById('modal-carousel-next').addEventListener('click', ()=>{
+    carouselIndex = (carouselIndex + 1) % carouselItems.length;
+    updateCarouselPosition();
+  });
+
+  // suporte a arrastar (swipe) no celular
+  (function(){
+    const track = document.getElementById('modal-carousel-track');
+    let startX = 0, isDragging = false;
+    track.addEventListener('touchstart', (e)=>{
+      startX = e.touches[0].clientX;
+      isDragging = true;
+    }, { passive: true });
+    track.addEventListener('touchend', (e)=>{
+      if(!isDragging) return;
+      isDragging = false;
+      const deltaX = e.changedTouches[0].clientX - startX;
+      if(Math.abs(deltaX) < 40 || carouselItems.length <= 1) return;
+      if(deltaX < 0){ carouselIndex = (carouselIndex + 1) % carouselItems.length; }
+      else { carouselIndex = (carouselIndex - 1 + carouselItems.length) % carouselItems.length; }
+      updateCarouselPosition();
+    }, { passive: true });
+  })();
+
+  window.hlOpenLightbox = function(){
+    const item = carouselItems[carouselIndex];
+    if(!item || (item.type !== 'video' && item.type !== 'gif')) return;
+    const lbVideo = document.getElementById('lightbox-video');
+    const lbGif = document.getElementById('lightbox-gif');
+    if(item.type === 'video'){
+      lbGif.style.display = 'none'; lbGif.removeAttribute('src');
+      lbVideo.src = item.url;
+      lbVideo.style.display = 'block';
+      lbVideo.play().catch(()=>{});
+    } else {
+      lbVideo.style.display = 'none'; lbVideo.pause(); lbVideo.removeAttribute('src');
+      lbGif.src = item.url;
+      lbGif.style.display = 'block';
+    }
+    document.getElementById('video-lightbox').classList.add('open');
+  };
+  function closeLightbox(){
+    document.getElementById('video-lightbox').classList.remove('open');
+    const lbVideo = document.getElementById('lightbox-video');
+    lbVideo.pause();
+  }
+  document.getElementById('lightbox-close-btn').addEventListener('click', closeLightbox);
+  document.getElementById('video-lightbox').addEventListener('click', (e)=>{
+    if(e.target.id === 'video-lightbox') closeLightbox();
+  });
+
   function openProductModal(code){
     const p = PRODUCTS.find(p=>p.code===code);
     if(!p) return;
-    const modalImg = document.getElementById('modal-img');
-    const modalVideo = document.getElementById('modal-video');
-    const modalGif = document.getElementById('modal-video-gif');
-    modalVideo.style.display = 'none'; modalVideo.pause(); modalVideo.removeAttribute('src');
-    modalGif.style.display = 'none'; modalGif.removeAttribute('src');
-    modalImg.style.display = 'flex';
 
+    // monta a lista de mídias: vídeo/gif primeiro (mostra o movimento), depois foto de capa, depois galeria
+    carouselItems = [];
     if(p.video){
       const isGif = /\.gif($|\?)/i.test(p.video);
-      if(isGif){
-        modalGif.src = p.video;
-        modalGif.style.display = 'block';
-        modalImg.style.display = 'none';
-      } else {
-        modalVideo.src = p.video;
-        modalVideo.style.display = 'block';
-        modalImg.style.display = 'none';
-        modalVideo.play().catch(()=>{});
-      }
-    } else {
-      modalImg.style.backgroundImage = p.image ? `url('${p.image.replace(/'/g,"")}')` : '';
-      modalImg.textContent = p.image ? '' : 'sem imagem';
+      carouselItems.push({ type: isGif ? 'gif' : 'video', url: p.video });
     }
+    const allPhotos = [p.image, ...(p.gallery || [])].filter(Boolean);
+    allPhotos.forEach(url=>carouselItems.push({ type:'image', url }));
+    if(carouselItems.length === 0) carouselItems.push({ type:'empty' });
+    carouselIndex = 0;
+    renderCarousel();
 
     document.getElementById('modal-tags').innerHTML = tagsHtml(p);
     document.getElementById('modal-name').textContent = p.name;
@@ -1283,19 +1487,6 @@
     else { descEl.style.display = 'none'; }
     document.getElementById('modal-public-price').textContent = p.publicPrice!=null ? fmtMoney(p.publicPrice) : fmtMoney(p.price);
     document.getElementById('modal-consignado-wrap').style.display = 'none';
-
-    // galeria de fotos secundárias
-    const galleryStrip = document.getElementById('modal-gallery-strip');
-    const allPhotos = [p.image, ...(p.gallery || [])].filter(Boolean);
-    if(allPhotos.length > 1 && !p.video){
-      galleryStrip.style.display = 'flex';
-      galleryStrip.innerHTML = allPhotos.map((url, i)=>`
-        <div class="modal-thumb ${i===0?'active':''}" style="background-image:url('${url.replace(/'/g,"")}')" onclick="window.hlModalThumbClick(this,'${url.replace(/'/g,"")}')"></div>
-      `).join('');
-    } else {
-      galleryStrip.style.display = 'none';
-      galleryStrip.innerHTML = '';
-    }
 
     // formulário de pedido
     const colors = p.colors || [];
@@ -1319,17 +1510,10 @@
   }
   function closeProductModal(){
     document.getElementById('product-modal').classList.remove('open');
-    const modalVideo = document.getElementById('modal-video');
-    modalVideo.pause();
+    document.querySelectorAll('#modal-carousel-track video').forEach(v=>v.pause());
+    closeLightbox();
   }
   window.hlOpenProduct = openProductModal;
-  window.hlModalThumbClick = function(el, url){
-    const modalImg = document.getElementById('modal-img');
-    modalImg.style.backgroundImage = `url('${url}')`;
-    modalImg.textContent = '';
-    document.querySelectorAll('#modal-gallery-strip .modal-thumb').forEach(t=>t.classList.remove('active'));
-    el.classList.add('active');
-  };
   document.getElementById('modal-close-btn').addEventListener('click', closeProductModal);
   document.getElementById('product-modal').addEventListener('click', (e)=>{
     if(e.target.id === 'product-modal') closeProductModal();
@@ -1749,7 +1933,11 @@
     const grid = document.getElementById('consig-grid');
     if(!grid) return;
     renderTopSellers('consig-top-sellers-wrap','consig-top-sellers','consig-top-sellers-more-wrap','consig-top-sellers-more','consignado');
-    const active = PRODUCTS.filter(p => p.active !== false);
+    const active = PRODUCTS.filter(p => p.active !== false).filter(p=>matchesSearch(p, consigSearchQuery));
+    if(active.length === 0){
+      grid.innerHTML = `<div class="empty"><div class="glyph">◇</div>Nenhum produto encontrado${consigSearchQuery ? ' para "'+consigSearchQuery+'"' : ''}.</div>`;
+      return;
+    }
     grid.innerHTML = active.map(p=>{
       const colors = p.colors || [];
       const colorsHtml = colors.length
@@ -1784,6 +1972,10 @@
       </div>`;
     }).join('');
   }
+  document.getElementById('consig-search').addEventListener('input', (e)=>{
+    consigSearchQuery = e.target.value.trim();
+    renderConsignadoCatalog();
+  });
 
   // ---------- CARRINHO DE REPOSIÇÃO ----------
   let reposicaoCart = [];
@@ -2097,7 +2289,10 @@
       editingProductCode = p.code;
       pendingCategories = [...getCategories(p)];
       document.getElementById('p-code').value = p.code;
-      document.getElementById('p-code').disabled = true;
+      document.getElementById('p-code').disabled = false;
+      const detectedPrefix = (p.code || '').match(/^[A-Z]+/);
+      const prefixSelect = document.getElementById('p-prefix');
+      prefixSelect.value = detectedPrefix && [...prefixSelect.options].some(o=>o.value===detectedPrefix[0]) ? detectedPrefix[0] : '';
       document.getElementById('p-name').value = p.name || '';
       document.getElementById('p-public-price').value = p.publicPrice != null ? p.publicPrice : '';
       document.getElementById('p-price').value = p.price != null ? p.price : '';
@@ -2290,6 +2485,7 @@
     editingProductCode = null;
     pendingCategories = [];
     ['p-code','p-name','p-public-price','p-price','p-img','p-video','p-desc','p-first-color-name','p-first-color-stock','p-first-color-img'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('p-prefix').value = '';
     document.getElementById('p-ondemand').checked = false;
     document.getElementById('p-code').disabled = false;
     document.getElementById('p-form-title').textContent = 'Novo produto';
@@ -2301,6 +2497,26 @@
   document.getElementById('p-cancel-edit-btn').addEventListener('click', ()=>{
     resetProductForm();
     document.getElementById('p-msg').innerHTML = '';
+  });
+
+  function nextCodeForPrefix(prefix){
+    let maxNum = 0;
+    PRODUCTS.forEach(p=>{
+      if(p.code && p.code.startsWith(prefix)){
+        const numPart = p.code.slice(prefix.length);
+        const n = parseInt(numPart, 10);
+        if(!isNaN(n) && n > maxNum) maxNum = n;
+      }
+    });
+    return prefix + String(maxNum + 1).padStart(4, '0');
+  }
+  document.getElementById('p-prefix').addEventListener('change', ()=>{
+    const prefix = document.getElementById('p-prefix').value;
+    if(!prefix) return;
+    // só preenche automaticamente ao cadastrar um produto novo, sem sobrescrever ao editar
+    if(!editingProductCode){
+      document.getElementById('p-code').value = nextCodeForPrefix(prefix);
+    }
   });
 
   document.getElementById('p-add-btn').addEventListener('click', async ()=>{
@@ -2320,6 +2536,31 @@
     if(editingProductCode){
       const p = PRODUCTS.find(p=>p.code===editingProductCode);
       if(!p){ msg.innerHTML = '<div class="msg err">Produto não encontrado (pode ter sido removido).</div>'; return; }
+
+      const codeChanged = code !== editingProductCode;
+      if(codeChanged && PRODUCTS.some(other=>other.code===code)){
+        msg.innerHTML = '<div class="msg err">Já existe outro produto com esse código.</div>';
+        return;
+      }
+
+      if(codeChanged){
+        // atualiza em cascata todos os registros que referenciam o código antigo, pra não quebrar nada
+        const oldCode = editingProductCode;
+        ENTREGAS = await getJSON('entregas', ENTREGAS);
+        DEVOLUCOES = await getJSON('devolucoes', DEVOLUCOES);
+        ACERTOS = await getJSON('acertos', ACERTOS);
+        PEDIDOS = await getJSON('pedidos', PEDIDOS);
+        ENTREGAS.forEach(e=>{ if(e.productCode===oldCode) e.productCode = code; });
+        DEVOLUCOES.forEach(d=>{ if(d.productCode===oldCode) d.productCode = code; });
+        ACERTOS.forEach(a=>{ if(a.productCode===oldCode) a.productCode = code; });
+        PEDIDOS.forEach(r=>{ if(r.productCode===oldCode) r.productCode = code; });
+        await setJSON('entregas', ENTREGAS);
+        await setJSON('devolucoes', DEVOLUCOES);
+        await setJSON('acertos', ACERTOS);
+        await setJSON('pedidos', PEDIDOS);
+        p.code = code;
+      }
+
       p.name = name;
       p.categories = [...pendingCategories];
       delete p.category;
@@ -2330,7 +2571,9 @@
       p.description = description;
       p.onDemand = onDemand;
       await setJSON('products', PRODUCTS);
-      msg.innerHTML = '<div class="msg ok">Alterações salvas.</div>';
+      msg.innerHTML = codeChanged
+        ? '<div class="msg ok">Alterações salvas — código atualizado em todos os registros vinculados (entregas, devoluções, acertos e pedidos).</div>'
+        : '<div class="msg ok">Alterações salvas.</div>';
       resetProductForm();
       refreshAdminSelects(); renderAdminLists(); renderPortfolio();
       return;
