@@ -231,6 +231,16 @@
     text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:8px;font-family:'IBM Plex Mono';
   }
   #portal-root .floating-cart-link:hover{border-color:var(--teal);}
+
+  /* --- documentos --- */
+  #portal-root .doc-card{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:8px;
+  }
+  #portal-root .doc-card .doc-info{display:flex;align-items:center;gap:10px;min-width:0;}
+  #portal-root .doc-card .doc-icon{font-size:20px;flex-shrink:0;}
+  #portal-root .doc-card .doc-title{font-size:13px;font-weight:600;}
+  #portal-root .doc-card .doc-meta{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono';margin-top:2px;}
   @media(max-width:900px){
     #portal-root #floating-cart{display:none !important;}
   }
@@ -672,6 +682,11 @@
         <h3 style="margin-bottom:12px;font-size:16px;">Histórico de movimentações</h3>
         <div id="client-history"></div>
 
+        <div class="divider"></div>
+        <h3 style="margin-bottom:4px;font-size:16px;">Meus documentos</h3>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:16px;">Contrato assinado e comprovantes de entrega, devolução e acerto.</p>
+        <div id="client-documents"></div>
+
         <div class="divider" id="consig-catalog-section" style="scroll-margin-top:20px;"></div>
         <h3 style="margin-bottom:4px;font-size:16px;">Catálogo (preço de repasse)</h3>
         <p style="color:var(--muted);font-size:12px;margin-bottom:16px;">Seu preço combinado em contrato ao lado do preço praticado ao público — veja sua margem em cada item. Toque numa cor para adicionar ao carrinho de reposição. Não fica visível ao público em geral.</p>
@@ -742,16 +757,26 @@
           <button data-admin-tab="acertos">Lançar acerto</button>
           <button data-admin-tab="pedidos">Pedidos de reposição <span id="pedidos-badge" class="badge pendente" style="display:none;margin-left:4px;">0</span></button>
           <button data-admin-tab="relatorio">Relatório</button>
+          <button data-admin-tab="documentos">Documentos</button>
         </div>
 
         <!-- PRODUTOS -->
         <div class="admin-tab" data-tab="produtos">
           <div class="panel" style="margin-bottom:20px;">
-            <h3 style="font-size:14px;margin-bottom:14px;">Novo produto</h3>
+            <h3 style="font-size:14px;margin-bottom:14px;" id="p-form-title">Novo produto</h3>
             <div class="row">
               <div class="field"><label>Código</label><input id="p-code" placeholder="P006"></div>
               <div class="field" style="flex:2;"><label>Nome</label><input id="p-name" placeholder="Chaveiro 3D Foguete"></div>
-              <div class="field"><label>Categoria</label><input id="p-cat" placeholder="Chaveiro 3D"></div>
+            </div>
+            <div class="field">
+              <label>Categorias (filtros) — clique numa existente ou digite uma nova</label>
+              <div id="p-cat-selected" class="color-chips" style="margin-bottom:8px;"></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <input type="text" id="p-cat-input" placeholder="Ex.: Chaveiro 3D" list="known-categories-list" style="flex:1;min-width:160px;">
+                <button type="button" id="p-cat-add-btn" class="btn secondary" style="padding:8px 14px;font-size:12px;">+ Adicionar categoria</button>
+                <datalist id="known-categories-list"></datalist>
+              </div>
+              <div id="p-cat-known-list" style="margin-top:8px;"></div>
             </div>
             <div class="row">
               <div class="field"><label>Preço ao público (R$)</label><input id="p-public-price" type="number" step="0.01" placeholder="25.00"></div>
@@ -770,8 +795,19 @@
                 Item personalizado feito só sob encomenda (sem controle de estoque, sempre aparece como "Sob encomenda")
               </label>
             </div>
+            <div id="p-first-color-wrap">
+              <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-family:'IBM Plex Mono';margin:10px 0 6px 0;">Primeira cor (opcional — dá pra adicionar mais depois)</div>
+              <div class="row">
+                <div class="field"><label>Nome da cor</label><input id="p-first-color-name" placeholder="Azul"></div>
+                <div class="field"><label>Estoque inicial</label><input id="p-first-color-stock" type="number" min="0" placeholder="10"></div>
+                <div class="field" style="flex:2;"><label>URL da foto desta cor (opcional)</label><input id="p-first-color-img" placeholder="https://..."></div>
+              </div>
+            </div>
             <div id="p-msg"></div>
-            <button class="btn" id="p-add-btn">Adicionar produto</button>
+            <div style="display:flex;gap:8px;">
+              <button class="btn" id="p-add-btn">Adicionar produto</button>
+              <button class="btn secondary" id="p-cancel-edit-btn" style="display:none;">Cancelar edição</button>
+            </div>
           </div>
           <div class="panel"><h3 style="font-size:14px;margin-bottom:8px;">Catálogo atual</h3><div id="p-list"></div></div>
         </div>
@@ -892,6 +928,36 @@
           </div>
         </div>
 
+        <!-- DOCUMENTOS -->
+        <div class="admin-tab" data-tab="documentos" style="display:none;">
+          <div class="panel" style="margin-bottom:20px;">
+            <h3 style="font-size:14px;margin-bottom:6px;">Adicionar documento</h3>
+            <p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Cole o link do arquivo (Google Drive com acesso público, Supabase Storage, etc.). O parceiro vê isso na área dele.</p>
+            <div class="row">
+              <div class="field"><label>Lojista</label><select id="doc-client"></select></div>
+              <div class="field"><label>Tipo</label>
+                <select id="doc-type">
+                  <option>Contrato</option>
+                  <option>Comprovante de Entrega</option>
+                  <option>Comprovante de Devolução</option>
+                  <option>Comprovante de Acerto</option>
+                  <option>Outro</option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <div class="field" style="flex:2;"><label>Título / descrição</label><input id="doc-title" placeholder="Ex.: Contrato assinado - Março/2026"></div>
+              <div class="field"><label>Data</label><input id="doc-date" type="date"></div>
+            </div>
+            <div class="row">
+              <div class="field" style="flex:1;"><label>URL do arquivo</label><input id="doc-url" placeholder="https://..."></div>
+            </div>
+            <div id="doc-msg"></div>
+            <button class="btn" id="doc-add-btn">Adicionar documento</button>
+          </div>
+          <div class="panel"><h3 style="font-size:14px;margin-bottom:8px;">Documentos cadastrados</h3><div id="doc-list"></div></div>
+        </div>
+
         <button class="btn secondary" id="admin-logout-btn" style="margin-top:24px;">Sair do modo administrador</button>
       </div>
     </section>
@@ -916,7 +982,7 @@
       <img id="modal-video-gif" style="display:none;width:100%;height:200px;object-fit:cover;background:#000;">
       <div id="modal-gallery-strip" style="display:none;"></div>
       <div class="body">
-        <span class="tag teal" id="modal-tag">Categoria</span>
+        <div id="modal-tags" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;"></div>
         <h3 id="modal-name" style="font-family:'Space Grotesk';font-size:17px;margin-bottom:4px;">—</h3>
         <div class="code" id="modal-code" style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono';">—</div>
         <div id="modal-description" style="color:var(--muted);font-size:12px;margin-top:8px;line-height:1.5;display:none;"></div>
@@ -959,9 +1025,18 @@
   const todayISO = () => new Date().toISOString().slice(0,10);
   const fmtDate = iso => { if(!iso) return '—'; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; };
 
-  let PRODUCTS = [], CLIENTS = [], ENTREGAS = [], DEVOLUCOES = [], ACERTOS = [], PEDIDOS = [];
+  let PRODUCTS = [], CLIENTS = [], ENTREGAS = [], DEVOLUCOES = [], ACERTOS = [], PEDIDOS = [], DOCUMENTS = [];
   let currentClientCode = null;
   let modalSelectedColor = null;
+  let KNOWN_CATEGORIES = [];
+  let pendingCategories = [];
+  let editingProductCode = null;
+
+  function getCategories(p){
+    if(p.categories && p.categories.length) return p.categories;
+    if(p.category) return [p.category];
+    return [];
+  }
 
   async function loadAll(){
     PRODUCTS = await getJSON('products', []);
@@ -970,19 +1045,30 @@
     DEVOLUCOES = await getJSON('devolucoes', []);
     ACERTOS = await getJSON('acertos', []);
     PEDIDOS = await getJSON('pedidos', []);
+    KNOWN_CATEGORIES = await getJSON('categories', []);
+    DOCUMENTS = await getJSON('documents', []);
 
     if(PRODUCTS.length === 0 && CLIENTS.length === 0){
       // seed inicial de demonstração, consistente com o contrato e a planilha
       PRODUCTS = [
-        {code:'P001', name:'Chaveiro 3D Personagem', category:'Chaveiro 3D', price:8.00, image:''},
-        {code:'P002', name:'Chaveiro 3D Nome Personalizado', category:'Chaveiro 3D', price:9.00, image:''},
-        {code:'P003', name:'Fidget Pop Simples', category:'Fidget', price:6.00, image:''},
-        {code:'P004', name:'Fidget Slider', category:'Fidget', price:7.50, image:''},
-        {code:'P005', name:'Brinquedo Sensorial Textura', category:'Sensorial', price:10.00, image:''},
+        {code:'P001', name:'Chaveiro 3D Personagem', categories:['Chaveiro 3D'], price:8.00, image:''},
+        {code:'P002', name:'Chaveiro 3D Nome Personalizado', categories:['Chaveiro 3D'], price:9.00, image:''},
+        {code:'P003', name:'Fidget Pop Simples', categories:['Fidget'], price:6.00, image:''},
+        {code:'P004', name:'Fidget Slider', categories:['Fidget'], price:7.50, image:''},
+        {code:'P005', name:'Brinquedo Sensorial Textura', categories:['Sensorial'], price:10.00, image:''},
       ];
       CLIENTS = [{code:'C001', name:'Maria Loja de Presentes', contact:'(34) 90000-0000'}];
       ENTREGAS = [{id:'ENT-001', date:'2026-03-03', clientCode:'C001', productCode:'P001', qty:10}];
+      KNOWN_CATEGORIES = ['Chaveiro 3D','Fidget','Sensorial'];
       await saveAll();
+      await setJSON('categories', KNOWN_CATEGORIES);
+    }
+    if(KNOWN_CATEGORIES.length === 0){
+      // reconstrói a lista a partir dos produtos já cadastrados, se ainda não existir
+      const set = new Set();
+      PRODUCTS.forEach(p=>getCategories(p).forEach(c=>set.add(c)));
+      KNOWN_CATEGORIES = [...set];
+      if(KNOWN_CATEGORIES.length) await setJSON('categories', KNOWN_CATEGORIES);
     }
   }
   async function refreshData(){
@@ -992,6 +1078,8 @@
     DEVOLUCOES = await getJSON('devolucoes', DEVOLUCOES);
     ACERTOS = await getJSON('acertos', ACERTOS);
     PEDIDOS = await getJSON('pedidos', PEDIDOS);
+    KNOWN_CATEGORIES = await getJSON('categories', KNOWN_CATEGORIES);
+    DOCUMENTS = await getJSON('documents', DOCUMENTS);
   }
   async function saveAll(){
     await setJSON('products', PRODUCTS);
@@ -1031,9 +1119,23 @@
   // ---------- PORTFÓLIO ----------
   let currentCategoryFilter = 'Todos';
   const tagClass = { 'Chaveiro 3D':'teal', 'Fidget':'coral', 'Sensorial':'mustard' };
+  const TAG_PALETTE = ['teal','coral','mustard'];
+  function tagColorFor(cat){
+    if(tagClass[cat]) return tagClass[cat];
+    let hash = 0;
+    for(let i=0;i<cat.length;i++) hash = (hash*31 + cat.charCodeAt(i)) >>> 0;
+    return TAG_PALETTE[hash % TAG_PALETTE.length];
+  }
+  function tagsHtml(p){
+    const cats = getCategories(p);
+    if(cats.length === 0) return `<span class="tag teal">Produto</span>`;
+    return cats.map(c=>`<span class="tag ${tagColorFor(c)}">${c}</span>`).join(' ');
+  }
 
   function renderPortfolioFilters(active){
-    const cats = ['Todos', ...Array.from(new Set(active.map(p=>p.category).filter(Boolean)))];
+    const set = new Set();
+    active.forEach(p=>getCategories(p).forEach(c=>set.add(c)));
+    const cats = ['Todos', ...Array.from(set)];
     if(!cats.includes(currentCategoryFilter)) currentCategoryFilter = 'Todos';
     document.getElementById('portfolio-filters').innerHTML = cats.map(c=>`
       <button data-cat="${c}" class="${c===currentCategoryFilter?'active':''}">${c}</button>
@@ -1093,7 +1195,7 @@
     const active = PRODUCTS.filter(p => p.active !== false);
     renderPortfolioFilters(active);
     const topCodes = renderTopSellers('top-sellers-wrap','top-sellers','top-sellers-more-wrap','top-sellers-more') || [];
-    const shown = currentCategoryFilter==='Todos' ? active : active.filter(p=>p.category===currentCategoryFilter);
+    const shown = currentCategoryFilter==='Todos' ? active : active.filter(p=>getCategories(p).includes(currentCategoryFilter));
     if(shown.length === 0){ empty.style.display='block'; grid.style.display='none'; return; }
     empty.style.display='none'; grid.style.display='block';
     // no filtro "Todos" os mais vendidos já aparecem em destaque acima, então não repete na lista
@@ -1109,7 +1211,7 @@
         <div class="portfolio-list-info">
           <h4>${p.name}${p.video ? ' <span class="video-badge" style="position:static;display:inline-flex;">▶</span>' : ''}</h4>
           <div class="portfolio-list-meta">
-            <span class="tag ${tagClass[p.category] || 'teal'}">${p.category || 'Produto'}</span>
+            ${tagsHtml(p)}
             ${p.onDemand ? '<span class="badge acerto">Sob encomenda</span>' : ''}
             ${colorsHtml}
           </div>
@@ -1166,8 +1268,7 @@
       modalImg.textContent = p.image ? '' : 'sem imagem';
     }
 
-    document.getElementById('modal-tag').textContent = p.category || 'Produto';
-    document.getElementById('modal-tag').className = `tag ${tagClass[p.category] || 'teal'}`;
+    document.getElementById('modal-tags').innerHTML = tagsHtml(p);
     document.getElementById('modal-name').textContent = p.name;
     document.getElementById('modal-code').textContent = p.code;
     const descEl = document.getElementById('modal-description');
@@ -1432,6 +1533,57 @@
     window.print();
   });
 
+  // ---------- DOCUMENTOS ----------
+  const docIcon = { 'Contrato':'📄', 'Comprovante de Entrega':'📦', 'Comprovante de Devolução':'↩️', 'Comprovante de Acerto':'💰', 'Outro':'📎' };
+
+  function renderDocList(){
+    const list = document.getElementById('doc-list');
+    if(!list) return;
+    if(DOCUMENTS.length === 0){ list.innerHTML = `<div class="empty">Nenhum documento cadastrado.</div>`; return; }
+    list.innerHTML = DOCUMENTS.slice().reverse().map(d=>{
+      const client = CLIENTS.find(c=>c.code===d.clientCode);
+      const clientLabel = client ? `${client.name} (${client.code})` : d.clientCode;
+      return `
+      <div class="doc-card">
+        <div class="doc-info">
+          <span class="doc-icon">${docIcon[d.type] || '📎'}</span>
+          <div>
+            <div class="doc-title">${d.title || d.type}</div>
+            <div class="doc-meta">${clientLabel} · ${d.type} · ${fmtDate(d.date)}</div>
+          </div>
+        </div>
+        <span class="actions">
+          <a href="${d.url}" target="_blank" rel="noopener" class="btn secondary" style="padding:6px 12px;font-size:11px;">Abrir</a>
+          <button data-del-doc="${d.id}">Remover</button>
+        </span>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('[data-del-doc]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      DOCUMENTS = await getJSON('documents', DOCUMENTS);
+      DOCUMENTS = DOCUMENTS.filter(d=>d.id!==btn.dataset.delDoc);
+      await setJSON('documents', DOCUMENTS);
+      renderDocList();
+    }));
+  }
+
+  document.getElementById('doc-add-btn').addEventListener('click', async ()=>{
+    const clientCode = document.getElementById('doc-client').value;
+    const type = document.getElementById('doc-type').value;
+    const title = document.getElementById('doc-title').value.trim();
+    const date = document.getElementById('doc-date').value || todayISO();
+    const url = document.getElementById('doc-url').value.trim();
+    const msg = document.getElementById('doc-msg');
+    if(!clientCode || !url){ msg.innerHTML = '<div class="msg err">Escolha o lojista e cole a URL do arquivo.</div>'; return; }
+    DOCUMENTS = await getJSON('documents', DOCUMENTS);
+    const id = 'DOC-' + String(DOCUMENTS.length+1).padStart(3,'0');
+    DOCUMENTS.push({ id, clientCode, type, title, url, date });
+    await setJSON('documents', DOCUMENTS);
+    msg.innerHTML = '<div class="msg ok">Documento adicionado.</div>';
+    document.getElementById('doc-title').value = '';
+    document.getElementById('doc-url').value = '';
+    renderDocList();
+  });
+
   function whatsappLink(req){
     const client = CLIENTS.find(c=>c.code===req.clientCode);
     const clientLabel = client ? `${client.name} (${client.code})` : req.clientCode;
@@ -1508,6 +1660,28 @@
 
     renderConsignadoCatalog();
     renderCart();
+    renderClientDocuments(client.code);
+  }
+
+  function renderClientDocuments(code){
+    const wrap = document.getElementById('client-documents');
+    if(!wrap) return;
+    const docs = DOCUMENTS.filter(d=>d.clientCode===code).slice().reverse();
+    if(docs.length === 0){
+      wrap.innerHTML = `<div class="empty"><div class="glyph">◇</div>Nenhum documento disponível ainda.</div>`;
+      return;
+    }
+    wrap.innerHTML = docs.map(d=>`
+      <div class="doc-card">
+        <div class="doc-info">
+          <span class="doc-icon">${docIcon[d.type] || '📎'}</span>
+          <div>
+            <div class="doc-title">${d.title || d.type}</div>
+            <div class="doc-meta">${d.type} · ${fmtDate(d.date)}</div>
+          </div>
+        </div>
+        <a href="${d.url}" target="_blank" rel="noopener" class="btn secondary" style="padding:7px 14px;font-size:11px;">Baixar / Abrir</a>
+      </div>`).join('');
   }
 
   function renderConsignadoCatalog(){
@@ -1531,7 +1705,7 @@
       <div class="card">
         <div class="img" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem imagem'}</div>
         <div class="body">
-          <span class="tag ${tagClass[p.category] || 'teal'}">${p.category || 'Produto'}</span>
+          ${tagsHtml(p)}
           ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
           <h3>${p.name}</h3>
           <div class="code">${p.code}</div>
@@ -1768,6 +1942,7 @@
     const productOpts = PRODUCTS.map(p=>`<option value="${p.code}">${p.code} — ${p.name}</option>`).join('');
     ['e-client','d-client','a-client'].forEach(id=>document.getElementById(id).innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>');
     document.getElementById('rep-client').innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>';
+    document.getElementById('doc-client').innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>';
     ['e-product','d-product','a-product'].forEach(id=>document.getElementById(id).innerHTML = productOpts || '<option value="">Cadastre um produto primeiro</option>');
     document.getElementById('e-date').value = todayISO();
     document.getElementById('d-date').value = todayISO();
@@ -1775,6 +1950,7 @@
     updateColorSelect('e-product','e-color');
     updateColorSelect('d-product','d-color');
     updateColorSelect('a-product','a-color');
+    renderCategoryPicker();
   }
 
   function updateColorSelect(productSelectId, colorSelectId, opts){
@@ -1799,6 +1975,7 @@
   });
 
   function renderAdminLists(){
+    renderDocList();
     document.getElementById('p-list').innerHTML = PRODUCTS.length ? PRODUCTS.map(p=>{
       const colors = p.colors || [];
       const gallery = p.gallery || [];
@@ -1814,11 +1991,13 @@
           <button data-del-gallery="${p.code}|${gi}" title="Remover esta foto">✕</button>
         </span>`).join('');
       const priceLine = `Público: ${p.publicPrice!=null ? fmtMoney(p.publicPrice) : '—'} · Consignado: ${fmtMoney(p.price)}`;
+      const catsLine = getCategories(p).join(', ') || 'sem categoria';
       return `
       <div class="list-row" style="flex-direction:column;align-items:stretch;gap:8px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-          <span class="mono">${p.code} — ${p.name} (${p.category}) — ${priceLine}${p.video ? ' · 🎬' : ''}${p.onDemand ? ' · <span class="badge acerto">Sob encomenda</span>' : ''}</span>
+          <span class="mono">${p.code} — ${p.name} (${catsLine}) — ${priceLine}${p.video ? ' · 🎬' : ''}${p.onDemand ? ' · <span class="badge acerto">Sob encomenda</span>' : ''}</span>
           <span class="actions">
+            <button data-edit-product="${p.code}">Editar</button>
             <button data-toggle-ondemand="${p.code}">${p.onDemand ? 'Desmarcar sob encomenda' : 'Marcar sob encomenda'}</button>
             <button data-del-product="${p.code}">Remover produto</button>
           </span>
@@ -1849,6 +2028,29 @@
       p.onDemand = !p.onDemand;
       await setJSON('products', PRODUCTS);
       renderAdminLists(); renderPortfolio();
+    }));
+
+    root.querySelectorAll('[data-edit-product]').forEach(btn=>btn.addEventListener('click', ()=>{
+      const p = PRODUCTS.find(p=>p.code===btn.dataset.editProduct);
+      if(!p) return;
+      editingProductCode = p.code;
+      pendingCategories = [...getCategories(p)];
+      document.getElementById('p-code').value = p.code;
+      document.getElementById('p-code').disabled = true;
+      document.getElementById('p-name').value = p.name || '';
+      document.getElementById('p-public-price').value = p.publicPrice != null ? p.publicPrice : '';
+      document.getElementById('p-price').value = p.price != null ? p.price : '';
+      document.getElementById('p-img').value = p.image || '';
+      document.getElementById('p-video').value = p.video || '';
+      document.getElementById('p-desc').value = p.description || '';
+      document.getElementById('p-ondemand').checked = !!p.onDemand;
+      document.getElementById('p-first-color-wrap').style.display = 'none';
+      document.getElementById('p-form-title').textContent = `Editando: ${p.code} — ${p.name}`;
+      document.getElementById('p-add-btn').textContent = 'Salvar alterações';
+      document.getElementById('p-cancel-edit-btn').style.display = 'inline-block';
+      document.getElementById('p-msg').innerHTML = '';
+      renderCategoryPicker();
+      document.querySelector('.admin-tab[data-tab="produtos"] .panel').scrollIntoView({ behavior:'smooth', block:'start' });
     }));
 
     root.querySelectorAll('[data-add-gallery]').forEach(btn=>btn.addEventListener('click', async ()=>{
@@ -1982,10 +2184,67 @@
     }));
   }
 
+  // ---------- seletor de categorias ----------
+  function renderCategoryPicker(){
+    const selectedWrap = document.getElementById('p-cat-selected');
+    selectedWrap.innerHTML = pendingCategories.length
+      ? pendingCategories.map((c,i)=>`<span class="color-chip">${c}<button data-remove-pending-cat="${i}">✕</button></span>`).join('')
+      : `<span style="color:var(--muted);font-size:11px;">Nenhuma categoria selecionada ainda.</span>`;
+    selectedWrap.querySelectorAll('[data-remove-pending-cat]').forEach(btn=>btn.addEventListener('click', ()=>{
+      pendingCategories.splice(Number(btn.dataset.removePendingCat), 1);
+      renderCategoryPicker();
+    }));
+
+    document.getElementById('known-categories-list').innerHTML = KNOWN_CATEGORIES.map(c=>`<option value="${c}"></option>`).join('');
+
+    const knownList = document.getElementById('p-cat-known-list');
+    const notSelected = KNOWN_CATEGORIES.filter(c=>!pendingCategories.includes(c));
+    knownList.innerHTML = notSelected.length
+      ? `<div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-family:'IBM Plex Mono';text-transform:uppercase;">Categorias já usadas — clique pra adicionar</div>
+         <div class="color-chips">${notSelected.map(c=>`<span class="color-chip" style="cursor:pointer;" data-pick-known-cat="${c}">+ ${c}</span>`).join('')}</div>`
+      : '';
+    knownList.querySelectorAll('[data-pick-known-cat]').forEach(el=>el.addEventListener('click', ()=>{
+      pendingCategories.push(el.dataset.pickKnownCat);
+      renderCategoryPicker();
+    }));
+  }
+  async function addPendingCategory(){
+    const input = document.getElementById('p-cat-input');
+    const val = input.value.trim();
+    if(!val) return;
+    if(!pendingCategories.includes(val)) pendingCategories.push(val);
+    if(!KNOWN_CATEGORIES.includes(val)){
+      KNOWN_CATEGORIES.push(val);
+      await setJSON('categories', KNOWN_CATEGORIES);
+    }
+    input.value = '';
+    renderCategoryPicker();
+  }
+  document.getElementById('p-cat-add-btn').addEventListener('click', addPendingCategory);
+  document.getElementById('p-cat-input').addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){ e.preventDefault(); addPendingCategory(); }
+  });
+
+  function resetProductForm(){
+    editingProductCode = null;
+    pendingCategories = [];
+    ['p-code','p-name','p-public-price','p-price','p-img','p-video','p-desc','p-first-color-name','p-first-color-stock','p-first-color-img'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('p-ondemand').checked = false;
+    document.getElementById('p-code').disabled = false;
+    document.getElementById('p-form-title').textContent = 'Novo produto';
+    document.getElementById('p-add-btn').textContent = 'Adicionar produto';
+    document.getElementById('p-cancel-edit-btn').style.display = 'none';
+    document.getElementById('p-first-color-wrap').style.display = 'block';
+    renderCategoryPicker();
+  }
+  document.getElementById('p-cancel-edit-btn').addEventListener('click', ()=>{
+    resetProductForm();
+    document.getElementById('p-msg').innerHTML = '';
+  });
+
   document.getElementById('p-add-btn').addEventListener('click', async ()=>{
     const code = document.getElementById('p-code').value.trim().toUpperCase();
     const name = document.getElementById('p-name').value.trim();
-    const category = document.getElementById('p-cat').value.trim();
     const publicPrice = parseFloat(document.getElementById('p-public-price').value);
     const price = parseFloat(document.getElementById('p-price').value);
     const image = document.getElementById('p-img').value.trim();
@@ -1994,12 +2253,42 @@
     const onDemand = document.getElementById('p-ondemand').checked;
     const msg = document.getElementById('p-msg');
     if(!code || !name || isNaN(price)){ msg.innerHTML = '<div class="msg err">Preencha ao menos código, nome e valor consignado.</div>'; return; }
+
+    PRODUCTS = await getJSON('products', PRODUCTS);
+
+    if(editingProductCode){
+      const p = PRODUCTS.find(p=>p.code===editingProductCode);
+      if(!p){ msg.innerHTML = '<div class="msg err">Produto não encontrado (pode ter sido removido).</div>'; return; }
+      p.name = name;
+      p.categories = [...pendingCategories];
+      delete p.category;
+      p.publicPrice = isNaN(publicPrice) ? null : publicPrice;
+      p.price = price;
+      p.image = image;
+      p.video = video;
+      p.description = description;
+      p.onDemand = onDemand;
+      await setJSON('products', PRODUCTS);
+      msg.innerHTML = '<div class="msg ok">Alterações salvas.</div>';
+      resetProductForm();
+      refreshAdminSelects(); renderAdminLists(); renderPortfolio();
+      return;
+    }
+
     if(PRODUCTS.some(p=>p.code===code)){ msg.innerHTML = '<div class="msg err">Já existe um produto com esse código.</div>'; return; }
-    PRODUCTS.push({code, name, category, price, publicPrice: isNaN(publicPrice) ? null : publicPrice, image, video, description, onDemand, colors:[], gallery:[], active:true});
+    const colors = [];
+    const firstColorName = document.getElementById('p-first-color-name').value.trim();
+    if(firstColorName){
+      colors.push({
+        name: firstColorName,
+        stock: Math.max(0, parseInt(document.getElementById('p-first-color-stock').value) || 0),
+        image: document.getElementById('p-first-color-img').value.trim(),
+      });
+    }
+    PRODUCTS.push({code, name, categories:[...pendingCategories], price, publicPrice: isNaN(publicPrice) ? null : publicPrice, image, video, description, onDemand, colors, gallery:[], active:true});
     await setJSON('products', PRODUCTS);
     msg.innerHTML = '<div class="msg ok">Produto adicionado.</div>';
-    ['p-code','p-name','p-cat','p-public-price','p-price','p-img','p-video','p-desc'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('p-ondemand').checked = false;
+    resetProductForm();
     refreshAdminSelects(); renderAdminLists(); renderPortfolio();
   });
 
