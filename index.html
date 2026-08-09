@@ -950,7 +950,14 @@
               <div class="field"><label>Data</label><input id="doc-date" type="date"></div>
             </div>
             <div class="row">
-              <div class="field" style="flex:1;"><label>URL do arquivo</label><input id="doc-url" placeholder="https://..."></div>
+              <div class="field" style="flex:1;">
+                <label>Arquivo (PDF ou imagem) — fica privado no bucket</label>
+                <input type="file" id="doc-file" accept="application/pdf,image/*">
+              </div>
+            </div>
+            <p style="color:var(--muted);font-size:11px;margin:-6px 0 12px 0;">Ou, se preferir, cole um link já hospedado em vez de enviar um arquivo:</p>
+            <div class="row">
+              <div class="field" style="flex:1;"><label>URL alternativa (opcional)</label><input id="doc-url" placeholder="https://..."></div>
             </div>
             <div id="doc-msg"></div>
             <button class="btn" id="doc-add-btn">Adicionar documento</button>
@@ -1535,6 +1542,20 @@
 
   // ---------- DOCUMENTOS ----------
   const docIcon = { 'Contrato':'📄', 'Comprovante de Entrega':'📦', 'Comprovante de Devolução':'↩️', 'Comprovante de Acerto':'💰', 'Outro':'📎' };
+  const DOCS_BUCKET = 'documentos';
+
+  async function openDocument(doc){
+    if(doc.path){
+      try{
+        const { data, error } = await supabaseClient.storage.from(DOCS_BUCKET).createSignedUrl(doc.path, 60);
+        if(error || !data){ alert('Não foi possível abrir o arquivo agora. Tente novamente em instantes.'); return; }
+        window.open(data.signedUrl, '_blank', 'noopener');
+      }catch(e){ alert('Não foi possível abrir o arquivo agora. Tente novamente em instantes.'); }
+    } else if(doc.url){
+      window.open(doc.url, '_blank', 'noopener');
+    }
+  }
+  window.hlOpenDocument = openDocument;
 
   function renderDocList(){
     const list = document.getElementById('doc-list');
@@ -1549,17 +1570,25 @@
           <span class="doc-icon">${docIcon[d.type] || '📎'}</span>
           <div>
             <div class="doc-title">${d.title || d.type}</div>
-            <div class="doc-meta">${clientLabel} · ${d.type} · ${fmtDate(d.date)}</div>
+            <div class="doc-meta">${clientLabel} · ${d.type} · ${fmtDate(d.date)}${d.path ? ' · 🔒 privado' : ''}</div>
           </div>
         </div>
         <span class="actions">
-          <a href="${d.url}" target="_blank" rel="noopener" class="btn secondary" style="padding:6px 12px;font-size:11px;">Abrir</a>
+          <button data-open-doc="${d.id}" class="btn secondary" style="padding:6px 12px;font-size:11px;">Abrir</button>
           <button data-del-doc="${d.id}">Remover</button>
         </span>
       </div>`;
     }).join('');
+    list.querySelectorAll('[data-open-doc]').forEach(btn=>btn.addEventListener('click', ()=>{
+      const doc = DOCUMENTS.find(d=>d.id===btn.dataset.openDoc);
+      if(doc) openDocument(doc);
+    }));
     list.querySelectorAll('[data-del-doc]').forEach(btn=>btn.addEventListener('click', async ()=>{
       DOCUMENTS = await getJSON('documents', DOCUMENTS);
+      const doc = DOCUMENTS.find(d=>d.id===btn.dataset.delDoc);
+      if(doc && doc.path){
+        try{ await supabaseClient.storage.from(DOCS_BUCKET).remove([doc.path]); }catch(e){}
+      }
       DOCUMENTS = DOCUMENTS.filter(d=>d.id!==btn.dataset.delDoc);
       await setJSON('documents', DOCUMENTS);
       renderDocList();
@@ -1572,15 +1601,43 @@
     const title = document.getElementById('doc-title').value.trim();
     const date = document.getElementById('doc-date').value || todayISO();
     const url = document.getElementById('doc-url').value.trim();
+    const fileInput = document.getElementById('doc-file');
+    const file = fileInput.files[0];
     const msg = document.getElementById('doc-msg');
-    if(!clientCode || !url){ msg.innerHTML = '<div class="msg err">Escolha o lojista e cole a URL do arquivo.</div>'; return; }
+    if(!clientCode || (!url && !file)){ msg.innerHTML = '<div class="msg err">Escolha o lojista e envie um arquivo ou cole uma URL.</div>'; return; }
+
+    const btn = document.getElementById('doc-add-btn');
+    btn.disabled = true; btn.textContent = 'Enviando…';
+
+    let path = null;
+    if(file){
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      path = `${clientCode}/${Date.now()}_${safeName}`;
+      try{
+        const { error } = await supabaseClient.storage.from(DOCS_BUCKET).upload(path, file);
+        if(error){
+          msg.innerHTML = `<div class="msg err">Falha ao enviar o arquivo: ${error.message}</div>`;
+          btn.disabled = false; btn.textContent = 'Adicionar documento';
+          return;
+        }
+      }catch(e){
+        msg.innerHTML = '<div class="msg err">Falha ao enviar o arquivo. Confira se o bucket "documentos" foi criado.</div>';
+        btn.disabled = false; btn.textContent = 'Adicionar documento';
+        return;
+      }
+    }
+
     DOCUMENTS = await getJSON('documents', DOCUMENTS);
     const id = 'DOC-' + String(DOCUMENTS.length+1).padStart(3,'0');
-    DOCUMENTS.push({ id, clientCode, type, title, url, date });
+    const doc = { id, clientCode, type, title, date };
+    if(path) doc.path = path; else doc.url = url;
+    DOCUMENTS.push(doc);
     await setJSON('documents', DOCUMENTS);
     msg.innerHTML = '<div class="msg ok">Documento adicionado.</div>';
     document.getElementById('doc-title').value = '';
     document.getElementById('doc-url').value = '';
+    fileInput.value = '';
+    btn.disabled = false; btn.textContent = 'Adicionar documento';
     renderDocList();
   });
 
@@ -1680,8 +1737,12 @@
             <div class="doc-meta">${d.type} · ${fmtDate(d.date)}</div>
           </div>
         </div>
-        <a href="${d.url}" target="_blank" rel="noopener" class="btn secondary" style="padding:7px 14px;font-size:11px;">Baixar / Abrir</a>
+        <button data-open-client-doc="${d.id}" class="btn secondary" style="padding:7px 14px;font-size:11px;">Baixar / Abrir</button>
       </div>`).join('');
+    wrap.querySelectorAll('[data-open-client-doc]').forEach(btn=>btn.addEventListener('click', ()=>{
+      const doc = DOCUMENTS.find(d=>d.id===btn.dataset.openClientDoc);
+      if(doc) openDocument(doc);
+    }));
   }
 
   function renderConsignadoCatalog(){
