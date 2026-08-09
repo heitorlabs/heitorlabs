@@ -396,6 +396,43 @@
     #portal-root .portfolio-list-price{order:3;width:100%;text-align:left;margin-top:4px;}
   }
 
+  /* --- promoções: destaque chamativo --- */
+  @keyframes promo-glow{
+    0%,100%{box-shadow:0 0 0 1px rgba(242,121,74,.45), 0 4px 18px rgba(224,57,156,.18);}
+    50%{box-shadow:0 0 0 1.5px rgba(224,57,156,.65), 0 6px 24px rgba(242,121,74,.32);}
+  }
+  #portal-root .portfolio-list-row.on-sale{
+    border-color:transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,
+      linear-gradient(100deg,var(--coral),var(--magenta)) border-box;
+    border:1.5px solid transparent;animation:promo-glow 2.6s ease-in-out infinite;
+  }
+  #portal-root .portfolio-list-price.promo-price-block{display:flex;flex-direction:column;align-items:flex-end;gap:3px;}
+  #portal-root .promo-pct-badge{
+    background:linear-gradient(90deg,var(--coral),var(--magenta));color:#fff;font-size:10px;font-weight:700;
+    padding:2px 8px;border-radius:999px;font-family:'Space Grotesk';white-space:nowrap;
+  }
+  #portal-root .promo-old-price{text-decoration:line-through;color:var(--muted);font-size:10.5px;font-family:'IBM Plex Mono';}
+  #portal-root .promo-new-price{font-weight:800;color:var(--coral);font-size:17px;font-family:'Space Grotesk';}
+
+  #portal-root .carousel-card.promo-card{
+    border-color:transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,
+      linear-gradient(135deg,var(--coral),var(--magenta)) border-box;
+    border:1.5px solid transparent;animation:promo-glow 2.6s ease-in-out infinite;
+  }
+  #portal-root .promo-ribbon{
+    position:absolute;top:8px;left:8px;z-index:2;background:linear-gradient(90deg,var(--coral),var(--magenta));
+    color:#fff;font-family:'Space Grotesk';font-weight:800;font-size:11px;padding:3px 9px;border-radius:999px;
+    box-shadow:0 2px 10px rgba(224,57,156,.5);
+  }
+  #portal-root .promo-carousel-price{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
+  #portal-root .promo-carousel-price .promo-old-price{font-size:9.5px;}
+  #portal-root .promo-carousel-price .promo-new-price{font-size:13px;}
+  #portal-root .card.on-sale{
+    border-color:transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,
+      linear-gradient(100deg,var(--coral),var(--magenta)) border-box;
+    border:1.5px solid transparent;animation:promo-glow 2.6s ease-in-out infinite;position:relative;
+  }
+
   /* --- modal de pré-visualização --- */
   #portal-root .modal-backdrop{
     position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;
@@ -624,6 +661,11 @@
         <button class="btn whatsapp" id="public-cart-submit-btn" style="display:none;margin-top:10px;width:100%;justify-content:center;">Enviar pedido pelo WhatsApp</button>
       </div>
 
+      <div id="promo-wrap" style="display:none;">
+        <h3 style="margin-bottom:12px;font-size:14px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--coral);">🔥 Em promoção</h3>
+        <div class="carousel-row" id="promo-carousel"></div>
+      </div>
+
       <div id="top-sellers-wrap" style="display:none;">
         <h3 style="margin-bottom:12px;font-size:14px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Top 5 mais vendidos</h3>
         <div class="carousel-row" id="top-sellers"></div>
@@ -749,6 +791,11 @@
           <button class="btn" id="cart-submit-btn" style="display:none;margin-top:10px;">Enviar pedido de reposição</button>
         </div>
 
+        <div id="consig-promo-wrap" style="display:none;">
+          <h4 style="margin-bottom:10px;font-size:12px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--coral);">🔥 Em promoção</h4>
+          <div class="carousel-row" id="consig-promo-carousel"></div>
+        </div>
+
         <div id="consig-top-sellers-wrap" style="display:none;">
           <h4 style="margin-bottom:10px;font-size:12px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Top 5 mais vendidos</h4>
           <div class="carousel-row" id="consig-top-sellers"></div>
@@ -850,6 +897,10 @@
               <div class="field"><label>Preço consignado — repasse (R$)</label><input id="p-price" type="number" step="0.01" placeholder="8.00"></div>
             </div>
             <div class="row">
+              <div class="field"><label>🔥 Preço promocional (opcional)</label><input id="p-promo-price" type="number" step="0.01" placeholder="Ex.: 19.90"></div>
+            </div>
+            <p style="color:var(--muted);font-size:11px;margin:-8px 0 12px 0;">Preencher aqui um valor menor que o preço ao público coloca o item em destaque como promoção no site. Deixe em branco pra remover a promoção.</p>
+            <div class="row">
               <div class="field" style="flex:2;"><label>URL da imagem principal (opcional)</label><input id="p-img" placeholder="https://..."></div>
               <div class="field" style="flex:2;"><label>URL do vídeo/GIF (opcional)</label><input id="p-video" placeholder="https://... (.mp4 ou .gif)"></div>
             </div>
@@ -874,6 +925,27 @@
             <div style="display:flex;gap:8px;">
               <button class="btn" id="p-add-btn">Adicionar produto</button>
               <button class="btn secondary" id="p-cancel-edit-btn" style="display:none;">Cancelar edição</button>
+            </div>
+          </div>
+          <div class="panel" style="margin-bottom:20px;">
+            <h3 style="font-size:14px;margin-bottom:6px;">Ajuste de preços em massa</h3>
+            <p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Aumenta ou diminui um percentual sobre o preço de vários produtos de uma vez. Sempre gera uma prévia antes de aplicar.</p>
+            <div class="row">
+              <div class="field"><label>Percentual</label><input id="bulk-pct" type="number" step="0.1" placeholder="Ex.: 10 (aumenta 10%) ou -10 (diminui 10%)"></div>
+              <div class="field"><label>Aplicar em</label>
+                <select id="bulk-target">
+                  <option value="public">Preço ao público</option>
+                  <option value="price">Preço consignado (repasse)</option>
+                  <option value="both">Ambos</option>
+                </select>
+              </div>
+              <div class="field"><label>Categoria (opcional)</label><select id="bulk-category"><option value="">Todos os produtos</option></select></div>
+            </div>
+            <div id="bulk-preview"></div>
+            <div id="bulk-msg"></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn secondary" id="bulk-preview-btn">Pré-visualizar</button>
+              <button class="btn" id="bulk-apply-btn" style="display:none;">Confirmar e aplicar</button>
             </div>
           </div>
           <div class="panel"><h3 style="font-size:14px;margin-bottom:8px;">Catálogo atual</h3><div id="p-list"></div></div>
@@ -1062,7 +1134,11 @@
         <h3 id="modal-name" style="font-family:'Space Grotesk';font-size:17px;margin-bottom:4px;">—</h3>
         <div class="code" id="modal-code" style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono';">—</div>
         <div id="modal-description" style="color:var(--muted);font-size:12px;margin-top:8px;line-height:1.5;display:none;"></div>
-        <div class="price" style="margin-top:12px;font-family:'IBM Plex Mono';font-size:14px;"><span class="lbl">Preço</span><span id="modal-public-price">—</span></div>
+        <div class="price" id="modal-price-normal-wrap" style="margin-top:12px;font-family:'IBM Plex Mono';font-size:14px;"><span class="lbl">Preço</span><span id="modal-public-price">—</span></div>
+        <div id="modal-promo-wrap" style="margin-top:12px;display:none;">
+          <span class="promo-pct-badge" id="modal-promo-badge">🔥 -0%</span>
+          <div style="margin-top:6px;"><span class="promo-old-price" id="modal-promo-old" style="font-size:13px;"></span> <span class="promo-new-price" id="modal-promo-new" style="font-size:20px;"></span></div>
+        </div>
         <div class="price" id="modal-consignado-wrap" style="margin-top:6px;font-family:'IBM Plex Mono';font-size:14px;color:var(--teal);display:none;"><span class="lbl">Seu preço (consignado)</span><span id="modal-price">—</span></div>
 
         <div class="divider" style="margin:16px 0;"></div>
@@ -1223,6 +1299,16 @@
     return cats.map(c=>`<span class="tag ${tagColorFor(c)}">${c}</span>`).join(' ');
   }
 
+  function getPromoInfo(p){
+    const base = p.publicPrice != null ? Number(p.publicPrice) : Number(p.price);
+    const promo = p.promoPrice != null ? Number(p.promoPrice) : null;
+    if(promo != null && promo > 0 && base > 0 && promo < base){
+      const pct = Math.round((1 - promo / base) * 100);
+      return { base, promo, pct };
+    }
+    return null;
+  }
+
   function renderPortfolioFilters(active){
     const set = new Set();
     active.forEach(p=>getCategories(p).forEach(c=>set.add(c)));
@@ -1249,6 +1335,33 @@
           <div class="carousel-count">${mode === 'consignado' ? '+ Adicionar ao carrinho' : r.qty + ' vendidas'}</div>
         </div>
       </div>`;
+  }
+
+  function renderPromoCarousel(wrapId, listId, mode){
+    const wrap = document.getElementById(wrapId);
+    if(!wrap) return;
+    const promoProducts = PRODUCTS.filter(p => p.active !== false && getPromoInfo(p));
+    if(promoProducts.length === 0){ wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    const clickBase = mode === 'consignado' ? null : null;
+    document.getElementById(listId).innerHTML = promoProducts.map(p=>{
+      const info = getPromoInfo(p);
+      const clickAction = mode === 'consignado'
+        ? `window.hlAddToCart('${p.code}','${((p.colors||[])[0]?.name||'').replace(/'/g,"")}')`
+        : `window.hlOpenProduct('${p.code}')`;
+      return `
+      <div class="carousel-card promo-card" onclick="${clickAction}">
+        <div class="promo-ribbon">🔥 -${info.pct}%</div>
+        <div class="carousel-img" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem foto'}</div>
+        <div class="carousel-body">
+          <div class="carousel-name">${p.name}</div>
+          <div class="promo-carousel-price">
+            <span class="promo-old-price">${fmtMoney(info.base)}</span>
+            <span class="promo-new-price">${fmtMoney(info.promo)}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
   }
 
   function renderTopSellers(wrapId, listId, moreWrapId, moreListId, mode){
@@ -1295,6 +1408,7 @@
     loading.style.display = 'none';
     const active = PRODUCTS.filter(p => p.active !== false);
     renderPortfolioFilters(active);
+    renderPromoCarousel('promo-wrap','promo-carousel');
     const topCodes = renderTopSellers('top-sellers-wrap','top-sellers','top-sellers-more-wrap','top-sellers-more') || [];
     const shown = currentCategoryFilter==='Todos' ? active : active.filter(p=>getCategories(p).includes(currentCategoryFilter));
     const searched = shown.filter(p=>matchesSearch(p, portfolioSearchQuery));
@@ -1313,8 +1427,16 @@
       const colorsHtml = colors.length ? `<div class="portfolio-colors">${colors.map(c=>`
         <button type="button" class="color-pill ${Number(c.stock)<=0?'out':''}" onclick="event.stopPropagation();window.hlSwapImage('${p.code}','${c.name.replace(/'/g,"")}')">${c.name}${Number(c.stock)<=0?' • esgotado':''}</button>`).join('')}</div>` : '';
       const displayPrice = p.publicPrice!=null ? p.publicPrice : p.price;
+      const promoInfo = getPromoInfo(p);
+      const priceHtml = promoInfo
+        ? `<div class="portfolio-list-price promo-price-block">
+             <span class="promo-pct-badge">🔥 -${promoInfo.pct}%</span>
+             <span class="promo-old-price">${fmtMoney(promoInfo.base)}</span>
+             <span class="promo-new-price">${fmtMoney(promoInfo.promo)}</span>
+           </div>`
+        : `<div class="portfolio-list-price">${fmtMoney(displayPrice)}</div>`;
       return `
-      <div class="portfolio-list-row" onclick="window.hlOpenProduct('${p.code}')">
+      <div class="portfolio-list-row ${promoInfo ? 'on-sale' : ''}" onclick="window.hlOpenProduct('${p.code}')">
         <div class="portfolio-list-thumb" id="card-img-${p.code}" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem foto'}</div>
         <div class="portfolio-list-info">
           <h4>${p.name}${p.video ? ' <span class="video-badge" style="position:static;display:inline-flex;">▶</span>' : ''}</h4>
@@ -1324,7 +1446,7 @@
             ${colorsHtml}
           </div>
         </div>
-        <div class="portfolio-list-price">${fmtMoney(displayPrice)}</div>
+        ${priceHtml}
         <button type="button" class="btn buy-btn" onclick="event.stopPropagation();window.hlOpenProduct('${p.code}')">Comprar</button>
       </div>`;
     }).join('')}</div>`;
@@ -1487,6 +1609,17 @@
     else { descEl.style.display = 'none'; }
     document.getElementById('modal-public-price').textContent = p.publicPrice!=null ? fmtMoney(p.publicPrice) : fmtMoney(p.price);
     document.getElementById('modal-consignado-wrap').style.display = 'none';
+    const promoInfoModal = getPromoInfo(p);
+    if(promoInfoModal){
+      document.getElementById('modal-price-normal-wrap').style.display = 'none';
+      document.getElementById('modal-promo-wrap').style.display = 'block';
+      document.getElementById('modal-promo-badge').textContent = `🔥 -${promoInfoModal.pct}%`;
+      document.getElementById('modal-promo-old').textContent = fmtMoney(promoInfoModal.base);
+      document.getElementById('modal-promo-new').textContent = fmtMoney(promoInfoModal.promo);
+    } else {
+      document.getElementById('modal-price-normal-wrap').style.display = 'block';
+      document.getElementById('modal-promo-wrap').style.display = 'none';
+    }
 
     // formulário de pedido
     const colors = p.colors || [];
@@ -1932,6 +2065,7 @@
   function renderConsignadoCatalog(){
     const grid = document.getElementById('consig-grid');
     if(!grid) return;
+    renderPromoCarousel('consig-promo-wrap','consig-promo-carousel','consignado');
     renderTopSellers('consig-top-sellers-wrap','consig-top-sellers','consig-top-sellers-more-wrap','consig-top-sellers-more','consignado');
     const active = PRODUCTS.filter(p => p.active !== false).filter(p=>matchesSearch(p, consigSearchQuery));
     if(active.length === 0){
@@ -1949,16 +2083,24 @@
       const marginHtml = margin != null
         ? `<div class="margin-hint">Lucro possível: ${fmtMoney(margin)} (revendendo pelo preço ao público)</div>`
         : '';
+      const promoInfo = getPromoInfo(p);
+      const publicPriceHtml = promoInfo
+        ? `<div class="price"><span class="lbl">Preço ao público</span>
+             <span class="promo-old-price" style="margin-right:6px;">${fmtMoney(promoInfo.base)}</span>
+             <span class="promo-new-price">${fmtMoney(promoInfo.promo)}</span>
+             <span class="promo-pct-badge" style="margin-left:6px;">🔥 -${promoInfo.pct}%</span>
+           </div>`
+        : `<div class="price"><span class="lbl">Preço ao público</span>${publicPrice != null ? fmtMoney(publicPrice) : '—'}</div>`;
       pickerQty[p.code] = pickerQty[p.code] || 1;
       return `
-      <div class="card">
+      <div class="card ${promoInfo ? 'on-sale' : ''}">
         <div class="img" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem imagem'}</div>
         <div class="body">
           ${tagsHtml(p)}
           ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
           <h3>${p.name}</h3>
           <div class="code">${p.code}</div>
-          <div class="price"><span class="lbl">Preço ao público</span>${publicPrice != null ? fmtMoney(publicPrice) : '—'}</div>
+          ${publicPriceHtml}
           <div class="price" style="margin-top:6px;color:var(--teal);"><span class="lbl">Seu preço (repasse)</span>${fmtMoney(p.price)}</div>
           ${marginHtml}
           <div class="qty-picker">
@@ -2204,6 +2346,12 @@
     updateColorSelect('d-product','d-color');
     updateColorSelect('a-product','a-color');
     renderCategoryPicker();
+    const bulkCategorySelect = document.getElementById('bulk-category');
+    if(bulkCategorySelect){
+      const currentVal = bulkCategorySelect.value;
+      bulkCategorySelect.innerHTML = '<option value="">Todos os produtos</option>' + KNOWN_CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('');
+      bulkCategorySelect.value = currentVal;
+    }
   }
 
   function updateColorSelect(productSelectId, colorSelectId, opts){
@@ -2243,7 +2391,10 @@
         <span class="color-chip">📷 Foto ${gi+1}
           <button data-del-gallery="${p.code}|${gi}" title="Remover esta foto">✕</button>
         </span>`).join('');
-      const priceLine = `Público: ${p.publicPrice!=null ? fmtMoney(p.publicPrice) : '—'} · Consignado: ${fmtMoney(p.price)}`;
+      const bulkPromoInfo = getPromoInfo(p);
+      const priceLine = bulkPromoInfo
+        ? `Público: <s>${fmtMoney(bulkPromoInfo.base)}</s> 🔥 ${fmtMoney(bulkPromoInfo.promo)} (-${bulkPromoInfo.pct}%) · Consignado: ${fmtMoney(p.price)}`
+        : `Público: ${p.publicPrice!=null ? fmtMoney(p.publicPrice) : '—'} · Consignado: ${fmtMoney(p.price)}`;
       const catsLine = getCategories(p).join(', ') || 'sem categoria';
       return `
       <div class="list-row" style="flex-direction:column;align-items:stretch;gap:8px;">
@@ -2295,6 +2446,7 @@
       prefixSelect.value = detectedPrefix && [...prefixSelect.options].some(o=>o.value===detectedPrefix[0]) ? detectedPrefix[0] : '';
       document.getElementById('p-name').value = p.name || '';
       document.getElementById('p-public-price').value = p.publicPrice != null ? p.publicPrice : '';
+      document.getElementById('p-promo-price').value = p.promoPrice != null ? p.promoPrice : '';
       document.getElementById('p-price').value = p.price != null ? p.price : '';
       document.getElementById('p-img').value = p.image || '';
       document.getElementById('p-video').value = p.video || '';
@@ -2484,7 +2636,7 @@
   function resetProductForm(){
     editingProductCode = null;
     pendingCategories = [];
-    ['p-code','p-name','p-public-price','p-price','p-img','p-video','p-desc','p-first-color-name','p-first-color-stock','p-first-color-img'].forEach(id=>document.getElementById(id).value='');
+    ['p-code','p-name','p-public-price','p-price','p-promo-price','p-img','p-video','p-desc','p-first-color-name','p-first-color-stock','p-first-color-img'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('p-prefix').value = '';
     document.getElementById('p-ondemand').checked = false;
     document.getElementById('p-code').disabled = false;
@@ -2524,6 +2676,8 @@
     const name = document.getElementById('p-name').value.trim();
     const publicPrice = parseFloat(document.getElementById('p-public-price').value);
     const price = parseFloat(document.getElementById('p-price').value);
+    const promoPriceRaw = document.getElementById('p-promo-price').value;
+    const promoPrice = promoPriceRaw.trim() === '' ? null : parseFloat(promoPriceRaw);
     const image = document.getElementById('p-img').value.trim();
     const video = document.getElementById('p-video').value.trim();
     const description = document.getElementById('p-desc').value.trim();
@@ -2566,6 +2720,7 @@
       delete p.category;
       p.publicPrice = isNaN(publicPrice) ? null : publicPrice;
       p.price = price;
+      p.promoPrice = promoPrice;
       p.image = image;
       p.video = video;
       p.description = description;
@@ -2589,10 +2744,92 @@
         image: document.getElementById('p-first-color-img').value.trim(),
       });
     }
-    PRODUCTS.push({code, name, categories:[...pendingCategories], price, publicPrice: isNaN(publicPrice) ? null : publicPrice, image, video, description, onDemand, colors, gallery:[], active:true});
+    PRODUCTS.push({code, name, categories:[...pendingCategories], price, publicPrice: isNaN(publicPrice) ? null : publicPrice, promoPrice, image, video, description, onDemand, colors, gallery:[], active:true});
     await setJSON('products', PRODUCTS);
     msg.innerHTML = '<div class="msg ok">Produto adicionado.</div>';
     resetProductForm();
+    refreshAdminSelects(); renderAdminLists(); renderPortfolio();
+  });
+
+  // ---------- AJUSTE DE PREÇOS EM MASSA ----------
+  function getBulkTargetProducts(){
+    const category = document.getElementById('bulk-category').value;
+    return PRODUCTS.filter(p => !category || getCategories(p).includes(category));
+  }
+
+  document.getElementById('bulk-preview-btn').addEventListener('click', ()=>{
+    const pctRaw = document.getElementById('bulk-pct').value;
+    const pct = parseFloat(pctRaw);
+    const target = document.getElementById('bulk-target').value;
+    const msg = document.getElementById('bulk-msg');
+    const preview = document.getElementById('bulk-preview');
+    const applyBtn = document.getElementById('bulk-apply-btn');
+    msg.innerHTML = ''; preview.innerHTML = ''; applyBtn.style.display = 'none';
+
+    if(isNaN(pct) || pct === 0){ msg.innerHTML = '<div class="msg err">Informe um percentual diferente de zero (ex.: 10 ou -10).</div>'; return; }
+
+    const affected = getBulkTargetProducts().filter(p=>{
+      if(target === 'public' || target === 'both'){ if(p.publicPrice != null) return true; }
+      if(target === 'price' || target === 'both'){ if(p.price != null) return true; }
+      return false;
+    });
+    if(affected.length === 0){ msg.innerHTML = '<div class="msg err">Nenhum produto encontrado com essa combinação de filtros.</div>'; return; }
+
+    const factor = 1 + (pct / 100);
+    const rows = affected.slice(0, 6).map(p=>{
+      const lines = [];
+      if((target === 'public' || target === 'both') && p.publicPrice != null){
+        lines.push(`Público: ${fmtMoney(p.publicPrice)} → <strong style="color:var(--teal);">${fmtMoney(p.publicPrice * factor)}</strong>`);
+      }
+      if((target === 'price' || target === 'both') && p.price != null){
+        lines.push(`Consignado: ${fmtMoney(p.price)} → <strong style="color:var(--teal);">${fmtMoney(p.price * factor)}</strong>`);
+      }
+      return `<div class="list-row"><span class="mono">${p.code} — ${p.name}</span><span style="font-size:11px;color:var(--muted);">${lines.join(' · ')}</span></div>`;
+    }).join('');
+    const moreLabel = affected.length > 6 ? `<div style="color:var(--muted);font-size:11px;margin-top:6px;">+ ${affected.length - 6} produto(s) a mais...</div>` : '';
+
+    preview.innerHTML = `
+      <div style="margin:10px 0;">
+        <div style="font-size:12px;color:var(--ink);margin-bottom:8px;">${affected.length} produto(s) serão ${pct > 0 ? 'reajustados para cima' : 'reajustados para baixo'} em ${Math.abs(pct)}%:</div>
+        ${rows}${moreLabel}
+      </div>`;
+    applyBtn.style.display = 'inline-block';
+    applyBtn.dataset.pct = pct;
+    applyBtn.dataset.target = target;
+  });
+
+  document.getElementById('bulk-apply-btn').addEventListener('click', async ()=>{
+    const pct = parseFloat(document.getElementById('bulk-apply-btn').dataset.pct);
+    const target = document.getElementById('bulk-apply-btn').dataset.target;
+    const msg = document.getElementById('bulk-msg');
+    const btn = document.getElementById('bulk-apply-btn');
+    btn.disabled = true; btn.textContent = 'Aplicando…';
+
+    PRODUCTS = await getJSON('products', PRODUCTS);
+    const affected = getBulkTargetProducts();
+    const factor = 1 + (pct / 100);
+    let count = 0;
+    affected.forEach(p=>{
+      const fresh = PRODUCTS.find(fp=>fp.code===p.code);
+      if(!fresh) return;
+      let touched = false;
+      if((target === 'public' || target === 'both') && fresh.publicPrice != null){
+        fresh.publicPrice = Math.round(fresh.publicPrice * factor * 100) / 100;
+        touched = true;
+      }
+      if((target === 'price' || target === 'both') && fresh.price != null){
+        fresh.price = Math.round(fresh.price * factor * 100) / 100;
+        touched = true;
+      }
+      if(touched) count++;
+    });
+    await setJSON('products', PRODUCTS);
+
+    msg.innerHTML = `<div class="msg ok">Reajuste aplicado em ${count} produto(s).</div>`;
+    document.getElementById('bulk-preview').innerHTML = '';
+    btn.style.display = 'none';
+    btn.disabled = false; btn.textContent = 'Confirmar e aplicar';
+    document.getElementById('bulk-pct').value = '';
     refreshAdminSelects(); renderAdminLists(); renderPortfolio();
   });
 
