@@ -1371,14 +1371,23 @@
     return cats.map(c=>`<span class="tag ${tagColorFor(c)}">${c}</span>`).join(' ');
   }
 
-  function getPromoInfo(p){
+  function getPromoInfo(p, colorName){
     const base = p.publicPrice != null ? Number(p.publicPrice) : Number(p.price);
-    const promo = p.promoPrice != null ? Number(p.promoPrice) : null;
-    if(promo != null && promo > 0 && base > 0 && promo < base){
+    let promo = null;
+    if(colorName){
+      const c = (p.colors || []).find(c => c.name === colorName);
+      if(c && c.promoPrice != null && Number(c.promoPrice) > 0) promo = Number(c.promoPrice);
+    }
+    if(promo == null && p.promoPrice != null && Number(p.promoPrice) > 0) promo = Number(p.promoPrice);
+    if(promo != null && base > 0 && promo < base){
       const pct = Math.round((1 - promo / base) * 100);
       return { base, promo, pct };
     }
     return null;
+  }
+  function hasAnyPromo(p){
+    if(getPromoInfo(p)) return true;
+    return (p.colors || []).some(c => getPromoInfo(p, c.name));
   }
 
   function renderPortfolioFilters(active){
@@ -1412,12 +1421,20 @@
   function renderPromoCarousel(wrapId, listId, mode){
     const wrap = document.getElementById(wrapId);
     if(!wrap) return;
-    const promoProducts = PRODUCTS.filter(p => p.active !== false && getPromoInfo(p));
+    const promoProducts = PRODUCTS.filter(p => p.active !== false && hasAnyPromo(p));
     if(promoProducts.length === 0){ wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
     const clickBase = mode === 'consignado' ? null : null;
     document.getElementById(listId).innerHTML = promoProducts.map(p=>{
-      const info = getPromoInfo(p);
+      // se o produto todo estiver em promoção, usa esse valor; senão, mostra a melhor promoção entre as cores
+      let info = getPromoInfo(p);
+      let colorLabel = '';
+      if(!info){
+        const colorInfos = (p.colors||[]).map(c=>({ name:c.name, info:getPromoInfo(p, c.name) })).filter(x=>x.info);
+        colorInfos.sort((a,b)=>a.info.promo - b.info.promo);
+        if(colorInfos.length){ info = colorInfos[0].info; colorLabel = ` (cor ${colorInfos[0].name})`; }
+      }
+      if(!info) return '';
       const clickAction = mode === 'consignado'
         ? `window.hlAddToCart('${p.code}','${((p.colors||[])[0]?.name||'').replace(/'/g,"")}')`
         : `window.hlOpenProduct('${p.code}')`;
@@ -1426,7 +1443,7 @@
         <div class="promo-ribbon">🔥 -${info.pct}%</div>
         <div class="carousel-img" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem foto'}</div>
         <div class="carousel-body">
-          <div class="carousel-name">${p.name}</div>
+          <div class="carousel-name">${p.name}${colorLabel}</div>
           <div class="promo-carousel-price">
             <span class="promo-old-price">${fmtMoney(info.base)}</span>
             <span class="promo-new-price">${fmtMoney(info.promo)}</span>
@@ -1526,6 +1543,7 @@
         <button type="button" class="color-pill ${Number(c.stock)<=0?'out':''}" onclick="event.stopPropagation();window.hlSwapImage('${p.code}','${c.name.replace(/'/g,"")}')">${c.name}${Number(c.stock)<=0?' • esgotado':''}</button>`).join('')}</div>` : '';
       const displayPrice = p.publicPrice!=null ? p.publicPrice : p.price;
       const promoInfo = getPromoInfo(p);
+      const colorOnlyPromo = !promoInfo && colors.some(c=>getPromoInfo(p, c.name));
       const priceHtml = promoInfo
         ? `<div class="price-buy-row">
              <div class="portfolio-list-price promo-price-block">
@@ -1536,11 +1554,14 @@
              <button type="button" class="btn buy-btn" onclick="event.stopPropagation();window.hlOpenProduct('${p.code}')">Comprar</button>
            </div>`
         : `<div class="price-buy-row">
-             <div class="price">${fmtMoney(displayPrice)}</div>
+             <div>
+               <div class="price">${fmtMoney(displayPrice)}</div>
+               ${colorOnlyPromo ? `<div class="promo-pct-badge" style="margin-top:4px;">🔥 promoção em cores específicas</div>` : ''}
+             </div>
              <button type="button" class="btn buy-btn" onclick="event.stopPropagation();window.hlOpenProduct('${p.code}')">Comprar</button>
            </div>`;
       return `
-      <div class="card big-photo ${promoInfo ? 'on-sale' : ''}" onclick="window.hlOpenProduct('${p.code}')">
+      <div class="card big-photo ${(promoInfo || colorOnlyPromo) ? 'on-sale' : ''}" onclick="window.hlOpenProduct('${p.code}')">
         <div class="img" id="card-img-${p.code}" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem foto'}${p.video ? '<span class="video-badge" style="position:absolute;bottom:8px;right:8px;">▶ vídeo</span>' : ''}</div>
         <div class="body">
           ${tagsHtml(p)}
@@ -1708,19 +1729,7 @@
     const descEl = document.getElementById('modal-description');
     if(p.description){ descEl.textContent = p.description; descEl.style.display = 'block'; }
     else { descEl.style.display = 'none'; }
-    document.getElementById('modal-public-price').textContent = p.publicPrice!=null ? fmtMoney(p.publicPrice) : fmtMoney(p.price);
     document.getElementById('modal-consignado-wrap').style.display = 'none';
-    const promoInfoModal = getPromoInfo(p);
-    if(promoInfoModal){
-      document.getElementById('modal-price-normal-wrap').style.display = 'none';
-      document.getElementById('modal-promo-wrap').style.display = 'block';
-      document.getElementById('modal-promo-badge').textContent = `🔥 -${promoInfoModal.pct}%`;
-      document.getElementById('modal-promo-old').textContent = fmtMoney(promoInfoModal.base);
-      document.getElementById('modal-promo-new').textContent = fmtMoney(promoInfoModal.promo);
-    } else {
-      document.getElementById('modal-price-normal-wrap').style.display = 'block';
-      document.getElementById('modal-promo-wrap').style.display = 'none';
-    }
 
     // formulário de pedido
     const colors = p.colors || [];
@@ -1728,7 +1737,7 @@
     const colorSelect = document.getElementById('modal-buyer-color');
     if(colors.length){
       colorField.style.display = 'block';
-      colorSelect.innerHTML = colors.map(c=>`<option value="${c.name}" ${c.name===modalSelectedColor?'selected':''}>${c.name}</option>`).join('');
+      colorSelect.innerHTML = colors.map(c=>`<option value="${c.name}" ${c.name===modalSelectedColor?'selected':''}>${c.name}${getPromoInfo(p, c.name) ? ' 🔥' : ''}</option>`).join('');
     } else {
       colorField.style.display = 'none';
       colorSelect.innerHTML = '';
@@ -1740,8 +1749,32 @@
     document.getElementById('modal-post-add').style.display = 'none';
     modalSelectedColor = null;
 
+    updateModalPriceDisplay(p.code);
     document.getElementById('product-modal').classList.add('open');
   }
+
+  function updateModalPriceDisplay(code){
+    const p = PRODUCTS.find(p=>p.code===code);
+    if(!p) return;
+    const colorField = document.getElementById('modal-buyer-color-field');
+    const activeColor = colorField.style.display !== 'none' ? document.getElementById('modal-buyer-color').value : null;
+    document.getElementById('modal-public-price').textContent = p.publicPrice!=null ? fmtMoney(p.publicPrice) : fmtMoney(p.price);
+    const promoInfoModal = getPromoInfo(p, activeColor);
+    if(promoInfoModal){
+      document.getElementById('modal-price-normal-wrap').style.display = 'none';
+      document.getElementById('modal-promo-wrap').style.display = 'block';
+      document.getElementById('modal-promo-badge').textContent = `🔥 -${promoInfoModal.pct}%${activeColor ? ' nesta cor' : ''}`;
+      document.getElementById('modal-promo-old').textContent = fmtMoney(promoInfoModal.base);
+      document.getElementById('modal-promo-new').textContent = fmtMoney(promoInfoModal.promo);
+    } else {
+      document.getElementById('modal-price-normal-wrap').style.display = 'block';
+      document.getElementById('modal-promo-wrap').style.display = 'none';
+    }
+  }
+  document.getElementById('modal-buyer-color').addEventListener('change', ()=>{
+    const code = document.getElementById('modal-buy-btn').dataset.productCode;
+    if(code) updateModalPriceDisplay(code);
+  });
   function closeProductModal(){
     document.getElementById('product-modal').classList.remove('open');
     document.querySelectorAll('#modal-carousel-track video').forEach(v=>v.pause());
@@ -1828,12 +1861,14 @@
     itemsWrap.innerHTML = publicCart.map((item, idx)=>{
       const p = PRODUCTS.find(p=>p.code===item.productCode);
       const name = p ? p.name : item.productCode;
-      const price = p ? (p.publicPrice!=null ? Number(p.publicPrice) : Number(p.price)) : 0;
+      const promoInfoItem = p ? getPromoInfo(p, item.color) : null;
+      const price = promoInfoItem ? promoInfoItem.promo : (p ? (p.publicPrice!=null ? Number(p.publicPrice) : Number(p.price)) : 0);
+      const priceLabel = promoInfoItem ? `🔥 ${fmtMoney(price)} cada (era ${fmtMoney(promoInfoItem.base)})` : `${fmtMoney(price)} cada`;
       return `
       <div class="ticket" style="margin-bottom:8px;">
         <div class="left">
           <div class="desc">${name}${item.color ? ' — '+item.color : ''}</div>
-          <div class="id">${fmtMoney(price)} cada</div>
+          <div class="id">${priceLabel}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <button data-pcart-dec="${idx}" class="cart-qty-btn">−</button>
@@ -1869,8 +1904,10 @@
     publicCart.forEach(item=>{
       const p = PRODUCTS.find(p=>p.code===item.productCode);
       const name = p ? p.name : item.productCode;
-      const price = p ? (p.publicPrice!=null ? Number(p.publicPrice) : Number(p.price)) : 0;
-      text += `• ${item.qty}x ${name}${item.color ? ' ('+item.color+')' : ''} — ${fmtMoney(price)} cada\n`;
+      const promoInfoMsg = p ? getPromoInfo(p, item.color) : null;
+      const price = promoInfoMsg ? promoInfoMsg.promo : (p ? (p.publicPrice!=null ? Number(p.publicPrice) : Number(p.price)) : 0);
+      const promoTag = promoInfoMsg ? ' [PROMOÇÃO]' : '';
+      text += `• ${item.qty}x ${name}${item.color ? ' ('+item.color+')' : ''} — ${fmtMoney(price)} cada${promoTag}\n`;
     });
     if(city === 'uberaba'){
       text += `\nCidade: Uberaba - MG\nFrete: R$ 5,00 (entrega na cidade)\n`;
@@ -2189,7 +2226,7 @@
       const colors = p.colors || [];
       const colorsHtml = colors.length
         ? `<div class="portfolio-colors">${colors.map(c=>`
-            <button type="button" class="color-pill ${(!p.onDemand && Number(c.stock)<=0)?'out':''}" onclick="window.hlAddToCart('${p.code}','${c.name.replace(/'/g,"")}')">+ ${c.name}${(!p.onDemand && Number(c.stock)<=0)?' • sem estoque':''}</button>`).join('')}</div>`
+            <button type="button" class="color-pill ${(!p.onDemand && Number(c.stock)<=0)?'out':''}" onclick="window.hlAddToCart('${p.code}','${c.name.replace(/'/g,"")}')">+ ${c.name}${getPromoInfo(p, c.name) ? ' 🔥' : ''}${(!p.onDemand && Number(c.stock)<=0)?' • sem estoque':''}</button>`).join('')}</div>`
         : `<button type="button" class="btn secondary" style="margin-top:8px;padding:6px 12px;font-size:11px;" onclick="window.hlAddToCart('${p.code}','')">+ ${p.onDemand ? 'Encomendar' : 'Adicionar ao carrinho'}</button>`;
       const publicPrice = p.publicPrice != null ? Number(p.publicPrice) : null;
       const margin = publicPrice != null ? publicPrice - Number(p.price) : null;
@@ -2197,16 +2234,19 @@
         ? `<div class="margin-hint">Lucro possível: ${fmtMoney(margin)} (revendendo pelo preço ao público)</div>`
         : '';
       const promoInfo = getPromoInfo(p);
+      const colorOnlyPromoConsig = !promoInfo && colors.some(c=>getPromoInfo(p, c.name));
       const publicPriceHtml = promoInfo
         ? `<div class="price"><span class="lbl">Preço ao público</span>
              <span class="promo-old-price" style="margin-right:6px;">${fmtMoney(promoInfo.base)}</span>
              <span class="promo-new-price">${fmtMoney(promoInfo.promo)}</span>
              <span class="promo-pct-badge" style="margin-left:6px;">🔥 -${promoInfo.pct}%</span>
            </div>`
-        : `<div class="price"><span class="lbl">Preço ao público</span>${publicPrice != null ? fmtMoney(publicPrice) : '—'}</div>`;
+        : `<div class="price"><span class="lbl">Preço ao público</span>${publicPrice != null ? fmtMoney(publicPrice) : '—'}
+             ${colorOnlyPromoConsig ? '<span class="promo-pct-badge" style="margin-left:6px;">🔥 promoção em cor(es) específica(s)</span>' : ''}
+           </div>`;
       pickerQty[p.code] = pickerQty[p.code] || 1;
       return `
-      <div class="card ${promoInfo ? 'on-sale' : ''}">
+      <div class="card ${(promoInfo || colorOnlyPromoConsig) ? 'on-sale' : ''}">
         <div class="img" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem imagem'}</div>
         <div class="body">
           ${tagsHtml(p)}
@@ -2494,13 +2534,18 @@
     document.getElementById('p-list').innerHTML = PRODUCTS.length ? PRODUCTS.map(p=>{
       const colors = p.colors || [];
       const gallery = p.gallery || [];
-      const colorChips = colors.map(c=>`
+      const colorChips = colors.map(c=>{
+        const colorPromoInfo = getPromoInfo(p, c.name);
+        return `
         <span class="color-chip ${Number(c.stock)<=0?'out':''}">
           ${c.image ? '📷 ' : ''}${c.name} · <strong>${c.stock}</strong>
+          ${colorPromoInfo ? ` · 🔥 <s>${fmtMoney(colorPromoInfo.base)}</s> ${fmtMoney(colorPromoInfo.promo)}` : ''}
           <button data-adj-color="${p.code}|${c.name}|-1" title="Diminuir 1 do estoque">−</button>
           <button data-adj-color="${p.code}|${c.name}|1" title="Aumentar 1 no estoque">+</button>
+          <button data-promo-color="${p.code}|${c.name}" title="${colorPromoInfo ? 'Editar/remover promoção desta cor' : 'Colocar esta cor em promoção'}">🔥</button>
           <button data-del-color="${p.code}|${c.name}" title="Remover esta cor">✕</button>
-        </span>`).join('');
+        </span>`;
+      }).join('');
       const galleryChips = gallery.map((url,gi)=>`
         <span class="color-chip">📷 Foto ${gi+1}
           <button data-del-gallery="${p.code}|${gi}" title="Remover esta foto">✕</button>
@@ -2525,6 +2570,7 @@
           <input type="text" placeholder="Nova cor (ex: Azul)" data-color-name-input="${p.code}">
           <input type="number" min="0" placeholder="Estoque inicial" data-color-stock-input="${p.code}">
           <input type="text" placeholder="URL da foto desta cor (opcional)" data-color-image-input="${p.code}" style="flex:1;min-width:160px;">
+          <input type="number" step="0.01" min="0" placeholder="🔥 Preço promo (opcional)" data-color-promo-input="${p.code}" style="max-width:150px;">
           <button data-add-color="${p.code}">+ Adicionar cor</button>
         </div>
         <div style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px;">
@@ -2603,9 +2649,12 @@
       const nameInput = root.querySelector(`[data-color-name-input="${code}"]`);
       const stockInput = root.querySelector(`[data-color-stock-input="${code}"]`);
       const imageInput = root.querySelector(`[data-color-image-input="${code}"]`);
+      const promoInput = root.querySelector(`[data-color-promo-input="${code}"]`);
       const name = nameInput.value.trim();
       const stock = Math.max(0, parseInt(stockInput.value) || 0);
       const image = imageInput.value.trim();
+      const promoRaw = promoInput.value.trim();
+      const promoPrice = promoRaw === '' ? null : parseFloat(promoRaw);
       if(!name) return;
       PRODUCTS = await getJSON('products', PRODUCTS);
       const p = PRODUCTS.find(p=>p.code===code);
@@ -2614,9 +2663,24 @@
       if(p.colors.some(c=>c.name.toLowerCase()===name.toLowerCase())){
         alert('Essa cor já existe para este produto.'); return;
       }
-      p.colors.push({name, stock, image});
+      p.colors.push({name, stock, image, promoPrice});
       await setJSON('products', PRODUCTS);
       refreshAdminSelects(); renderAdminLists(); renderPortfolio();
+    }));
+    root.querySelectorAll('[data-promo-color]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const [code, colorName] = btn.dataset.promoColor.split('|');
+      PRODUCTS = await getJSON('products', PRODUCTS);
+      const p = PRODUCTS.find(p=>p.code===code);
+      const c = p && (p.colors||[]).find(c=>c.name===colorName);
+      if(!c) return;
+      const base = p.publicPrice != null ? p.publicPrice : p.price;
+      const current = c.promoPrice != null ? c.promoPrice : '';
+      const answer = window.prompt(`Preço promocional para a cor "${colorName}" (preço ao público atual: ${fmtMoney(base)}).\nDeixe em branco pra remover a promoção desta cor.`, current);
+      if(answer === null) return; // cancelou
+      const trimmed = answer.trim();
+      c.promoPrice = trimmed === '' ? null : parseFloat(trimmed);
+      await setJSON('products', PRODUCTS);
+      renderAdminLists(); renderPortfolio();
     }));
     root.querySelectorAll('[data-adj-color]').forEach(btn=>btn.addEventListener('click', async ()=>{
       const [code, colorName, delta] = btn.dataset.adjColor.split('|');
