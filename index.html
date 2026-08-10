@@ -1031,8 +1031,12 @@
               <div class="field"><label>Contato</label><input id="c-contact" placeholder="(34) 90000-0000"></div>
             </div>
             <div class="row">
+              <div class="field" style="flex:2;"><label>Nome do responsável</label><input id="c-responsavel" placeholder="Quem responde pela loja"></div>
               <div class="field"><label>CPF/CNPJ</label><input id="c-document" placeholder="000.000.000-00"></div>
-              <div class="field" style="flex:2;"><label>Observação</label><input id="c-notes" placeholder="Ex.: prefere acerto quinzenal, ponto de referência..."></div>
+            </div>
+            <div class="field">
+              <label>Observações</label>
+              <textarea id="c-notes" rows="3" placeholder="Ex.: prefere acerto quinzenal, ponto de referência, forma de pagamento combinada..." style="width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);padding:8px 10px;border-radius:8px;font-size:13px;font-family:'Inter';resize:vertical;box-sizing:border-box;"></textarea>
             </div>
             <div id="c-msg"></div>
             <button class="btn" id="c-add-btn">Adicionar cliente</button>
@@ -1253,6 +1257,15 @@
   const root = document.getElementById('portal-root');
   const fmtMoney = v => 'R$ ' + (Number(v)||0).toFixed(2).replace('.', ',');
   const todayISO = () => new Date().toISOString().slice(0,10);
+  function nextSeqId(list, prefix){
+    let maxNum = 0;
+    const re = new RegExp('^' + prefix + '-(\\d+)$');
+    list.forEach(item=>{
+      const m = re.exec(item.id);
+      if(m){ const n = parseInt(m[1], 10); if(n > maxNum) maxNum = n; }
+    });
+    return prefix + '-' + String(maxNum + 1).padStart(3, '0');
+  }
   const fmtDate = iso => { if(!iso) return '—'; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; };
 
   let PRODUCTS = [], CLIENTS = [], ENTREGAS = [], DEVOLUCOES = [], ACERTOS = [], PEDIDOS = [], DOCUMENTS = [];
@@ -1429,10 +1442,16 @@
       // se o produto todo estiver em promoção, usa esse valor; senão, mostra a melhor promoção entre as cores
       let info = getPromoInfo(p);
       let colorLabel = '';
+      let promoImage = p.image;
       if(!info){
-        const colorInfos = (p.colors||[]).map(c=>({ name:c.name, info:getPromoInfo(p, c.name) })).filter(x=>x.info);
+        const colorInfos = (p.colors||[]).map(c=>({ name:c.name, image:c.image, info:getPromoInfo(p, c.name) })).filter(x=>x.info);
         colorInfos.sort((a,b)=>a.info.promo - b.info.promo);
-        if(colorInfos.length){ info = colorInfos[0].info; colorLabel = ` (cor ${colorInfos[0].name})`; }
+        if(colorInfos.length){
+          info = colorInfos[0].info;
+          colorLabel = ` (cor ${colorInfos[0].name})`;
+          // usa a foto dessa cor específica, se tiver; senão cai pra foto principal do produto
+          if(colorInfos[0].image) promoImage = colorInfos[0].image;
+        }
       }
       if(!info) return '';
       const clickAction = mode === 'consignado'
@@ -1441,7 +1460,7 @@
       return `
       <div class="carousel-card promo-card" onclick="${clickAction}">
         <div class="promo-ribbon">🔥 -${info.pct}%</div>
-        <div class="carousel-img" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem foto'}</div>
+        <div class="carousel-img" style="${promoImage ? `background-image:url('${promoImage.replace(/'/g,"")}')` : ''}">${promoImage ? '' : 'sem foto'}</div>
         <div class="carousel-body">
           <div class="carousel-name">${p.name}${colorLabel}</div>
           <div class="promo-carousel-price">
@@ -1543,7 +1562,9 @@
         <button type="button" class="color-pill ${Number(c.stock)<=0?'out':''}" onclick="event.stopPropagation();window.hlSwapImage('${p.code}','${c.name.replace(/'/g,"")}')">${c.name}${Number(c.stock)<=0?' • esgotado':''}</button>`).join('')}</div>` : '';
       const displayPrice = p.publicPrice!=null ? p.publicPrice : p.price;
       const promoInfo = getPromoInfo(p);
-      const colorOnlyPromo = !promoInfo && colors.some(c=>getPromoInfo(p, c.name));
+      const promoColor = !promoInfo ? colors.find(c=>getPromoInfo(p, c.name)) : null;
+      const colorOnlyPromo = !!promoColor;
+      const cardImage = (promoColor && promoColor.image) ? promoColor.image : p.image;
       const priceHtml = promoInfo
         ? `<div class="price-buy-row">
              <div class="portfolio-list-price promo-price-block">
@@ -1556,13 +1577,13 @@
         : `<div class="price-buy-row">
              <div>
                <div class="price">${fmtMoney(displayPrice)}</div>
-               ${colorOnlyPromo ? `<div class="promo-pct-badge" style="margin-top:4px;">🔥 promoção em cores específicas</div>` : ''}
+               ${colorOnlyPromo ? `<div class="promo-pct-badge" style="margin-top:4px;">🔥 promoção na cor ${promoColor.name}</div>` : ''}
              </div>
              <button type="button" class="btn buy-btn" onclick="event.stopPropagation();window.hlOpenProduct('${p.code}')">Comprar</button>
            </div>`;
       return `
       <div class="card big-photo ${(promoInfo || colorOnlyPromo) ? 'on-sale' : ''}" onclick="window.hlOpenProduct('${p.code}')">
-        <div class="img" id="card-img-${p.code}" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem foto'}${p.video ? '<span class="video-badge" style="position:absolute;bottom:8px;right:8px;">▶ vídeo</span>' : ''}</div>
+        <div class="img" id="card-img-${p.code}" style="${cardImage ? `background-image:url('${cardImage.replace(/'/g,"")}')` : ''}">${cardImage ? '' : 'sem foto'}${p.video ? '<span class="video-badge" style="position:absolute;bottom:8px;right:8px;">▶ vídeo</span>' : ''}</div>
         <div class="body">
           ${tagsHtml(p)}
           ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
@@ -2095,7 +2116,7 @@
     }
 
     DOCUMENTS = await getJSON('documents', DOCUMENTS);
-    const id = 'DOC-' + String(DOCUMENTS.length+1).padStart(3,'0');
+    const id = nextSeqId(DOCUMENTS, 'DOC');
     const doc = { id, clientCode, type, title, date };
     if(path) doc.path = path; else doc.url = url;
     DOCUMENTS.push(doc);
@@ -2234,7 +2255,9 @@
         ? `<div class="margin-hint">Lucro possível: ${fmtMoney(margin)} (revendendo pelo preço ao público)</div>`
         : '';
       const promoInfo = getPromoInfo(p);
-      const colorOnlyPromoConsig = !promoInfo && colors.some(c=>getPromoInfo(p, c.name));
+      const promoColorConsig = !promoInfo ? colors.find(c=>getPromoInfo(p, c.name)) : null;
+      const colorOnlyPromoConsig = !!promoColorConsig;
+      const cardImageConsig = (promoColorConsig && promoColorConsig.image) ? promoColorConsig.image : p.image;
       const publicPriceHtml = promoInfo
         ? `<div class="price"><span class="lbl">Preço ao público</span>
              <span class="promo-old-price" style="margin-right:6px;">${fmtMoney(promoInfo.base)}</span>
@@ -2242,12 +2265,12 @@
              <span class="promo-pct-badge" style="margin-left:6px;">🔥 -${promoInfo.pct}%</span>
            </div>`
         : `<div class="price"><span class="lbl">Preço ao público</span>${publicPrice != null ? fmtMoney(publicPrice) : '—'}
-             ${colorOnlyPromoConsig ? '<span class="promo-pct-badge" style="margin-left:6px;">🔥 promoção em cor(es) específica(s)</span>' : ''}
+             ${colorOnlyPromoConsig ? `<span class="promo-pct-badge" style="margin-left:6px;">🔥 promoção na cor ${promoColorConsig.name}</span>` : ''}
            </div>`;
       pickerQty[p.code] = pickerQty[p.code] || 1;
       return `
       <div class="card ${(promoInfo || colorOnlyPromoConsig) ? 'on-sale' : ''}">
-        <div class="img" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem imagem'}</div>
+        <div class="img" style="${cardImageConsig ? `background-image:url('${cardImageConsig.replace(/'/g,"")}')` : ''}">${cardImageConsig ? '' : 'sem imagem'}</div>
         <div class="body">
           ${tagsHtml(p)}
           ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
@@ -2390,7 +2413,7 @@
         if(c && item.qty <= stock){ c.stock = stock - item.qty; type = 'reposicao'; }
         else { type = 'producao'; }
       }
-      const id = 'PED-' + String(PEDIDOS.length + createdReqs.length + 1).padStart(3,'0');
+      const id = nextSeqId(PEDIDOS, 'PED');
       const req = { id, date: todayISO(), clientCode: currentClientCode, productCode: item.productCode, color: item.color, qty: item.qty, note, status:'Pendente', type };
       PEDIDOS.push(req);
       createdReqs.push(req);
@@ -2529,11 +2552,14 @@
     });
   });
 
+  let expandedProductCode = null;
+
   function renderAdminLists(){
     renderDocList();
     document.getElementById('p-list').innerHTML = PRODUCTS.length ? PRODUCTS.map(p=>{
       const colors = p.colors || [];
       const gallery = p.gallery || [];
+      const isExpanded = expandedProductCode === p.code;
       const colorChips = colors.map(c=>{
         const colorPromoInfo = getPromoInfo(p, c.name);
         return `
@@ -2557,32 +2583,45 @@
       const catsLine = getCategories(p).join(', ') || 'sem categoria';
       return `
       <div class="list-row" style="flex-direction:column;align-items:stretch;gap:8px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-          <span class="mono">${p.code} — ${p.name} (${catsLine}) — ${priceLine}${p.video ? ' · 🎬' : ''}${p.onDemand ? ' · <span class="badge acerto">Sob encomenda</span>' : ''}</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;cursor:pointer;" data-toggle-product="${p.code}">
+          <span class="mono">
+            <span style="display:inline-block;transition:transform .15s;transform:rotate(${isExpanded?90:0}deg);margin-right:4px;">▸</span>
+            ${p.code} — ${p.name} (${catsLine}) — ${priceLine}${p.video ? ' · 🎬' : ''}${p.onDemand ? ' · <span class="badge acerto">Sob encomenda</span>' : ''}
+          </span>
           <span class="actions">
             <button data-edit-product="${p.code}">Editar</button>
             <button data-toggle-ondemand="${p.code}">${p.onDemand ? 'Desmarcar sob encomenda' : 'Marcar sob encomenda'}</button>
             <button data-del-product="${p.code}">Remover produto</button>
           </span>
         </div>
-        ${colors.length ? `<div class="color-chips">${colorChips}</div>` : `<div style="color:var(--muted);font-size:11px;">Sem variações de cor cadastradas — este item não usa controle de estoque.</div>`}
-        <div class="color-add-row">
-          <input type="text" placeholder="Nova cor (ex: Azul)" data-color-name-input="${p.code}">
-          <input type="number" min="0" placeholder="Estoque inicial" data-color-stock-input="${p.code}">
-          <input type="text" placeholder="URL da foto desta cor (opcional)" data-color-image-input="${p.code}" style="flex:1;min-width:160px;">
-          <input type="number" step="0.01" min="0" placeholder="🔥 Preço promo (opcional)" data-color-promo-input="${p.code}" style="max-width:150px;">
-          <button data-add-color="${p.code}">+ Adicionar cor</button>
-        </div>
-        <div style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px;">
-          <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-family:'IBM Plex Mono';margin-bottom:6px;">Fotos secundárias (galeria)</div>
-          ${gallery.length ? `<div class="color-chips" style="margin-bottom:8px;">${galleryChips}</div>` : ''}
-          <textarea placeholder="Cole uma ou várias URLs de foto, uma por linha" data-gallery-input="${p.code}" rows="3" style="width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);padding:8px 10px;border-radius:8px;font-size:12px;font-family:'Inter';resize:vertical;box-sizing:border-box;"></textarea>
-          <button data-add-gallery="${p.code}" style="margin-top:6px;">+ Adicionar foto(s)</button>
+        <div style="display:${isExpanded ? 'flex' : 'none'};flex-direction:column;gap:8px;">
+          ${colors.length ? `<div class="color-chips">${colorChips}</div>` : `<div style="color:var(--muted);font-size:11px;">Sem variações de cor cadastradas — este item não usa controle de estoque.</div>`}
+          <div class="color-add-row">
+            <input type="text" placeholder="Nova cor (ex: Azul)" data-color-name-input="${p.code}">
+            <input type="number" min="0" placeholder="Estoque inicial" data-color-stock-input="${p.code}">
+            <input type="text" placeholder="URL da foto desta cor (opcional)" data-color-image-input="${p.code}" style="flex:1;min-width:160px;">
+            <input type="number" step="0.01" min="0" placeholder="🔥 Preço promo (opcional)" data-color-promo-input="${p.code}" style="max-width:150px;">
+            <button data-add-color="${p.code}">+ Adicionar cor</button>
+          </div>
+          <div style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px;">
+            <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-family:'IBM Plex Mono';margin-bottom:6px;">Fotos secundárias (galeria)</div>
+            ${gallery.length ? `<div class="color-chips" style="margin-bottom:8px;">${galleryChips}</div>` : ''}
+            <textarea placeholder="Cole uma ou várias URLs de foto, uma por linha" data-gallery-input="${p.code}" rows="3" style="width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);padding:8px 10px;border-radius:8px;font-size:12px;font-family:'Inter';resize:vertical;box-sizing:border-box;"></textarea>
+            <button data-add-gallery="${p.code}" style="margin-top:6px;">+ Adicionar foto(s)</button>
+          </div>
         </div>
       </div>`;
     }).join('') : `<div class="empty">Nenhum produto cadastrado.</div>`;
 
-    root.querySelectorAll('[data-toggle-ondemand]').forEach(btn=>btn.addEventListener('click', async ()=>{
+    root.querySelectorAll('[data-toggle-product]').forEach(el=>el.addEventListener('click', (e)=>{
+      if(e.target.closest('.actions')) return; // não expande/recolhe se clicou nos botões de ação
+      const code = el.dataset.toggleProduct;
+      expandedProductCode = expandedProductCode === code ? null : code;
+      renderAdminLists();
+    }));
+
+    root.querySelectorAll('[data-toggle-ondemand]').forEach(btn=>btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
       const code = btn.dataset.toggleOndemand;
       PRODUCTS = await getJSON('products', PRODUCTS);
       const p = PRODUCTS.find(p=>p.code===code);
@@ -2705,10 +2744,10 @@
     document.getElementById('c-list').innerHTML = CLIENTS.length ? CLIENTS.map(c=>`
       <div class="list-row" style="flex-direction:column;align-items:stretch;gap:4px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-          <span class="mono">${c.code} — ${c.name} — ${c.contact||'sem contato'}${c.document ? ' · '+c.document : ''}</span>
+          <span class="mono">${c.code} — ${c.name} — ${c.contact||'sem contato'}${c.responsavel ? ' · resp.: '+c.responsavel : ''}${c.document ? ' · '+c.document : ''}</span>
           <span class="actions"><button data-del-client="${c.code}">Remover</button></span>
         </div>
-        ${c.notes ? `<div style="color:var(--muted);font-size:11px;">${c.notes}</div>` : ''}
+        ${c.notes ? `<div style="color:var(--muted);font-size:11px;white-space:pre-wrap;">${c.notes}</div>` : ''}
       </div>
     `).join('') : `<div class="empty">Nenhum cliente cadastrado.</div>`;
 
@@ -2745,7 +2784,7 @@
     root.querySelectorAll('[data-approve-req]').forEach(b=>b.addEventListener('click', async ()=>{
       const req = PEDIDOS.find(r=>r.id===b.dataset.approveReq);
       if(!req) return;
-      const entId = 'ENT-' + String(ENTREGAS.length+1).padStart(3,'0');
+      const entId = nextSeqId(ENTREGAS, 'ENT');
       ENTREGAS.push({ id: entId, date: todayISO(), clientCode: req.clientCode, productCode: req.productCode, color: req.color||'', qty: req.qty });
       req.status = 'Aprovado';
       await setJSON('entregas', ENTREGAS);
@@ -3015,15 +3054,16 @@
     const code = document.getElementById('c-code').value.trim().toUpperCase();
     const name = document.getElementById('c-name').value.trim();
     const contact = document.getElementById('c-contact').value.trim();
+    const responsavel = document.getElementById('c-responsavel').value.trim();
     const document_ = document.getElementById('c-document').value.trim();
     const notes = document.getElementById('c-notes').value.trim();
     const msg = document.getElementById('c-msg');
     if(!code || !name){ msg.innerHTML = '<div class="msg err">Preencha código e nome.</div>'; return; }
     if(CLIENTS.some(c=>c.code===code)){ msg.innerHTML = '<div class="msg err">Já existe um cliente com esse código.</div>'; return; }
-    CLIENTS.push({code, name, contact, document: document_, notes, status:'Ativo'});
+    CLIENTS.push({code, name, contact, responsavel, document: document_, notes, status:'Ativo'});
     await setJSON('clients', CLIENTS);
     msg.innerHTML = '<div class="msg ok">Cliente adicionado.</div>';
-    ['c-code','c-name','c-contact','c-document','c-notes'].forEach(id=>document.getElementById(id).value='');
+    ['c-code','c-name','c-contact','c-responsavel','c-document','c-notes'].forEach(id=>document.getElementById(id).value='');
     refreshAdminSelects(); renderAdminLists();
   });
 
@@ -3036,7 +3076,7 @@
     const msg = document.getElementById('e-msg');
     if(!clientCode || !productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto e quantidade.</div>'; return; }
     ENTREGAS = await getJSON('entregas', ENTREGAS);
-    const id = 'ENT-' + String(ENTREGAS.length+1).padStart(3,'0');
+    const id = nextSeqId(ENTREGAS, 'ENT');
     ENTREGAS.push({id, date, clientCode, productCode, color, qty});
     await setJSON('entregas', ENTREGAS);
     msg.innerHTML = '<div class="msg ok">Entrega registrada.</div>';
@@ -3055,7 +3095,7 @@
     const msg = document.getElementById('d-msg');
     if(!clientCode || !productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto e quantidade.</div>'; return; }
     DEVOLUCOES = await getJSON('devolucoes', DEVOLUCOES);
-    const id = 'DEV-' + String(DEVOLUCOES.length+1).padStart(3,'0');
+    const id = nextSeqId(DEVOLUCOES, 'DEV');
     DEVOLUCOES.push({id, date, clientCode, productCode, color, qty, state, obs});
     await setJSON('devolucoes', DEVOLUCOES);
 
@@ -3087,7 +3127,7 @@
     const msg = document.getElementById('a-msg');
     if(!clientCode || !productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto e quantidade.</div>'; return; }
     ACERTOS = await getJSON('acertos', ACERTOS);
-    const id = 'ACT-' + String(ACERTOS.length+1).padStart(3,'0');
+    const id = nextSeqId(ACERTOS, 'ACT');
     ACERTOS.push({id, date, clientCode, productCode, color, qty, status, payDate});
     await setJSON('acertos', ACERTOS);
     msg.innerHTML = '<div class="msg ok">Acerto registrado.</div>';
