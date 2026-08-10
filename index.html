@@ -2530,10 +2530,8 @@
         <div style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px;">
           <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-family:'IBM Plex Mono';margin-bottom:6px;">Fotos secundárias (galeria)</div>
           ${gallery.length ? `<div class="color-chips" style="margin-bottom:8px;">${galleryChips}</div>` : ''}
-          <div class="color-add-row">
-            <input type="text" placeholder="URL de foto adicional" data-gallery-input="${p.code}" style="flex:1;min-width:200px;">
-            <button data-add-gallery="${p.code}">+ Adicionar foto</button>
-          </div>
+          <textarea placeholder="Cole uma ou várias URLs de foto, uma por linha" data-gallery-input="${p.code}" rows="3" style="width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);padding:8px 10px;border-radius:8px;font-size:12px;font-family:'Inter';resize:vertical;box-sizing:border-box;"></textarea>
+          <button data-add-gallery="${p.code}" style="margin-top:6px;">+ Adicionar foto(s)</button>
         </div>
       </div>`;
     }).join('') : `<div class="empty">Nenhum produto cadastrado.</div>`;
@@ -2578,13 +2576,15 @@
     root.querySelectorAll('[data-add-gallery]').forEach(btn=>btn.addEventListener('click', async ()=>{
       const code = btn.dataset.addGallery;
       const input = root.querySelector(`[data-gallery-input="${code}"]`);
-      const url = input.value.trim();
-      if(!url) return;
+      const urls = input.value.split('\n').map(u=>u.trim()).filter(Boolean);
+      if(urls.length === 0) return;
       PRODUCTS = await getJSON('products', PRODUCTS);
       const p = PRODUCTS.find(p=>p.code===code);
       if(!p) return;
       p.gallery = p.gallery || [];
-      p.gallery.push(url);
+      urls.forEach(url=>{
+        if(!p.gallery.includes(url)) p.gallery.push(url);
+      });
       await setJSON('products', PRODUCTS);
       renderAdminLists(); renderPortfolio();
     }));
