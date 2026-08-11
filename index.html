@@ -759,12 +759,8 @@
       </div>
 
       <div id="top-sellers-wrap" style="display:none;">
-        <h3 style="margin-bottom:12px;font-size:14px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Top 5 mais vendidos</h3>
+        <h3 style="margin-bottom:12px;font-size:14px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Mais vendidos</h3>
         <div class="carousel-row" id="top-sellers"></div>
-        <div id="top-sellers-more-wrap" style="display:none;">
-          <div class="carousel-subtitle">6º ao 10º mais vendidos</div>
-          <div class="carousel-row" id="top-sellers-more"></div>
-        </div>
       </div>
 
       <div class="search-wrap" style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -900,15 +896,17 @@
         </div>
 
         <div id="consig-top-sellers-wrap" style="display:none;">
-          <h4 style="margin-bottom:10px;font-size:12px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Top 5 mais vendidos</h4>
+          <h4 style="margin-bottom:10px;font-size:12px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;color:var(--muted);">Mais vendidos</h4>
           <div class="carousel-row" id="consig-top-sellers"></div>
-          <div id="consig-top-sellers-more-wrap" style="display:none;">
-            <div class="carousel-subtitle">6º ao 10º mais vendidos</div>
-            <div class="carousel-row" id="consig-top-sellers-more"></div>
-          </div>
         </div>
-        <div class="search-wrap">
-          <input type="text" id="consig-search" placeholder="🔍 Buscar por nome, código ou categoria..." class="search-input">
+        <div class="search-wrap" style="display:flex;gap:10px;flex-wrap:wrap;">
+          <input type="text" id="consig-search" placeholder="🔍 Buscar por nome, código ou categoria..." class="search-input" style="flex:1;min-width:200px;">
+          <select id="consig-sort" class="search-input" style="width:auto;flex:0 0 auto;">
+            <option value="relevancia">Ordenar: relevância</option>
+            <option value="menor-preco">Menor preço</option>
+            <option value="maior-preco">Maior preço</option>
+            <option value="recentes">Mais recentes</option>
+          </select>
         </div>
         <div class="grid-products" id="consig-grid"></div>
 
@@ -1297,7 +1295,7 @@
   const ADMIN_WHATSAPP_NUMBER = "5534999416973"; // (34) 99941-6973
   const ADMIN_EMAIL = "hl3dsolutions@gmail.com";
   const INSTAGRAM_URL = "https://instagram.com/hl3dsolutions";
-  const MERCADO_LIVRE_URL = ""; // cole aqui o link da sua loja no Mercado Livre quando tiver
+  const MERCADO_LIVRE_URL = "https://www.mercadolivre.com.br/up/MLBU3916039215?matt_tool=38524122&pdp_filters=item_id:MLB4632345935&ua=-mmdIKt90ZG0f215N9GdhfPV79nvuI0o3jTn3HXts8oNK_bF#origin=share&sid=share&wid=MLB4632345935&action=copy";
 
   const root = document.getElementById('portal-root');
   const fmtMoney = v => 'R$ ' + (Number(v)||0).toFixed(2).replace('.', ',');
@@ -1527,7 +1525,7 @@
     const newProducts = PRODUCTS
       .filter(p => p.active !== false && p.createdAt && p.createdAt >= cutoff)
       .sort((a,b) => b.createdAt - a.createdAt)
-      .slice(0, 8);
+      .slice(0, 4);
     if(newProducts.length === 0){ wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
     document.getElementById(listId).innerHTML = newProducts.map(p=>{
@@ -1544,31 +1542,19 @@
     }).join('');
   }
 
-  function renderTopSellers(wrapId, listId, moreWrapId, moreListId, mode){
+  function renderTopSellers(wrapId, listId, mode){
     const sold = {};
     ACERTOS.forEach(a=>{ sold[a.productCode] = (sold[a.productCode]||0) + Number(a.qty); });
     const rankedAll = Object.entries(sold).sort((a,b)=>b[1]-a[1])
       .map(([code, qty])=>({ p: PRODUCTS.find(p=>p.code===code), qty })).filter(r=>r.p);
-    const top5 = rankedAll.slice(0,5);
-    const next5 = rankedAll.slice(5,10);
+    const top10 = rankedAll.slice(0,10);
 
     const wrap = document.getElementById(wrapId);
     if(!wrap) return;
-    if(top5.length === 0){ wrap.style.display = 'none'; return; }
+    if(top10.length === 0){ wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
-    document.getElementById(listId).innerHTML = top5.map((r,i)=>carouselCardHtml(r, i+1, true, mode)).join('');
-
-    if(moreWrapId){
-      const moreWrap = document.getElementById(moreWrapId);
-      if(moreWrap){
-        if(next5.length === 0){ moreWrap.style.display = 'none'; }
-        else {
-          moreWrap.style.display = 'block';
-          document.getElementById(moreListId).innerHTML = next5.map((r,i)=>carouselCardHtml(r, i+6, false, mode)).join('');
-        }
-      }
-    }
-    return top5.map(r=>r.p.code);
+    document.getElementById(listId).innerHTML = top10.map((r,i)=>carouselCardHtml(r, i+1, i<3, mode)).join('');
+    return top10.slice(0,5).map(r=>r.p.code);
   }
 
   function normalizeSearch(s){
@@ -1635,7 +1621,7 @@
     renderPortfolioFilters(active);
     renderPromoCarousel('promo-wrap','promo-carousel');
     renderNewArrivalsCarousel('new-wrap','new-carousel');
-    const topCodes = renderTopSellers('top-sellers-wrap','top-sellers','top-sellers-more-wrap','top-sellers-more') || [];
+    const topCodes = renderTopSellers('top-sellers-wrap','top-sellers') || [];
     const shown = currentCategoryFilter==='Todos' ? active : active.filter(p=>getCategories(p).includes(currentCategoryFilter));
     const searched = shown.filter(p=>matchesSearch(p, portfolioSearchQuery));
     if(searched.length === 0){
@@ -2460,12 +2446,13 @@
     }));
   }
 
+  let consigSortOrder = 'relevancia';
   function renderConsignadoCatalog(){
     const grid = document.getElementById('consig-grid');
     if(!grid) return;
     renderPromoCarousel('consig-promo-wrap','consig-promo-carousel','consignado');
-    renderTopSellers('consig-top-sellers-wrap','consig-top-sellers','consig-top-sellers-more-wrap','consig-top-sellers-more','consignado');
-    const active = PRODUCTS.filter(p => p.active !== false).filter(p=>matchesSearch(p, consigSearchQuery));
+    renderTopSellers('consig-top-sellers-wrap','consig-top-sellers','consignado');
+    const active = sortProducts(PRODUCTS.filter(p => p.active !== false).filter(p=>matchesSearch(p, consigSearchQuery)), consigSortOrder);
     if(active.length === 0){
       grid.innerHTML = `<div class="empty"><div class="glyph">◇</div>Nenhum produto encontrado${consigSearchQuery ? ' para "'+consigSearchQuery+'"' : ''}.</div>`;
       return;
@@ -2519,6 +2506,10 @@
   }
   document.getElementById('consig-search').addEventListener('input', (e)=>{
     consigSearchQuery = e.target.value.trim();
+    renderConsignadoCatalog();
+  });
+  document.getElementById('consig-sort').addEventListener('change', (e)=>{
+    consigSortOrder = e.target.value;
     renderConsignadoCatalog();
   });
 
