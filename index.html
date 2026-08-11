@@ -481,6 +481,22 @@
     color:#fff;font-family:'Space Grotesk';font-weight:800;font-size:10.5px;padding:3px 9px;border-radius:999px;
     box-shadow:0 2px 10px rgba(105,71,199,.5);
   }
+  #portal-root .low-stock-badge{
+    position:absolute;bottom:8px;left:8px;z-index:2;background:rgba(194,51,73,.92);
+    color:#fff;font-family:'Space Grotesk';font-weight:800;font-size:10.5px;padding:3px 9px;border-radius:999px;
+    box-shadow:0 2px 10px rgba(194,51,73,.5);
+  }
+  #portal-root .cart-total-box{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:12px;
+  }
+  #portal-root .cart-total-row{
+    display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);font-family:'IBM Plex Mono';
+    padding:3px 0;
+  }
+  #portal-root .cart-total-row.grand{
+    color:var(--ink);font-weight:700;font-size:15px;font-family:'Space Grotesk';
+    border-top:1px solid var(--line);margin-top:6px;padding-top:8px;
+  }
   #portal-root .card.on-sale{
     border-color:transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,
       linear-gradient(100deg,var(--coral),var(--magenta)) border-box;
@@ -520,6 +536,12 @@
     width:56px;height:56px;border-radius:50%;background:rgba(0,0,0,.55);border:2px solid #fff;
     display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;
   }
+  #portal-root .zoom-btn{
+    position:absolute;bottom:10px;right:10px;z-index:3;width:34px;height:34px;border-radius:50%;
+    background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:15px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:background .15s;
+  }
+  #portal-root .zoom-btn:hover{background:rgba(0,0,0,.8);}
   #portal-root .carousel-arrow{
     position:absolute;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;
     background:rgba(0,0,0,.5);border:none;color:#fff;font-size:20px;cursor:pointer;z-index:3;
@@ -544,6 +566,8 @@
   }
   #portal-root .lightbox-backdrop.open{display:flex;}
   #portal-root .lightbox-backdrop .modal-close{top:16px;right:16px;width:36px;height:36px;font-size:18px;}
+  #portal-root .lightbox-zoomable{transition:transform .2s ease;transform:scale(1);}
+  #portal-root .lightbox-zoomable.zoomed{transform:scale(1.9);cursor:zoom-out;}
   #portal-root .modal-close{
     position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;
     background:rgba(0,0,0,.5);border:none;color:#fff;font-size:16px;cursor:pointer;z-index:2;
@@ -720,6 +744,7 @@
           </div>
         </div>
         <div id="public-cart-msg"></div>
+        <div id="public-cart-total-summary" style="display:none;"></div>
         <button class="btn whatsapp" id="public-cart-submit-btn" style="display:none;margin-top:10px;width:100%;justify-content:center;">Enviar pedido pelo WhatsApp</button>
       </div>
 
@@ -742,8 +767,14 @@
         </div>
       </div>
 
-      <div class="search-wrap">
-        <input type="text" id="portfolio-search" placeholder="🔍 Buscar por nome, código ou categoria..." class="search-input">
+      <div class="search-wrap" style="display:flex;gap:10px;flex-wrap:wrap;">
+        <input type="text" id="portfolio-search" placeholder="🔍 Buscar por nome, código ou categoria..." class="search-input" style="flex:1;min-width:200px;">
+        <select id="portfolio-sort" class="search-input" style="width:auto;flex:0 0 auto;">
+          <option value="relevancia">Ordenar: relevância</option>
+          <option value="menor-preco">Menor preço</option>
+          <option value="maior-preco">Maior preço</option>
+          <option value="recentes">Mais recentes</option>
+        </select>
       </div>
 
       <div class="subnav" id="portfolio-filters"></div>
@@ -1206,7 +1237,10 @@
         <div class="carousel-dots" id="modal-carousel-dots"></div>
       </div>
       <div class="body">
-        <div id="modal-tags" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
+          <div id="modal-tags" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+          <button type="button" id="modal-copy-link-btn" title="Copiar link deste produto" style="flex-shrink:0;background:var(--panel-2);border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:5px 9px;font-size:11px;cursor:pointer;white-space:nowrap;">🔗 Copiar link</button>
+        </div>
         <h3 id="modal-name" style="font-family:'Space Grotesk';font-size:17px;margin-bottom:4px;">—</h3>
         <div class="code" id="modal-code" style="color:var(--muted);font-size:11px;font-family:'IBM Plex Mono';">—</div>
         <div id="modal-description" style="color:var(--muted);font-size:12px;margin-top:8px;line-height:1.5;display:none;"></div>
@@ -1216,6 +1250,7 @@
           <div style="margin-top:6px;"><span class="promo-old-price" id="modal-promo-old" style="font-size:13px;"></span> <span class="promo-new-price" id="modal-promo-new" style="font-size:20px;"></span></div>
         </div>
         <div class="price" id="modal-consignado-wrap" style="margin-top:6px;font-family:'IBM Plex Mono';font-size:14px;color:var(--teal);display:none;"><span class="lbl">Seu preço (consignado)</span><span id="modal-price">—</span></div>
+        <div id="modal-low-stock" style="display:none;margin-top:8px;"></div>
 
         <div class="divider" style="margin:16px 0;"></div>
         <h4 style="font-family:'Space Grotesk';font-size:13px;margin-bottom:10px;">Adicionar ao pedido</h4>
@@ -1232,14 +1267,22 @@
             <button class="btn whatsapp" id="modal-finish-order-btn" style="flex:1;">Finalizar pedido</button>
           </div>
         </div>
+        <div id="modal-related-wrap" style="display:none;margin-top:22px;">
+          <div class="divider" style="margin-bottom:16px;"></div>
+          <h4 style="font-family:'Space Grotesk';font-size:13px;margin-bottom:10px;">Quem viu este também gostou de</h4>
+          <div class="carousel-row" id="modal-related"></div>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="lightbox-backdrop" id="video-lightbox">
     <button class="modal-close" id="lightbox-close-btn">✕</button>
+    <button type="button" class="carousel-arrow left lightbox-arrow" id="lightbox-prev" aria-label="Anterior">‹</button>
+    <button type="button" class="carousel-arrow right lightbox-arrow" id="lightbox-next" aria-label="Próximo">›</button>
     <video id="lightbox-video" controls autoplay playsinline style="max-width:92vw;max-height:88vh;background:#000;display:none;"></video>
     <img id="lightbox-gif" style="max-width:92vw;max-height:88vh;background:#000;display:none;">
+    <img id="lightbox-image" class="lightbox-zoomable" style="max-width:96vw;max-height:92vh;object-fit:contain;display:none;cursor:zoom-in;">
   </div>
 </div>
 
@@ -1371,6 +1414,8 @@
   // ---------- PORTFÓLIO ----------
   let currentCategoryFilter = 'Todos';
   let portfolioSearchQuery = '';
+  let portfolioSortOrder = 'relevancia';
+  const LOW_STOCK_THRESHOLD = 3;
   let consigSearchQuery = '';
   const tagClass = { 'Chaveiro 3D':'teal', 'Fidget':'coral', 'Sensorial':'mustard' };
   const TAG_PALETTE = ['teal','coral','mustard'];
@@ -1536,28 +1581,6 @@
     return haystack.includes(q);
   }
 
-  function renderPortfolio(){
-    const grid = document.getElementById('portfolio-grid');
-    const loading = document.getElementById('portfolio-loading');
-    const empty = document.getElementById('portfolio-empty');
-    loading.style.display = 'none';
-    const active = PRODUCTS.filter(p => p.active !== false);
-    renderPortfolioFilters(active);
-    renderPromoCarousel('promo-wrap','promo-carousel');
-    renderNewArrivalsCarousel('new-wrap','new-carousel');
-    const topCodes = renderTopSellers('top-sellers-wrap','top-sellers','top-sellers-more-wrap','top-sellers-more') || [];
-    const shown = currentCategoryFilter==='Todos' ? active : active.filter(p=>getCategories(p).includes(currentCategoryFilter));
-    const searched = shown.filter(p=>matchesSearch(p, portfolioSearchQuery));
-    if(searched.length === 0){
-      empty.style.display='block'; grid.style.display='none';
-      empty.innerHTML = portfolioSearchQuery
-        ? `<div class="glyph">◇</div>Nenhum produto encontrado para "${portfolioSearchQuery}".`
-        : `<div class="glyph">◇</div>Nenhum produto nesta categoria ainda.`;
-      return;
-    }
-    empty.style.display='none'; grid.style.display='grid';
-    // no filtro "Todos" sem busca ativa, os mais vendidos já aparecem em destaque acima, então não repete na grade
-    const gridItems = (currentCategoryFilter==='Todos' && !portfolioSearchQuery) ? searched.filter(p=>!topCodes.includes(p.code)) : searched;
   function buildCardPriceHtml(p, selectedColorName){
     const colors = p.colors || [];
     const displayPrice = p.publicPrice!=null ? p.publicPrice : p.price;
@@ -1582,6 +1605,51 @@
            </div>`;
   }
 
+  function getTotalStock(p){
+    if(p.onDemand) return null; // sob encomenda não tem limite real de estoque
+    const colors = p.colors || [];
+    if(colors.length === 0) return null; // produto sem controle de cor/estoque
+    return colors.reduce((s,c)=>s + (Number(c.stock)||0), 0);
+  }
+
+  function sortProducts(list, order){
+    const arr = [...list];
+    switch(order){
+      case 'menor-preco':
+        return arr.sort((a,b)=>(a.publicPrice!=null?a.publicPrice:a.price) - (b.publicPrice!=null?b.publicPrice:b.price));
+      case 'maior-preco':
+        return arr.sort((a,b)=>(b.publicPrice!=null?b.publicPrice:b.price) - (a.publicPrice!=null?a.publicPrice:a.price));
+      case 'recentes':
+        return arr.sort((a,b)=>(b.createdAt||0) - (a.createdAt||0));
+      default:
+        return arr;
+    }
+  }
+
+  function renderPortfolio(){
+    const grid = document.getElementById('portfolio-grid');
+    const loading = document.getElementById('portfolio-loading');
+    const empty = document.getElementById('portfolio-empty');
+    loading.style.display = 'none';
+    const active = PRODUCTS.filter(p => p.active !== false);
+    renderPortfolioFilters(active);
+    renderPromoCarousel('promo-wrap','promo-carousel');
+    renderNewArrivalsCarousel('new-wrap','new-carousel');
+    const topCodes = renderTopSellers('top-sellers-wrap','top-sellers','top-sellers-more-wrap','top-sellers-more') || [];
+    const shown = currentCategoryFilter==='Todos' ? active : active.filter(p=>getCategories(p).includes(currentCategoryFilter));
+    const searched = shown.filter(p=>matchesSearch(p, portfolioSearchQuery));
+    if(searched.length === 0){
+      empty.style.display='block'; grid.style.display='none';
+      empty.innerHTML = portfolioSearchQuery
+        ? `<div class="glyph">◇</div>Nenhum produto encontrado para "${portfolioSearchQuery}".`
+        : `<div class="glyph">◇</div>Nenhum produto nesta categoria ainda.`;
+      return;
+    }
+    empty.style.display='none'; grid.style.display='grid';
+    // no filtro "Todos" sem busca ativa, os mais vendidos já aparecem em destaque acima, então não repete na grade
+    const gridItemsRaw = (currentCategoryFilter==='Todos' && !portfolioSearchQuery) ? searched.filter(p=>!topCodes.includes(p.code)) : searched;
+    const gridItems = sortProducts(gridItemsRaw, portfolioSortOrder);
+
     grid.innerHTML = gridItems.map(p=>{
       const colors = p.colors || [];
       const colorsHtml = colors.length ? `<div class="portfolio-colors">${colors.map(c=>`
@@ -1590,9 +1658,12 @@
       const promoColor = !promoInfo ? colors.find(c=>getPromoInfo(p, c.name)) : null;
       const colorOnlyPromo = !!promoColor;
       const cardImage = (promoColor && promoColor.image) ? promoColor.image : p.image;
+      const totalStock = getTotalStock(p);
+      const lowStockHtml = (totalStock !== null && totalStock > 0 && totalStock <= LOW_STOCK_THRESHOLD)
+        ? `<div class="low-stock-badge">⚡ Só ${totalStock} ${totalStock===1?'unidade':'unidades'}!</div>` : '';
       return `
       <div class="card big-photo ${(promoInfo || colorOnlyPromo) ? 'on-sale' : ''}" onclick="window.hlOpenProduct('${p.code}')">
-        <div class="img" id="card-img-${p.code}" style="${cardImage ? `background-image:url('${cardImage.replace(/'/g,"")}')` : ''}">${cardImage ? '' : 'sem foto'}${p.video ? '<span class="video-badge" style="position:absolute;bottom:8px;right:8px;">▶ vídeo</span>' : ''}</div>
+        <div class="img" id="card-img-${p.code}" style="${cardImage ? `background-image:url('${cardImage.replace(/'/g,"")}')` : ''}">${cardImage ? '' : 'sem foto'}${p.video ? '<span class="video-badge" style="position:absolute;bottom:8px;right:8px;">▶ vídeo</span>' : ''}${lowStockHtml}</div>
         <div class="body">
           ${tagsHtml(p)}
           ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
@@ -1603,6 +1674,11 @@
       </div>`;
     }).join('');
   }
+
+  document.getElementById('portfolio-sort').addEventListener('change', (e)=>{
+    portfolioSortOrder = e.target.value;
+    renderPortfolio();
+  });
 
   document.getElementById('portfolio-search').addEventListener('input', (e)=>{
     portfolioSearchQuery = e.target.value.trim();
@@ -1654,7 +1730,10 @@
         </div>`;
       }
       if(item.type === 'image'){
-        return `<div class="carousel-slide"><img src="${item.url}"></div>`;
+        return `<div class="carousel-slide">
+          <img src="${item.url}">
+          <button type="button" class="zoom-btn" onclick="window.hlOpenLightbox()" title="Ampliar foto">🔍</button>
+        </div>`;
       }
       return `<div class="carousel-slide"><span class="slide-placeholder">sem imagem</span></div>`;
     }).join('');
@@ -1728,26 +1807,54 @@
   })();
 
   window.hlOpenLightbox = function(){
+    renderLightboxContent();
+    document.getElementById('video-lightbox').classList.add('open');
+  };
+  function renderLightboxContent(){
     const item = carouselItems[carouselIndex];
-    if(!item || (item.type !== 'video' && item.type !== 'gif')) return;
+    if(!item) return;
     const lbVideo = document.getElementById('lightbox-video');
     const lbGif = document.getElementById('lightbox-gif');
+    const lbImage = document.getElementById('lightbox-image');
+    lbVideo.style.display = 'none'; lbVideo.pause(); lbVideo.removeAttribute('src');
+    lbGif.style.display = 'none'; lbGif.removeAttribute('src');
+    lbImage.style.display = 'none'; lbImage.removeAttribute('src');
     if(item.type === 'video'){
-      lbGif.style.display = 'none'; lbGif.removeAttribute('src');
       lbVideo.src = item.url;
       lbVideo.style.display = 'block';
       lbVideo.play().catch(()=>{});
-    } else {
-      lbVideo.style.display = 'none'; lbVideo.pause(); lbVideo.removeAttribute('src');
+    } else if(item.type === 'gif'){
       lbGif.src = item.url;
       lbGif.style.display = 'block';
+    } else if(item.type === 'image'){
+      lbImage.src = item.url;
+      lbImage.style.display = 'block';
     }
-    document.getElementById('video-lightbox').classList.add('open');
-  };
+    const showArrows = carouselItems.length > 1;
+    document.getElementById('lightbox-prev').classList.toggle('hidden', !showArrows);
+    document.getElementById('lightbox-next').classList.toggle('hidden', !showArrows);
+  }
+  document.getElementById('lightbox-prev').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    carouselIndex = (carouselIndex - 1 + carouselItems.length) % carouselItems.length;
+    updateCarouselPosition();
+    renderLightboxContent();
+  });
+  document.getElementById('lightbox-next').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    carouselIndex = (carouselIndex + 1) % carouselItems.length;
+    updateCarouselPosition();
+    renderLightboxContent();
+  });
+  document.getElementById('lightbox-image').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    e.target.classList.toggle('zoomed');
+  });
   function closeLightbox(){
     document.getElementById('video-lightbox').classList.remove('open');
     const lbVideo = document.getElementById('lightbox-video');
     lbVideo.pause();
+    document.getElementById('lightbox-image').classList.remove('zoomed');
   }
   document.getElementById('lightbox-close-btn').addEventListener('click', closeLightbox);
   document.getElementById('video-lightbox').addEventListener('click', (e)=>{
@@ -1805,8 +1912,43 @@
     modalSelectedColor = null;
 
     updateModalPriceDisplay(p.code);
+    renderRelatedProducts(p);
+    history.replaceState(null, '', '#p=' + encodeURIComponent(p.code));
     document.getElementById('product-modal').classList.add('open');
   }
+
+  function renderRelatedProducts(p){
+    const wrap = document.getElementById('modal-related-wrap');
+    const cats = getCategories(p);
+    const related = PRODUCTS
+      .filter(o => o.code !== p.code && o.active !== false && getCategories(o).some(c=>cats.includes(c)))
+      .slice(0, 6);
+    if(related.length === 0){ wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    document.getElementById('modal-related').innerHTML = related.map(o=>{
+      const displayPrice = o.publicPrice != null ? o.publicPrice : o.price;
+      return `
+      <div class="carousel-card" onclick="window.hlOpenProduct('${o.code}')">
+        <div class="carousel-img" style="${o.image ? `background-image:url('${o.image.replace(/'/g,"")}')` : ''}">${o.image ? '' : 'sem foto'}</div>
+        <div class="carousel-body">
+          <div class="carousel-name">${o.name}</div>
+          <div class="carousel-count">${fmtMoney(displayPrice)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('modal-copy-link-btn').addEventListener('click', async ()=>{
+    const btn = document.getElementById('modal-copy-link-btn');
+    try{
+      await navigator.clipboard.writeText(location.href);
+      const original = btn.textContent;
+      btn.textContent = '✓ Link copiado!';
+      setTimeout(()=>{ btn.textContent = original; }, 1800);
+    }catch(e){
+      alert('Não consegui copiar automaticamente. Copie manualmente pela barra de endereço.');
+    }
+  });
 
   function updateModalPriceDisplay(code){
     const p = PRODUCTS.find(p=>p.code===code);
@@ -1825,6 +1967,28 @@
       document.getElementById('modal-price-normal-wrap').style.display = 'block';
       document.getElementById('modal-promo-wrap').style.display = 'none';
     }
+    // aviso de urgência de estoque — não se aplica a itens sob encomenda (não têm limite real)
+    const lowStockEl = document.getElementById('modal-low-stock');
+    if(p.onDemand){
+      lowStockEl.style.display = 'none';
+    } else {
+      let stockToShow = null;
+      if(activeColor){
+        const c = (p.colors||[]).find(c=>c.name===activeColor);
+        if(c) stockToShow = Number(c.stock)||0;
+      } else {
+        stockToShow = getTotalStock(p);
+      }
+      if(stockToShow !== null && stockToShow > 0 && stockToShow <= LOW_STOCK_THRESHOLD){
+        lowStockEl.style.display = 'block';
+        lowStockEl.innerHTML = `<span class="promo-pct-badge" style="background:linear-gradient(90deg,#C23349,#C85A28);">⚡ Só ${stockToShow} ${stockToShow===1?'unidade':'unidades'} ${activeColor ? 'nesta cor' : ''}!</span>`;
+      } else if(stockToShow === 0){
+        lowStockEl.style.display = 'block';
+        lowStockEl.innerHTML = `<span class="promo-pct-badge" style="background:var(--muted);">Esgotado ${activeColor ? 'nesta cor' : ''}</span>`;
+      } else {
+        lowStockEl.style.display = 'none';
+      }
+    }
   }
   document.getElementById('modal-buyer-color').addEventListener('change', ()=>{
     const code = document.getElementById('modal-buy-btn').dataset.productCode;
@@ -1834,6 +1998,9 @@
     document.getElementById('product-modal').classList.remove('open');
     document.querySelectorAll('#modal-carousel-track video').forEach(v=>v.pause());
     closeLightbox();
+    if(location.hash.startsWith('#p=')){
+      history.replaceState(null, '', location.pathname + location.search);
+    }
   }
   window.hlOpenProduct = openProductModal;
   document.getElementById('modal-close-btn').addEventListener('click', closeProductModal);
@@ -1946,7 +2113,33 @@
     itemsWrap.querySelectorAll('[data-pcart-remove]').forEach(b=>b.addEventListener('click', ()=>{
       publicCart.splice(+b.dataset.pcartRemove,1); renderPublicCart();
     }));
+
+    renderPublicCartTotal();
   }
+
+  function renderPublicCartTotal(){
+    const summaryEl = document.getElementById('public-cart-total-summary');
+    if(!summaryEl || publicCart.length === 0){ if(summaryEl) summaryEl.style.display = 'none'; return; }
+    let subtotal = 0;
+    publicCart.forEach(item=>{
+      const p = PRODUCTS.find(p=>p.code===item.productCode);
+      if(!p) return;
+      const promoInfoItem = getPromoInfo(p, item.color);
+      const price = promoInfoItem ? promoInfoItem.promo : (p.publicPrice!=null ? Number(p.publicPrice) : Number(p.price));
+      subtotal += price * item.qty;
+    });
+    const city = document.getElementById('public-cart-city').value;
+    const frete = city === 'uberaba' ? 5 : null;
+    const total = subtotal + (frete || 0);
+    summaryEl.style.display = 'block';
+    summaryEl.innerHTML = `
+      <div class="cart-total-box">
+        <div class="cart-total-row"><span>Subtotal</span><span>${fmtMoney(subtotal)}</span></div>
+        <div class="cart-total-row"><span>Frete</span><span>${frete != null ? fmtMoney(frete) : 'a combinar'}</span></div>
+        <div class="cart-total-row grand"><span>Total</span><span>${frete != null ? fmtMoney(total) : fmtMoney(subtotal) + ' + frete'}</span></div>
+      </div>`;
+  }
+  document.getElementById('public-cart-city').addEventListener('change', renderPublicCartTotal);
 
   document.getElementById('public-cart-submit-btn').addEventListener('click', ()=>{
     const msgEl = document.getElementById('public-cart-msg');
@@ -3187,6 +3380,14 @@
     if(MERCADO_LIVRE_URL){
       const mlLink = document.getElementById('social-proof-ml-link');
       if(mlLink){ mlLink.href = MERCADO_LIVRE_URL; mlLink.style.display = 'inline-flex'; }
+    }
+    // se a pessoa chegou por um link direto de produto (#p=CODIGO), abre o produto automaticamente
+    const hashMatch = /^#p=(.+)$/.exec(location.hash);
+    if(hashMatch){
+      const codeFromLink = decodeURIComponent(hashMatch[1]);
+      if(PRODUCTS.some(p=>p.code===codeFromLink)){
+        openProductModal(codeFromLink);
+      }
     }
   })();
 })();
