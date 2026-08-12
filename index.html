@@ -123,6 +123,7 @@
   }
   #portal-root .card{
     background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+    display:flex;flex-direction:column;height:100%;
   }
   #portal-root .card .img{
     height:140px;background:var(--panel-2);display:flex;align-items:center;justify-content:center;
@@ -132,7 +133,14 @@
   @media(max-width:520px){
     #portal-root .card.big-photo .img{height:170px;}
   }
-  #portal-root .card .body{padding:14px;}
+  #portal-root .card .body{padding:14px;display:flex;flex-direction:column;flex:1;}
+  #portal-root .card-footer{
+    margin-top:auto;padding-top:10px;display:flex;flex-direction:column;align-items:center;
+    gap:6px;text-align:center;
+  }
+  #portal-root .card-footer .buy-btn{padding:6px 18px;font-size:11px;box-shadow:0 4px 14px rgba(105,71,199,.3);}
+  #portal-root .card-footer .price{margin-top:0;font-size:17px;font-weight:700;font-family:'Space Grotesk';}
+  #portal-root .card-footer .promo-price-block{align-items:center;}
   #portal-root .tag{
     display:inline-block;font-family:'IBM Plex Mono';font-size:10px;text-transform:uppercase;letter-spacing:.05em;
     padding:3px 8px;border-radius:99px;margin-bottom:8px;
@@ -197,6 +205,7 @@
   #portal-root .badge.entrega{background:rgba(14,138,150,.18);color:var(--teal);}
   #portal-root .badge.devolucao{background:rgba(142,142,153,.18);color:var(--muted);}
   #portal-root .badge.acerto{background:rgba(200,90,40,.18);color:var(--coral);}
+  #portal-root .badge.customizavel{background:rgba(105,71,199,.18);color:var(--violet);}
   #portal-root .badge.aprovado{background:rgba(30,148,99,.18);color:var(--green);}
   #portal-root .badge.recusado{background:rgba(194,51,73,.18);color:var(--red);}
 
@@ -322,6 +331,7 @@
   #portal-root .ticket.t-entrega{border-left-color:var(--teal);}
   #portal-root .ticket.t-devolucao{border-left-color:var(--muted);}
   #portal-root .ticket.t-acerto{border-left-color:var(--coral);}
+  #portal-root .ticket.t-venda{border-left-color:var(--green);}
   #portal-root .ticket .glyph{font-size:14px;margin-right:8px;opacity:.85;}
   #portal-root .subnav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
   #portal-root .search-wrap{margin-bottom:14px;}
@@ -364,6 +374,16 @@
     font-size:13px;gap:10px;flex-wrap:wrap;
   }
   #portal-root .list-row:last-child{border-bottom:none;}
+  #portal-root .client-link{color:var(--violet);text-decoration:none;font-weight:600;cursor:pointer;}
+  #portal-root .client-link:hover{text-decoration:underline;}
+  #portal-root .client-link-code{color:var(--muted);font-weight:400;}
+  #portal-root .client-highlight{
+    animation:client-highlight-pulse 1.8s ease-in-out 2;
+  }
+  @keyframes client-highlight-pulse{
+    0%,100%{background:transparent;}
+    50%{background:rgba(105,71,199,.18);}
+  }
   #portal-root .list-row .actions{display:flex;gap:6px;}
   #portal-root .list-row .actions button{
     background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
@@ -667,6 +687,17 @@
     width:18px;height:18px;border-radius:50%;line-height:1;
   }
   #portal-root .color-chip button:hover{background:var(--line);color:var(--ink);}
+  #portal-root .color-chip-editing{
+    border-radius:8px;padding:6px 8px;gap:6px;background:var(--panel);border-color:var(--violet);
+  }
+  #portal-root .color-chip-editing input{
+    background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
+    padding:4px 8px;border-radius:6px;font-size:11px;font-family:'Inter';
+  }
+  #portal-root .color-chip-editing button{
+    width:auto;border-radius:6px;padding:4px 8px;background:var(--panel-2);border:1px solid var(--line);
+  }
+  #portal-root .color-chip-editing button[data-save-color]{background:var(--green);color:#fff;border-color:var(--green);}
   #portal-root .color-add-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
   #portal-root .color-add-row input{
     background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
@@ -736,13 +767,13 @@
             <div class="cover-eyebrow">HL 3D Solutions</div>
             <div class="cover-title">Peças Únicas, Feitas Pra Você</div>
             <div class="cover-rule"></div>
-            <div class="cover-sub">Chaveiros 3D, fidgets, itens sensoriais e peças personalizadas sob medida, impressos com capricho. Escolha, veja em movimento e peça pelo WhatsApp — entrega rápida em Uberaba/MG e envio para todo o Brasil.</div>
+            <div class="cover-sub">Escolha, veja em movimento e peça pelo WhatsApp — entrega rápida em Uberaba/MG e envio para todo o Brasil.</div>
           </div>
         </div>
       </div>
 
       <div class="social-proof-bar" id="social-proof-bar">
-        <div class="social-proof-text">✨ Centenas de peças já saíram daqui! Segue <strong>@hl3dsolutions</strong> no Insta pra ver tudo em movimento antes de todo mundo 👀🔥</div>
+        <div class="social-proof-text">Segue <strong>@hl3dsolutions</strong> no Insta e confere as avaliações no ML 👇</div>
         <div class="social-proof-links">
           <a href="https://instagram.com/hl3dsolutions" target="_blank" rel="noopener" class="social-proof-btn instagram">📷 Ver no Instagram</a>
           <a href="#" id="social-proof-ml-link" target="_blank" rel="noopener" class="social-proof-btn mercadolivre" style="display:none;">🛒 Avaliações no Mercado Livre</a>
@@ -982,6 +1013,7 @@
           <button data-admin-tab="entregas">Lançar entrega</button>
           <button data-admin-tab="devolucoes">Lançar devolução</button>
           <button data-admin-tab="acertos">Lançar acerto</button>
+          <button data-admin-tab="venda-direta">Venda direta (fora do consignado)</button>
           <button data-admin-tab="pedidos">Pedidos de reposição <span id="pedidos-badge" class="badge pendente" style="display:none;margin-left:4px;">0</span></button>
           <button data-admin-tab="relatorio">Relatório</button>
           <button data-admin-tab="documentos">Documentos</button>
@@ -1040,6 +1072,12 @@
               <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);cursor:pointer;">
                 <input type="checkbox" id="p-ondemand" style="width:16px;height:16px;">
                 Item personalizado feito só sob encomenda (sem controle de estoque, sempre aparece como "Sob encomenda")
+              </label>
+            </div>
+            <div class="row" style="align-items:center;">
+              <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);cursor:pointer;">
+                <input type="checkbox" id="p-customizable" style="width:16px;height:16px;">
+                ✨ Este item também pode ser feito personalizado, além da versão padrão (adiciona um aviso na descrição e a categoria "Personalizável" automaticamente)
               </label>
             </div>
             <div id="p-first-color-wrap">
@@ -1165,6 +1203,28 @@
             <button class="btn" id="a-add-btn">Registrar acerto</button>
           </div>
           <div class="panel" style="margin-top:20px;"><h3 style="font-size:14px;margin-bottom:8px;">Últimos acertos</h3><div id="a-list"></div></div>
+        </div>
+
+        <!-- VENDA DIRETA (fora do consignado) -->
+        <div class="admin-tab" data-tab="venda-direta" style="display:none;">
+          <div class="panel">
+            <h3 style="font-size:14px;margin-bottom:6px;">Registrar venda direta</h3>
+            <p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Use isto quando o parceiro compra uma peça sua avulsa — que não faz parte do estoque em consignação — e já paga na hora. Fica registrado no histórico dele como comprovante, sem entrar nos cálculos de saldo/consignado.</p>
+            <div class="row">
+              <div class="field"><label>Cliente</label><select id="v-client"></select></div>
+              <div class="field"><label>Produto</label><select id="v-product"></select></div>
+              <div class="field"><label>Cor</label><select id="v-color"></select></div>
+              <div class="field"><label>Quantidade</label><input id="v-qty" type="number" min="1" placeholder="1"></div>
+            </div>
+            <div class="row">
+              <div class="field"><label>Valor total pago (R$)</label><input id="v-total" type="number" step="0.01" min="0" placeholder="45.00"></div>
+              <div class="field"><label>Data</label><input id="v-date" type="date"></div>
+              <div class="field" style="flex:2;"><label>Observação (opcional)</label><input id="v-obs" placeholder="Ex.: pago no Pix, retirado pessoalmente..."></div>
+            </div>
+            <div id="v-msg"></div>
+            <button class="btn" id="v-add-btn">Registrar venda</button>
+          </div>
+          <div class="panel" style="margin-top:20px;"><h3 style="font-size:14px;margin-bottom:8px;">Últimas vendas diretas</h3><div id="v-list"></div></div>
         </div>
 
         <!-- PEDIDOS -->
@@ -1345,7 +1405,7 @@
     return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} às ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
 
-  let PRODUCTS = [], CLIENTS = [], ENTREGAS = [], DEVOLUCOES = [], ACERTOS = [], PEDIDOS = [], DOCUMENTS = [];
+  let PRODUCTS = [], CLIENTS = [], ENTREGAS = [], DEVOLUCOES = [], ACERTOS = [], PEDIDOS = [], DOCUMENTS = [], VENDAS = [];
   let currentClientCode = null;
   let modalSelectedColor = null;
   let KNOWN_CATEGORIES = [];
@@ -1367,6 +1427,7 @@
     PEDIDOS = await getJSON('pedidos', []);
     KNOWN_CATEGORIES = await getJSON('categories', []);
     DOCUMENTS = await getJSON('documents', []);
+    VENDAS = await getJSON('vendas', []);
 
     if(PRODUCTS.length === 0 && CLIENTS.length === 0){
       // seed inicial de demonstração, consistente com o contrato e a planilha
@@ -1391,7 +1452,7 @@
       if(KNOWN_CATEGORIES.length) await setJSON('categories', KNOWN_CATEGORIES);
     }
     // adiciona as categorias sugeridas que ainda não existem na lista, sem duplicar
-    const suggestedCategories = ['Chaveiros','Brinquedos','Fidgets','Pets / Mascotes','Flexíveis / Articulados','Decoração','Utilidades','Personalizados sob encomenda','Colecionáveis','Vasos / Ornamentos'];
+    const suggestedCategories = ['Chaveiros','Brinquedos','Fidgets','Pets / Mascotes','Flexíveis / Articulados','Decoração','Utilidades','Personalizados sob encomenda','Colecionáveis','Vasos / Ornamentos','Personalizável'];
     const missingCategories = suggestedCategories.filter(c=>!KNOWN_CATEGORIES.includes(c));
     if(missingCategories.length){
       KNOWN_CATEGORIES = [...KNOWN_CATEGORIES, ...missingCategories];
@@ -1407,6 +1468,7 @@
     PEDIDOS = await getJSON('pedidos', PEDIDOS);
     KNOWN_CATEGORIES = await getJSON('categories', KNOWN_CATEGORIES);
     DOCUMENTS = await getJSON('documents', DOCUMENTS);
+    VENDAS = await getJSON('vendas', VENDAS);
   }
   async function saveAll(){
     await setJSON('products', PRODUCTS);
@@ -1458,7 +1520,7 @@
     return TAG_PALETTE[hash % TAG_PALETTE.length];
   }
   function tagsHtml(p){
-    const cats = getCategories(p);
+    const cats = getCategories(p).filter(c => c !== CUSTOMIZABLE_CATEGORY);
     if(cats.length === 0) return `<span class="tag teal">Produto</span>`;
     return cats.map(c=>`<span class="tag ${tagColorFor(c)}">${c}</span>`).join(' ');
   }
@@ -1605,23 +1667,22 @@
     const colors = p.colors || [];
     const displayPrice = p.publicPrice!=null ? p.publicPrice : p.price;
     const info = selectedColorName ? getPromoInfo(p, selectedColorName) : getPromoInfo(p);
+    const buyBtn = `<button type="button" class="btn buy-btn" onclick="event.stopPropagation();window.hlOpenProduct('${p.code}')">Comprar</button>`;
     if(info){
-      return `<div class="price-buy-row">
+      return `<div class="card-footer">
              <div class="portfolio-list-price promo-price-block">
                <span class="promo-pct-badge">🔥 -${info.pct}%</span>
                <span class="promo-old-price">${fmtMoney(info.base)}</span>
                <span class="promo-new-price">${fmtMoney(info.promo)}</span>
              </div>
-             <button type="button" class="btn buy-btn" onclick="event.stopPropagation();window.hlOpenProduct('${p.code}')">Comprar</button>
+             ${buyBtn}
            </div>`;
     }
     const colorOnlyPromoObj = !selectedColorName ? colors.find(c=>getPromoInfo(p, c.name)) : null;
-    return `<div class="price-buy-row">
-             <div>
-               <div class="price">${fmtMoney(displayPrice)}</div>
-               ${colorOnlyPromoObj ? `<div class="promo-pct-badge" style="margin-top:4px;">🔥 promoção na cor ${colorOnlyPromoObj.name}</div>` : ''}
-             </div>
-             <button type="button" class="btn buy-btn" onclick="event.stopPropagation();window.hlOpenProduct('${p.code}')">Comprar</button>
+    return `<div class="card-footer">
+             <div class="price">${fmtMoney(displayPrice)}</div>
+             ${colorOnlyPromoObj ? `<div class="promo-pct-badge" style="margin-bottom:2px;">🔥 promoção na cor ${colorOnlyPromoObj.name}</div>` : ''}
+             ${buyBtn}
            </div>`;
   }
 
@@ -1687,6 +1748,7 @@
         <div class="body">
           ${tagsHtml(p)}
           ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
+          ${p.customizable ? '<span class="badge customizavel" style="margin-left:4px;">✨ Personalizável</span>' : ''}
           <h3>${p.name}</h3>
           <div id="price-block-${p.code}">${buildCardPriceHtml(p, null)}</div>
           ${colorsHtml}
@@ -2214,10 +2276,15 @@
       ...ENTREGAS.filter(e=>e.clientCode===code).map(e=>({type:'entrega', date:e.date, id:e.id, desc:`Entrega de ${e.qty}x ${productName(e.productCode)}`})),
       ...DEVOLUCOES.filter(d=>d.clientCode===code).map(d=>({type:'devolucao', date:d.date, id:d.id, desc:`Devolução de ${d.qty}x ${productName(d.productCode)}`})),
       ...ACERTOS.filter(a=>a.clientCode===code).map(a=>({type:'acerto', date:a.date, id:a.id, desc:`Acerto: ${a.qty}x ${productName(a.productCode)} — ${fmtMoney(a.qty*productPrice(a.productCode))}`, status:a.status})),
+      ...VENDAS.filter(v=>v.clientCode===code).map(v=>({type:'venda', date:v.date, id:v.id, desc:`✅ Compra paga: ${v.qty}x ${productName(v.productCode)}${v.color ? ' ('+v.color+')' : ''} — ${fmtMoney(v.total)}${v.obs ? ' · '+v.obs : ''}`})),
     ];
     return items.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
   }
   function productName(code){ const p = PRODUCTS.find(p=>p.code===code); return p ? p.name : code; }
+  function clientName(code){ const c = CLIENTS.find(c=>c.code===code); return c ? c.name : code; }
+  function clientLinkHtml(code){
+    return `<a href="#" class="client-link" data-goto-client="${code}" title="Ver cadastro deste cliente">${clientName(code)} <span class="client-link-code">(${code})</span></a>`;
+  }
   function productPrice(code){ const p = PRODUCTS.find(p=>p.code===code); return p ? Number(p.price) : 0; }
 
   function buildClientReport(clientCode){
@@ -2436,9 +2503,9 @@
     renderClientRequests(client.code);
 
     const hist = clientHistory(client.code);
-    const badgeClass = { entrega:'entrega', devolucao:'devolucao', acerto:'acerto' };
-    const badgeLabel = { entrega:'Entrega', devolucao:'Devolução', acerto:'Acerto' };
-    const typeGlyph = { entrega:'▲', devolucao:'▼', acerto:'◆' };
+    const badgeClass = { entrega:'entrega', devolucao:'devolucao', acerto:'acerto', venda:'pago' };
+    const badgeLabel = { entrega:'Entrega', devolucao:'Devolução', acerto:'Acerto', venda:'Compra paga' };
+    const typeGlyph = { entrega:'▲', devolucao:'▼', acerto:'◆', venda:'✓' };
     document.getElementById('client-history').innerHTML = hist.length ? hist.map(h=>`
       <div class="ticket t-${h.type}">
         <div class="left">
@@ -2524,6 +2591,7 @@
         <div class="body">
           ${tagsHtml(p)}
           ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
+          ${p.customizable ? '<span class="badge customizavel" style="margin-left:4px;">✨ Personalizável</span>' : ''}
           <h3>${p.name}</h3>
           <div class="code">${p.code}</div>
           ${publicPriceHtml}
@@ -2766,16 +2834,18 @@
   function refreshAdminSelects(){
     const clientOpts = CLIENTS.map(c=>`<option value="${c.code}">${c.code} — ${c.name}</option>`).join('');
     const productOpts = PRODUCTS.map(p=>`<option value="${p.code}">${p.code} — ${p.name}</option>`).join('');
-    ['e-client','d-client','a-client'].forEach(id=>document.getElementById(id).innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>');
+    ['e-client','d-client','a-client','v-client'].forEach(id=>document.getElementById(id).innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>');
     document.getElementById('rep-client').innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>';
     document.getElementById('doc-client').innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>';
-    ['e-product','d-product','a-product'].forEach(id=>document.getElementById(id).innerHTML = productOpts || '<option value="">Cadastre um produto primeiro</option>');
+    ['e-product','d-product','a-product','v-product'].forEach(id=>document.getElementById(id).innerHTML = productOpts || '<option value="">Cadastre um produto primeiro</option>');
     document.getElementById('e-date').value = todayISO();
     document.getElementById('d-date').value = todayISO();
     document.getElementById('a-date').value = todayISO();
+    document.getElementById('v-date').value = todayISO();
     updateColorSelect('e-product','e-color');
     updateColorSelect('d-product','d-color');
     updateColorSelect('a-product','a-color');
+    updateColorSelect('v-product','v-color');
     renderCategoryPicker();
     const bulkCategorySelect = document.getElementById('bulk-category');
     if(bulkCategorySelect){
@@ -2800,13 +2870,14 @@
       return `<option value="${c.name}">${c.name}${stockLabel}</option>`;
     }).join('');
   }
-  ['e-product','d-product','a-product'].forEach(id=>{
+  ['e-product','d-product','a-product','v-product'].forEach(id=>{
     document.getElementById(id).addEventListener('change', ()=>{
       updateColorSelect(id, id.replace('-product','-color'));
     });
   });
 
   let expandedProductCode = null;
+  let editingColorKey = null; // formato "CODIGO_PRODUTO|NOME_DA_COR"
 
   function renderAdminLists(){
     renderDocList();
@@ -2815,6 +2886,16 @@
       const gallery = p.gallery || [];
       const isExpanded = expandedProductCode === p.code;
       const colorChips = colors.map(c=>{
+        const key = `${p.code}|${c.name}`;
+        if(editingColorKey === key){
+          return `
+          <span class="color-chip color-chip-editing">
+            <input type="text" data-edit-color-name="${key}" value="${c.name.replace(/"/g,'&quot;')}" placeholder="Nome da cor" style="width:110px;">
+            <input type="text" data-edit-color-image="${key}" value="${(c.image||'').replace(/"/g,'&quot;')}" placeholder="URL da foto (opcional)" style="width:180px;">
+            <button data-save-color="${key}" title="Salvar alterações">✓ Salvar</button>
+            <button data-cancel-edit-color="${key}" title="Cancelar">Cancelar</button>
+          </span>`;
+        }
         const colorPromoInfo = getPromoInfo(p, c.name);
         return `
         <span class="color-chip ${Number(c.stock)<=0?'out':''}">
@@ -2822,6 +2903,7 @@
           ${colorPromoInfo ? ` · 🔥 <s>${fmtMoney(colorPromoInfo.base)}</s> ${fmtMoney(colorPromoInfo.promo)}` : ''}
           <button data-adj-color="${p.code}|${c.name}|-1" title="Diminuir 1 do estoque">−</button>
           <button data-adj-color="${p.code}|${c.name}|1" title="Aumentar 1 no estoque">+</button>
+          <button data-edit-color="${key}" title="Editar nome/foto desta cor">✏️</button>
           <button data-promo-color="${p.code}|${c.name}" title="${colorPromoInfo ? 'Editar/remover promoção desta cor' : 'Colocar esta cor em promoção'}">🔥</button>
           <button data-del-color="${p.code}|${c.name}" title="Remover esta cor">✕</button>
         </span>`;
@@ -2840,7 +2922,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;cursor:pointer;" data-toggle-product="${p.code}">
           <span class="mono">
             <span style="display:inline-block;transition:transform .15s;transform:rotate(${isExpanded?90:0}deg);margin-right:4px;">▸</span>
-            ${p.code} — ${p.name} (${catsLine}) — ${priceLine}${p.video ? ' · 🎬' : ''}${p.onDemand ? ' · <span class="badge acerto">Sob encomenda</span>' : ''}
+            ${p.code} — ${p.name} (${catsLine}) — ${priceLine}${p.video ? ' · 🎬' : ''}${p.onDemand ? ' · <span class="badge acerto">Sob encomenda</span>' : ''}${p.customizable ? ' · <span class="badge customizavel">✨ Personalizável</span>' : ''}
           </span>
           <span class="actions">
             <button data-edit-product="${p.code}">Editar</button>
@@ -2903,6 +2985,7 @@
       document.getElementById('p-video').value = p.video || '';
       document.getElementById('p-desc').value = p.description || '';
       document.getElementById('p-ondemand').checked = !!p.onDemand;
+      document.getElementById('p-customizable').checked = !!p.customizable;
       document.getElementById('p-first-color-wrap').style.display = 'none';
       document.getElementById('p-form-title').textContent = `Editando: ${p.code} — ${p.name}`;
       document.getElementById('p-add-btn').textContent = 'Salvar alterações';
@@ -2960,6 +3043,56 @@
       await setJSON('products', PRODUCTS);
       refreshAdminSelects(); renderAdminLists(); renderPortfolio();
     }));
+    root.querySelectorAll('[data-edit-color]').forEach(btn=>btn.addEventListener('click', ()=>{
+      editingColorKey = btn.dataset.editColor;
+      renderAdminLists();
+    }));
+    root.querySelectorAll('[data-cancel-edit-color]').forEach(btn=>btn.addEventListener('click', ()=>{
+      editingColorKey = null;
+      renderAdminLists();
+    }));
+    root.querySelectorAll('[data-save-color]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const key = btn.dataset.saveColor;
+      const [code, oldName] = key.split('|');
+      const nameInput = root.querySelector(`[data-edit-color-name="${key}"]`);
+      const imageInput = root.querySelector(`[data-edit-color-image="${key}"]`);
+      const newName = nameInput.value.trim();
+      const newImage = imageInput.value.trim();
+      if(!newName){ alert('O nome da cor não pode ficar em branco.'); return; }
+
+      PRODUCTS = await getJSON('products', PRODUCTS);
+      const p = PRODUCTS.find(p=>p.code===code);
+      if(!p) return;
+      const c = (p.colors||[]).find(c=>c.name===oldName);
+      if(!c) return;
+
+      const nameChanged = newName !== oldName;
+      if(nameChanged && p.colors.some(other=>other!==c && other.name.toLowerCase()===newName.toLowerCase())){
+        alert('Já existe outra cor com esse nome neste produto.'); return;
+      }
+
+      if(nameChanged){
+        // atualiza em cascata os registros que referenciam o nome antigo desta cor, pra manter o histórico consistente
+        ENTREGAS = await getJSON('entregas', ENTREGAS);
+        DEVOLUCOES = await getJSON('devolucoes', DEVOLUCOES);
+        ACERTOS = await getJSON('acertos', ACERTOS);
+        PEDIDOS = await getJSON('pedidos', PEDIDOS);
+        ENTREGAS.forEach(e=>{ if(e.productCode===code && e.color===oldName) e.color = newName; });
+        DEVOLUCOES.forEach(d=>{ if(d.productCode===code && d.color===oldName) d.color = newName; });
+        ACERTOS.forEach(a=>{ if(a.productCode===code && a.color===oldName) a.color = newName; });
+        PEDIDOS.forEach(r=>{ if(r.productCode===code && r.color===oldName) r.color = newName; });
+        await setJSON('entregas', ENTREGAS);
+        await setJSON('devolucoes', DEVOLUCOES);
+        await setJSON('acertos', ACERTOS);
+        await setJSON('pedidos', PEDIDOS);
+        c.name = newName;
+      }
+      c.image = newImage;
+
+      await setJSON('products', PRODUCTS);
+      editingColorKey = null;
+      refreshAdminSelects(); renderAdminLists(); renderPortfolio();
+    }));
     root.querySelectorAll('[data-promo-color]').forEach(btn=>btn.addEventListener('click', async ()=>{
       const [code, colorName] = btn.dataset.promoColor.split('|');
       PRODUCTS = await getJSON('products', PRODUCTS);
@@ -2996,7 +3129,7 @@
     }));
 
     document.getElementById('c-list').innerHTML = CLIENTS.length ? CLIENTS.map(c=>`
-      <div class="list-row" style="flex-direction:column;align-items:stretch;gap:4px;">
+      <div class="list-row" id="client-row-${c.code}" style="flex-direction:column;align-items:stretch;gap:4px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
           <span class="mono">${c.code} — ${c.name} — ${c.contact||'sem contato'}${c.responsavel ? ' · resp.: '+c.responsavel : ''}${c.document ? ' · '+c.document : ''}</span>
           <span class="actions"><button data-del-client="${c.code}">Remover</button></span>
@@ -3006,19 +3139,24 @@
     `).join('') : `<div class="empty">Nenhum cliente cadastrado.</div>`;
 
     document.getElementById('e-list').innerHTML = ENTREGAS.slice().reverse().slice(0,8).map(e=>`
-      <div class="list-row"><span class="mono">${e.id} · ${fmtDate(e.date)} · ${e.clientCode} · ${e.qty}x ${productName(e.productCode)}${e.color ? ' ('+e.color+')' : ''}</span>
+      <div class="list-row"><span class="mono">${e.id} · ${fmtDate(e.date)} · ${clientLinkHtml(e.clientCode)} · ${e.qty}x ${productName(e.productCode)}${e.color ? ' ('+e.color+')' : ''}</span>
       <span class="actions"><button data-del-entrega="${e.id}">Remover</button></span></div>
     `).join('') || `<div class="empty">Nenhuma entrega registrada.</div>`;
 
     document.getElementById('d-list').innerHTML = DEVOLUCOES.slice().reverse().slice(0,8).map(d=>`
-      <div class="list-row"><span class="mono">${d.id} · ${fmtDate(d.date)} · ${d.clientCode} · ${d.qty}x ${productName(d.productCode)}${d.color ? ' ('+d.color+')' : ''} · ${d.state}</span>
+      <div class="list-row"><span class="mono">${d.id} · ${fmtDate(d.date)} · ${clientLinkHtml(d.clientCode)} · ${d.qty}x ${productName(d.productCode)}${d.color ? ' ('+d.color+')' : ''} · ${d.state}</span>
       <span class="actions"><button data-del-devolucao="${d.id}">Remover</button></span></div>
     `).join('') || `<div class="empty">Nenhuma devolução registrada.</div>`;
 
     document.getElementById('a-list').innerHTML = ACERTOS.slice().reverse().slice(0,8).map(a=>`
-      <div class="list-row"><span class="mono">${a.id} · ${fmtDate(a.date)} · ${a.clientCode} · ${a.qty}x ${productName(a.productCode)}${a.color ? ' ('+a.color+')' : ''}</span>
+      <div class="list-row"><span class="mono">${a.id} · ${fmtDate(a.date)} · ${clientLinkHtml(a.clientCode)} · ${a.qty}x ${productName(a.productCode)}${a.color ? ' ('+a.color+')' : ''}</span>
       <span class="actions"><span class="badge ${a.status.toLowerCase()}">${a.status}</span><button data-del-acerto="${a.id}">Remover</button></span></div>
     `).join('') || `<div class="empty">Nenhum acerto registrado.</div>`;
+
+    document.getElementById('v-list').innerHTML = VENDAS.slice().reverse().slice(0,8).map(v=>`
+      <div class="list-row"><span class="mono">${v.id} · ${fmtDate(v.date)} · ${clientLinkHtml(v.clientCode)} · ${v.qty}x ${productName(v.productCode)}${v.color ? ' ('+v.color+')' : ''} · ${fmtMoney(v.total)}${v.obs ? ' · '+v.obs : ''}</span>
+      <span class="actions"><span class="badge pago">Pago</span><button data-del-venda="${v.id}">Remover</button></span></div>
+    `).join('') || `<div class="empty">Nenhuma venda direta registrada.</div>`;
 
     const pendentes = PEDIDOS.filter(r=>r.status==='Pendente');
     const badge = document.getElementById('pedidos-badge');
@@ -3028,7 +3166,7 @@
     const statusClass = { Pendente:'pendente', Aprovado:'aprovado', Recusado:'recusado' };
     document.getElementById('req-list').innerHTML = PEDIDOS.length ? PEDIDOS.slice().reverse().map(r=>`
       <div class="list-row">
-        <span class="mono">${r.id} · ${fmtDate(r.date)} · ${r.clientCode} · ${r.qty}x ${productName(r.productCode)}${r.color ? ' ('+r.color+')' : ''}${r.note ? ' · "'+r.note+'"' : ''}</span>
+        <span class="mono">${r.id} · ${fmtDate(r.date)} · ${clientLinkHtml(r.clientCode)} · ${r.qty}x ${productName(r.productCode)}${r.color ? ' ('+r.color+')' : ''}${r.note ? ' · "'+r.note+'"' : ''}</span>
         <span class="actions">
           ${r.type==='producao' ? '<span class="badge acerto" style="margin-right:6px;">Produção</span>' : ''}
           <span class="badge ${statusClass[r.status]}" style="margin-right:6px;">${r.status}</span>
@@ -3057,6 +3195,13 @@
       ACERTOS = await getJSON('acertos', ACERTOS);
       ACERTOS = ACERTOS.filter(a=>a.id!==b.dataset.delAcerto);
       await setJSON('acertos', ACERTOS);
+      renderAdminLists();
+    }));
+    root.querySelectorAll('[data-del-venda]').forEach(b=>b.addEventListener('click', async ()=>{
+      if(!confirm('Remover esta venda direta do histórico do cliente? Use apenas para corrigir lançamentos errados (ex.: dados de teste).')) return;
+      VENDAS = await getJSON('vendas', VENDAS);
+      VENDAS = VENDAS.filter(v=>v.id!==b.dataset.delVenda);
+      await setJSON('vendas', VENDAS);
       renderAdminLists();
     }));
     root.querySelectorAll('[data-del-pedido]').forEach(b=>b.addEventListener('click', async ()=>{
@@ -3099,6 +3244,24 @@
     root.querySelectorAll('[data-del-client]').forEach(b=>b.addEventListener('click', async ()=>{
       CLIENTS = CLIENTS.filter(c=>c.code!==b.dataset.delClient);
       await setJSON('clients', CLIENTS); refreshAdminSelects(); renderAdminLists();
+    }));
+    root.querySelectorAll('[data-goto-client]').forEach(a=>a.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const code = a.dataset.gotoClient;
+      // troca pra aba de clientes
+      root.querySelectorAll('[data-admin-tab]').forEach(b=>b.classList.remove('active'));
+      root.querySelector('[data-admin-tab="clientes"]').classList.add('active');
+      root.querySelectorAll('.admin-tab').forEach(t=>t.style.display='none');
+      root.querySelector('.admin-tab[data-tab="clientes"]').style.display='block';
+      // rola até o cliente e dá um destaque visual temporário
+      setTimeout(()=>{
+        const row = document.getElementById('client-row-'+code);
+        if(row){
+          row.scrollIntoView({behavior:'smooth', block:'center'});
+          row.classList.add('client-highlight');
+          setTimeout(()=>row.classList.remove('client-highlight'), 3700);
+        }
+      }, 50);
     }));
   }
 
@@ -3149,6 +3312,7 @@
     ['p-code','p-name','p-public-price','p-price','p-promo-price','p-img','p-video','p-desc','p-first-color-name','p-first-color-stock','p-first-color-img'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('p-prefix').value = '';
     document.getElementById('p-ondemand').checked = false;
+    document.getElementById('p-customizable').checked = false;
     document.getElementById('p-code').disabled = false;
     document.getElementById('p-form-title').textContent = 'Novo produto';
     document.getElementById('p-add-btn').textContent = 'Adicionar produto';
@@ -3181,6 +3345,20 @@
     }
   });
 
+  const CUSTOMIZABLE_NOTE = '✨ Este produto também pode ser feito personalizado (cor, nome, tema, etc.) — combine os detalhes pelo WhatsApp.';
+  const CUSTOMIZABLE_CATEGORY = 'Personalizável';
+  function applyCustomizableSync(description, categories, isCustomizable){
+    // remove qualquer ocorrência anterior do aviso automático, pra não duplicar ao marcar/desmarcar várias vezes
+    let desc = description.split(CUSTOMIZABLE_NOTE).join('').trim();
+    desc = desc.replace(/\n{3,}/g, '\n\n').trim();
+    let cats = categories.filter(c=>c !== CUSTOMIZABLE_CATEGORY);
+    if(isCustomizable){
+      desc = desc ? `${desc}\n\n${CUSTOMIZABLE_NOTE}` : CUSTOMIZABLE_NOTE;
+      cats = [...cats, CUSTOMIZABLE_CATEGORY];
+    }
+    return { description: desc, categories: cats };
+  }
+
   document.getElementById('p-add-btn').addEventListener('click', async ()=>{
     const code = document.getElementById('p-code').value.trim().toUpperCase();
     const name = document.getElementById('p-name').value.trim();
@@ -3190,8 +3368,9 @@
     const promoPrice = promoPriceRaw.trim() === '' ? null : parseFloat(promoPriceRaw);
     const image = document.getElementById('p-img').value.trim();
     const video = document.getElementById('p-video').value.trim();
-    const description = document.getElementById('p-desc').value.trim();
+    const descriptionRaw = document.getElementById('p-desc').value.trim();
     const onDemand = document.getElementById('p-ondemand').checked;
+    const customizable = document.getElementById('p-customizable').checked;
     const msg = document.getElementById('p-msg');
     if(!code || !name || isNaN(price)){ msg.innerHTML = '<div class="msg err">Preencha ao menos código, nome e valor consignado.</div>'; return; }
 
@@ -3225,16 +3404,18 @@
         p.code = code;
       }
 
+      const synced = applyCustomizableSync(descriptionRaw, [...pendingCategories], customizable);
       p.name = name;
-      p.categories = [...pendingCategories];
+      p.categories = synced.categories;
       delete p.category;
       p.publicPrice = isNaN(publicPrice) ? null : publicPrice;
       p.price = price;
       p.promoPrice = promoPrice;
       p.image = image;
       p.video = video;
-      p.description = description;
+      p.description = synced.description;
       p.onDemand = onDemand;
+      p.customizable = customizable;
       await setJSON('products', PRODUCTS);
       msg.innerHTML = codeChanged
         ? '<div class="msg ok">Alterações salvas — código atualizado em todos os registros vinculados (entregas, devoluções, acertos e pedidos).</div>'
@@ -3254,7 +3435,10 @@
         image: document.getElementById('p-first-color-img').value.trim(),
       });
     }
-    PRODUCTS.push({code, name, categories:[...pendingCategories], price, publicPrice: isNaN(publicPrice) ? null : publicPrice, promoPrice, image, video, description, onDemand, colors, gallery:[], active:true, createdAt: Date.now()});
+    PRODUCTS.push((()=>{
+      const synced = applyCustomizableSync(descriptionRaw, [...pendingCategories], customizable);
+      return {code, name, categories: synced.categories, price, publicPrice: isNaN(publicPrice) ? null : publicPrice, promoPrice, image, video, description: synced.description, onDemand, customizable, colors, gallery:[], active:true, createdAt: Date.now()};
+    })());
     await setJSON('products', PRODUCTS);
     msg.innerHTML = '<div class="msg ok">Produto adicionado.</div>';
     resetProductForm();
@@ -3425,6 +3609,27 @@
     await setJSON('acertos', ACERTOS);
     msg.innerHTML = '<div class="msg ok">Acerto registrado.</div>';
     document.getElementById('a-qty').value = '';
+    renderAdminLists();
+  });
+
+  document.getElementById('v-add-btn').addEventListener('click', async ()=>{
+    const clientCode = document.getElementById('v-client').value;
+    const productCode = document.getElementById('v-product').value;
+    const color = document.getElementById('v-color').value;
+    const qty = parseInt(document.getElementById('v-qty').value);
+    const total = parseFloat(document.getElementById('v-total').value);
+    const date = document.getElementById('v-date').value;
+    const obs = document.getElementById('v-obs').value.trim();
+    const msg = document.getElementById('v-msg');
+    if(!clientCode || !productCode || !qty || isNaN(total)){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto, quantidade e valor total pago.</div>'; return; }
+    VENDAS = await getJSON('vendas', VENDAS);
+    const id = nextSeqId(VENDAS, 'VD');
+    VENDAS.push({id, date, clientCode, productCode, color, qty, total, obs});
+    await setJSON('vendas', VENDAS);
+    msg.innerHTML = '<div class="msg ok">Venda direta registrada — já aparece no histórico do cliente como comprovante.</div>';
+    document.getElementById('v-qty').value = '';
+    document.getElementById('v-total').value = '';
+    document.getElementById('v-obs').value = '';
     renderAdminLists();
   });
 
