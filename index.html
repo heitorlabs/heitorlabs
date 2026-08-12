@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -2978,16 +2979,18 @@
     `).join('') : `<div class="empty">Nenhum cliente cadastrado.</div>`;
 
     document.getElementById('e-list').innerHTML = ENTREGAS.slice().reverse().slice(0,8).map(e=>`
-      <div class="list-row"><span class="mono">${e.id} · ${fmtDate(e.date)} · ${e.clientCode} · ${e.qty}x ${productName(e.productCode)}${e.color ? ' ('+e.color+')' : ''}</span></div>
+      <div class="list-row"><span class="mono">${e.id} · ${fmtDate(e.date)} · ${e.clientCode} · ${e.qty}x ${productName(e.productCode)}${e.color ? ' ('+e.color+')' : ''}</span>
+      <span class="actions"><button data-del-entrega="${e.id}">Remover</button></span></div>
     `).join('') || `<div class="empty">Nenhuma entrega registrada.</div>`;
 
     document.getElementById('d-list').innerHTML = DEVOLUCOES.slice().reverse().slice(0,8).map(d=>`
-      <div class="list-row"><span class="mono">${d.id} · ${fmtDate(d.date)} · ${d.clientCode} · ${d.qty}x ${productName(d.productCode)}${d.color ? ' ('+d.color+')' : ''} · ${d.state}</span></div>
+      <div class="list-row"><span class="mono">${d.id} · ${fmtDate(d.date)} · ${d.clientCode} · ${d.qty}x ${productName(d.productCode)}${d.color ? ' ('+d.color+')' : ''} · ${d.state}</span>
+      <span class="actions"><button data-del-devolucao="${d.id}">Remover</button></span></div>
     `).join('') || `<div class="empty">Nenhuma devolução registrada.</div>`;
 
     document.getElementById('a-list').innerHTML = ACERTOS.slice().reverse().slice(0,8).map(a=>`
       <div class="list-row"><span class="mono">${a.id} · ${fmtDate(a.date)} · ${a.clientCode} · ${a.qty}x ${productName(a.productCode)}${a.color ? ' ('+a.color+')' : ''}</span>
-      <span class="badge ${a.status.toLowerCase()}">${a.status}</span></div>
+      <span class="actions"><span class="badge ${a.status.toLowerCase()}">${a.status}</span><button data-del-acerto="${a.id}">Remover</button></span></div>
     `).join('') || `<div class="empty">Nenhum acerto registrado.</div>`;
 
     const pendentes = PEDIDOS.filter(r=>r.status==='Pendente');
@@ -3003,9 +3006,39 @@
           ${r.type==='producao' ? '<span class="badge acerto" style="margin-right:6px;">Produção</span>' : ''}
           <span class="badge ${statusClass[r.status]}" style="margin-right:6px;">${r.status}</span>
           ${r.status==='Pendente' ? `<button data-approve-req="${r.id}">Aprovar</button><button data-refuse-req="${r.id}">Recusar</button>` : ''}
+          <button data-del-pedido="${r.id}">Remover</button>
         </span>
       </div>
     `).join('') : `<div class="empty">Nenhum pedido de reposição por enquanto.</div>`;
+
+    root.querySelectorAll('[data-del-entrega]').forEach(b=>b.addEventListener('click', async ()=>{
+      if(!confirm('Remover esta entrega? Isso NÃO devolve automaticamente o estoque nem desfaz outros cálculos — use apenas para corrigir lançamentos errados (ex.: dados de teste).')) return;
+      ENTREGAS = await getJSON('entregas', ENTREGAS);
+      ENTREGAS = ENTREGAS.filter(e=>e.id!==b.dataset.delEntrega);
+      await setJSON('entregas', ENTREGAS);
+      renderAdminLists();
+    }));
+    root.querySelectorAll('[data-del-devolucao]').forEach(b=>b.addEventListener('click', async ()=>{
+      if(!confirm('Remover esta devolução? Isso NÃO desfaz automaticamente o ajuste de estoque que ela possa ter gerado — use apenas para corrigir lançamentos errados (ex.: dados de teste).')) return;
+      DEVOLUCOES = await getJSON('devolucoes', DEVOLUCOES);
+      DEVOLUCOES = DEVOLUCOES.filter(d=>d.id!==b.dataset.delDevolucao);
+      await setJSON('devolucoes', DEVOLUCOES);
+      renderAdminLists();
+    }));
+    root.querySelectorAll('[data-del-acerto]').forEach(b=>b.addEventListener('click', async ()=>{
+      if(!confirm('Remover este acerto? Isso vai tirar essa venda dos cálculos de vendido/devido/pago do cliente. Use apenas para corrigir lançamentos errados (ex.: dados de teste).')) return;
+      ACERTOS = await getJSON('acertos', ACERTOS);
+      ACERTOS = ACERTOS.filter(a=>a.id!==b.dataset.delAcerto);
+      await setJSON('acertos', ACERTOS);
+      renderAdminLists();
+    }));
+    root.querySelectorAll('[data-del-pedido]').forEach(b=>b.addEventListener('click', async ()=>{
+      if(!confirm('Remover este pedido de reposição do histórico? Se ele ainda estiver pendente, remover aqui NÃO devolve estoque (use "Recusar" antes, se aplicável).')) return;
+      PEDIDOS = await getJSON('pedidos', PEDIDOS);
+      PEDIDOS = PEDIDOS.filter(r=>r.id!==b.dataset.delPedido);
+      await setJSON('pedidos', PEDIDOS);
+      renderAdminLists();
+    }));
 
     root.querySelectorAll('[data-approve-req]').forEach(b=>b.addEventListener('click', async ()=>{
       const req = PEDIDOS.find(r=>r.id===b.dataset.approveReq);
