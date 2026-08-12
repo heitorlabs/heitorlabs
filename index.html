@@ -1080,6 +1080,13 @@
                 ✨ Este item também pode ser feito personalizado, além da versão padrão (adiciona um aviso na descrição e a categoria "Personalizável" automaticamente)
               </label>
             </div>
+            <div class="row" id="p-customizable-minqty-wrap" style="display:none;align-items:center;">
+              <div class="field" style="max-width:220px;">
+                <label>Quantidade mínima para personalizar</label>
+                <input id="p-customizable-minqty" type="number" min="1" placeholder="Ex.: 5">
+              </div>
+              <p style="color:var(--muted);font-size:11px;margin:0;">Deixe em branco se não tiver mínimo — o cliente vê esse número no aviso de personalização.</p>
+            </div>
             <div id="p-first-color-wrap">
               <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-family:'IBM Plex Mono';margin:10px 0 6px 0;">Primeira cor (opcional — dá pra adicionar mais depois)</div>
               <div class="row">
@@ -1748,7 +1755,7 @@
         <div class="body">
           ${tagsHtml(p)}
           ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
-          ${p.customizable ? '<span class="badge customizavel" style="margin-left:4px;">✨ Personalizável</span>' : ''}
+          ${p.customizable ? `<span class="badge customizavel" style="margin-left:4px;">✨ Personalizável${p.customizableMinQty ? ' (mín. '+p.customizableMinQty+')' : ''}</span>` : ''}
           <h3>${p.name}</h3>
           <div id="price-block-${p.code}">${buildCardPriceHtml(p, null)}</div>
           ${colorsHtml}
@@ -2591,7 +2598,7 @@
         <div class="body">
           ${tagsHtml(p)}
           ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
-          ${p.customizable ? '<span class="badge customizavel" style="margin-left:4px;">✨ Personalizável</span>' : ''}
+          ${p.customizable ? `<span class="badge customizavel" style="margin-left:4px;">✨ Personalizável${p.customizableMinQty ? ' (mín. '+p.customizableMinQty+')' : ''}</span>` : ''}
           <h3>${p.name}</h3>
           <div class="code">${p.code}</div>
           ${publicPriceHtml}
@@ -2922,7 +2929,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;cursor:pointer;" data-toggle-product="${p.code}">
           <span class="mono">
             <span style="display:inline-block;transition:transform .15s;transform:rotate(${isExpanded?90:0}deg);margin-right:4px;">▸</span>
-            ${p.code} — ${p.name} (${catsLine}) — ${priceLine}${p.video ? ' · 🎬' : ''}${p.onDemand ? ' · <span class="badge acerto">Sob encomenda</span>' : ''}${p.customizable ? ' · <span class="badge customizavel">✨ Personalizável</span>' : ''}
+            ${p.code} — ${p.name} (${catsLine}) — ${priceLine}${p.video ? ' · 🎬' : ''}${p.onDemand ? ' · <span class="badge acerto">Sob encomenda</span>' : ''}${p.customizable ? ` · <span class="badge customizavel">✨ Personalizável${p.customizableMinQty ? ' (mín. '+p.customizableMinQty+')' : ''}</span>` : ''}
           </span>
           <span class="actions">
             <button data-edit-product="${p.code}">Editar</button>
@@ -2986,6 +2993,8 @@
       document.getElementById('p-desc').value = p.description || '';
       document.getElementById('p-ondemand').checked = !!p.onDemand;
       document.getElementById('p-customizable').checked = !!p.customizable;
+      document.getElementById('p-customizable-minqty').value = p.customizableMinQty != null ? p.customizableMinQty : '';
+      document.getElementById('p-customizable-minqty-wrap').style.display = p.customizable ? 'flex' : 'none';
       document.getElementById('p-first-color-wrap').style.display = 'none';
       document.getElementById('p-form-title').textContent = `Editando: ${p.code} — ${p.name}`;
       document.getElementById('p-add-btn').textContent = 'Salvar alterações';
@@ -3313,6 +3322,8 @@
     document.getElementById('p-prefix').value = '';
     document.getElementById('p-ondemand').checked = false;
     document.getElementById('p-customizable').checked = false;
+    document.getElementById('p-customizable-minqty').value = '';
+    document.getElementById('p-customizable-minqty-wrap').style.display = 'none';
     document.getElementById('p-code').disabled = false;
     document.getElementById('p-form-title').textContent = 'Novo produto';
     document.getElementById('p-add-btn').textContent = 'Adicionar produto';
@@ -3345,15 +3356,24 @@
     }
   });
 
-  const CUSTOMIZABLE_NOTE = '✨ Este produto também pode ser feito personalizado (cor, nome, tema, etc.) — combine os detalhes pelo WhatsApp.';
+  document.getElementById('p-customizable').addEventListener('change', (e)=>{
+    document.getElementById('p-customizable-minqty-wrap').style.display = e.target.checked ? 'flex' : 'none';
+  });
+
   const CUSTOMIZABLE_CATEGORY = 'Personalizável';
-  function applyCustomizableSync(description, categories, isCustomizable){
-    // remove qualquer ocorrência anterior do aviso automático, pra não duplicar ao marcar/desmarcar várias vezes
-    let desc = description.split(CUSTOMIZABLE_NOTE).join('').trim();
+  const CUSTOMIZABLE_NOTE_REGEX = /✨ Este produto também pode ser feito personalizado \(cor, nome, tema, etc\.\)(?: — pedido mínimo de \d+ unidades? para personalização)? — combine os detalhes pelo WhatsApp\./g;
+  function buildCustomizableNote(minQty){
+    const minPart = minQty ? ` — pedido mínimo de ${minQty} unidade${minQty === 1 ? '' : 's'} para personalização` : '';
+    return `✨ Este produto também pode ser feito personalizado (cor, nome, tema, etc.)${minPart} — combine os detalhes pelo WhatsApp.`;
+  }
+  function applyCustomizableSync(description, categories, isCustomizable, minQty){
+    // remove qualquer ocorrência anterior do aviso automático (com ou sem mínimo), pra não duplicar ao marcar/desmarcar ou trocar o mínimo várias vezes
+    let desc = description.replace(CUSTOMIZABLE_NOTE_REGEX, '').trim();
     desc = desc.replace(/\n{3,}/g, '\n\n').trim();
     let cats = categories.filter(c=>c !== CUSTOMIZABLE_CATEGORY);
     if(isCustomizable){
-      desc = desc ? `${desc}\n\n${CUSTOMIZABLE_NOTE}` : CUSTOMIZABLE_NOTE;
+      const note = buildCustomizableNote(minQty);
+      desc = desc ? `${desc}\n\n${note}` : note;
       cats = [...cats, CUSTOMIZABLE_CATEGORY];
     }
     return { description: desc, categories: cats };
@@ -3371,6 +3391,8 @@
     const descriptionRaw = document.getElementById('p-desc').value.trim();
     const onDemand = document.getElementById('p-ondemand').checked;
     const customizable = document.getElementById('p-customizable').checked;
+    const minQtyRaw = document.getElementById('p-customizable-minqty').value;
+    const customizableMinQty = minQtyRaw.trim() === '' ? null : Math.max(1, parseInt(minQtyRaw) || 1);
     const msg = document.getElementById('p-msg');
     if(!code || !name || isNaN(price)){ msg.innerHTML = '<div class="msg err">Preencha ao menos código, nome e valor consignado.</div>'; return; }
 
@@ -3404,7 +3426,7 @@
         p.code = code;
       }
 
-      const synced = applyCustomizableSync(descriptionRaw, [...pendingCategories], customizable);
+      const synced = applyCustomizableSync(descriptionRaw, [...pendingCategories], customizable, customizableMinQty);
       p.name = name;
       p.categories = synced.categories;
       delete p.category;
@@ -3416,6 +3438,7 @@
       p.description = synced.description;
       p.onDemand = onDemand;
       p.customizable = customizable;
+      p.customizableMinQty = customizable ? customizableMinQty : null;
       await setJSON('products', PRODUCTS);
       msg.innerHTML = codeChanged
         ? '<div class="msg ok">Alterações salvas — código atualizado em todos os registros vinculados (entregas, devoluções, acertos e pedidos).</div>'
@@ -3436,8 +3459,8 @@
       });
     }
     PRODUCTS.push((()=>{
-      const synced = applyCustomizableSync(descriptionRaw, [...pendingCategories], customizable);
-      return {code, name, categories: synced.categories, price, publicPrice: isNaN(publicPrice) ? null : publicPrice, promoPrice, image, video, description: synced.description, onDemand, customizable, colors, gallery:[], active:true, createdAt: Date.now()};
+      const synced = applyCustomizableSync(descriptionRaw, [...pendingCategories], customizable, customizableMinQty);
+      return {code, name, categories: synced.categories, price, publicPrice: isNaN(publicPrice) ? null : publicPrice, promoPrice, image, video, description: synced.description, onDemand, customizable, customizableMinQty: customizable ? customizableMinQty : null, colors, gallery:[], active:true, createdAt: Date.now()};
     })());
     await setJSON('products', PRODUCTS);
     msg.innerHTML = '<div class="msg ok">Produto adicionado.</div>';
