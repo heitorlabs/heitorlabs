@@ -1310,6 +1310,12 @@
     return prefix + '-' + String(maxNum + 1).padStart(3, '0');
   }
   const fmtDate = iso => { if(!iso) return '—'; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; };
+  const fmtDateTime = ts => {
+    if(!ts) return null;
+    const d = new Date(ts);
+    const pad = n => String(n).padStart(2,'0');
+    return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} às ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
 
   let PRODUCTS = [], CLIENTS = [], ENTREGAS = [], DEVOLUCOES = [], ACERTOS = [], PEDIDOS = [], DOCUMENTS = [];
   let currentClientCode = null;
@@ -2272,6 +2278,7 @@
           <div>
             <div class="doc-title">${d.title || d.type}</div>
             <div class="doc-meta">${clientLabel} · ${d.type} · ${fmtDate(d.date)}${d.path ? ' · 🔒 privado' : ''}</div>
+            ${d.uploadedAt ? `<div class="doc-meta" style="opacity:.75;">Enviado em ${fmtDateTime(d.uploadedAt)}</div>` : ''}
           </div>
         </div>
         <span class="actions">
@@ -2330,7 +2337,7 @@
 
     DOCUMENTS = await getJSON('documents', DOCUMENTS);
     const id = nextSeqId(DOCUMENTS, 'DOC');
-    const doc = { id, clientCode, type, title, date };
+    const doc = { id, clientCode, type, title, date, uploadedAt: Date.now() };
     if(path) doc.path = path; else doc.url = url;
     DOCUMENTS.push(doc);
     await setJSON('documents', DOCUMENTS);
@@ -2436,6 +2443,7 @@
           <div>
             <div class="doc-title">${d.title || d.type}</div>
             <div class="doc-meta">${d.type} · ${fmtDate(d.date)}</div>
+            ${d.uploadedAt ? `<div class="doc-meta" style="opacity:.75;">Enviado em ${fmtDateTime(d.uploadedAt)}</div>` : ''}
           </div>
         </div>
         <button data-open-client-doc="${d.id}" class="btn secondary" style="padding:7px 14px;font-size:11px;">Baixar / Abrir</button>
@@ -3012,9 +3020,16 @@
     root.querySelectorAll('[data-refuse-req]').forEach(b=>b.addEventListener('click', async ()=>{
       const req = PEDIDOS.find(r=>r.id===b.dataset.refuseReq);
       if(!req) return;
+      // se o pedido era do tipo "reposição", o estoque já tinha sido descontado no envio — devolve ao recusar
+      if(req.type === 'reposicao' && req.color){
+        PRODUCTS = await getJSON('products', PRODUCTS);
+        const p = PRODUCTS.find(p=>p.code===req.productCode);
+        const c = p && (p.colors||[]).find(c=>c.name===req.color);
+        if(c){ c.stock = (Number(c.stock)||0) + Number(req.qty); await setJSON('products', PRODUCTS); }
+      }
       req.status = 'Recusado';
       await setJSON('pedidos', PEDIDOS);
-      renderAdminLists();
+      refreshAdminSelects(); renderAdminLists(); renderPortfolio();
     }));
 
     root.querySelectorAll('[data-del-product]').forEach(b=>b.addEventListener('click', async ()=>{
