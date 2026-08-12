@@ -161,6 +161,17 @@
   }
 
   #portal-root .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px;}
+  #portal-root .file-download-list{display:flex;flex-direction:column;gap:8px;}
+  #portal-root .file-download-item{
+    display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;
+    background:var(--panel-2);border:1px solid var(--line);text-decoration:none;color:var(--ink);
+    transition:.15s;
+  }
+  #portal-root .file-download-item:hover{border-color:var(--violet);transform:translateX(2px);}
+  #portal-root .file-download-icon{font-size:22px;flex-shrink:0;}
+  #portal-root .file-download-info{display:flex;flex-direction:column;gap:2px;}
+  #portal-root .file-download-info strong{font-size:13px;font-family:'Space Grotesk';}
+  #portal-root .file-download-info span{font-size:11px;color:var(--muted);}
   #portal-root .field{margin-bottom:14px;}
   #portal-root label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.04em;}
   #portal-root input, #portal-root select{
@@ -1128,7 +1139,7 @@
         <!-- CLIENTES -->
         <div class="admin-tab" data-tab="clientes" style="display:none;">
           <div class="panel" style="margin-bottom:20px;">
-            <h3 style="font-size:14px;margin-bottom:14px;">Novo cliente</h3>
+            <h3 style="font-size:14px;margin-bottom:14px;" id="c-form-title">Novo cliente</h3>
             <div class="row">
               <div class="field"><label>Código</label><input id="c-code" placeholder="C002"></div>
               <div class="field" style="flex:2;"><label>Nome / Razão social</label><input id="c-name" placeholder="Nome da loja"></div>
@@ -1143,7 +1154,10 @@
               <textarea id="c-notes" rows="3" placeholder="Ex.: prefere acerto quinzenal, ponto de referência, forma de pagamento combinada..." style="width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);padding:8px 10px;border-radius:8px;font-size:13px;font-family:'Inter';resize:vertical;box-sizing:border-box;"></textarea>
             </div>
             <div id="c-msg"></div>
-            <button class="btn" id="c-add-btn">Adicionar cliente</button>
+            <div style="display:flex;gap:8px;">
+              <button class="btn" id="c-add-btn">Adicionar cliente</button>
+              <button class="btn secondary" id="c-cancel-edit-btn" style="display:none;">Cancelar edição</button>
+            </div>
           </div>
           <div class="panel"><h3 style="font-size:14px;margin-bottom:8px;">Clientes cadastrados</h3><div id="c-list"></div></div>
         </div>
@@ -1269,6 +1283,25 @@
 
         <!-- DOCUMENTOS -->
         <div class="admin-tab" data-tab="documentos" style="display:none;">
+          <div class="panel" style="margin-bottom:20px;">
+            <h3 style="font-size:14px;margin-bottom:6px;">📄 Modelos para imprimir</h3>
+            <p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Versões "limpas" (sem dados de nenhum cliente específico) do contrato e da planilha de controle, prontas pra baixar e imprimir toda vez que fechar com um novo parceiro.</p>
+            <div class="file-download-list">
+              <a href="Contrato_de_Consignacao.docx" download class="file-download-item">
+                <span class="file-download-icon">📝</span>
+                <span class="file-download-info"><strong>Contrato de Consignação (.docx)</strong><span>Editável no Word — preencha os dados do consignatário antes de imprimir</span></span>
+              </a>
+              <a href="Contrato_de_Consignacao.pdf" download class="file-download-item">
+                <span class="file-download-icon">📕</span>
+                <span class="file-download-info"><strong>Contrato de Consignação (.pdf)</strong><span>Pronto pra imprimir e preencher os dados do consignatário à mão</span></span>
+              </a>
+              <a href="Controle_de_Consignacao.xlsx" download class="file-download-item">
+                <span class="file-download-icon">📊</span>
+                <span class="file-download-info"><strong>Planilha de Controle (.xlsx)</strong><span>Modelo de controle manual, útil como backup ou apoio impresso</span></span>
+              </a>
+            </div>
+            <p style="color:var(--muted);font-size:11px;margin-top:12px;">⚠️ Pra esses links funcionarem, os três arquivos precisam estar na mesma pasta do <span class="mono">index.html</span> no seu repositório do GitHub. Basta arrastar os arquivos pra lá do mesmo jeito que você atualiza o portal.</p>
+          </div>
           <div class="panel" style="margin-bottom:20px;">
             <h3 style="font-size:14px;margin-bottom:6px;">Adicionar documento</h3>
             <p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Cole o link do arquivo (Google Drive com acesso público, Supabase Storage, etc.). O parceiro vê isso na área dele.</p>
@@ -1418,6 +1451,7 @@
   let KNOWN_CATEGORIES = [];
   let pendingCategories = [];
   let editingProductCode = null;
+  let editingClientCode = null;
 
   function getCategories(p){
     if(p.categories && p.categories.length) return p.categories;
@@ -3141,7 +3175,7 @@
       <div class="list-row" id="client-row-${c.code}" style="flex-direction:column;align-items:stretch;gap:4px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
           <span class="mono">${c.code} — ${c.name} — ${c.contact||'sem contato'}${c.responsavel ? ' · resp.: '+c.responsavel : ''}${c.document ? ' · '+c.document : ''}</span>
-          <span class="actions"><button data-del-client="${c.code}">Remover</button></span>
+          <span class="actions"><button data-edit-client="${c.code}">Editar</button><button data-del-client="${c.code}">Remover</button></span>
         </div>
         ${c.notes ? `<div style="color:var(--muted);font-size:11px;white-space:pre-wrap;">${c.notes}</div>` : ''}
       </div>
@@ -3251,8 +3285,26 @@
       await setJSON('products', PRODUCTS); refreshAdminSelects(); renderAdminLists(); renderPortfolio();
     }));
     root.querySelectorAll('[data-del-client]').forEach(b=>b.addEventListener('click', async ()=>{
+      if(!confirm('Remover este cliente? O histórico de entregas/devoluções/acertos dele NÃO é apagado, mas ele deixa de aparecer na lista de clientes ativos.')) return;
       CLIENTS = CLIENTS.filter(c=>c.code!==b.dataset.delClient);
       await setJSON('clients', CLIENTS); refreshAdminSelects(); renderAdminLists();
+    }));
+    root.querySelectorAll('[data-edit-client]').forEach(b=>b.addEventListener('click', ()=>{
+      const c = CLIENTS.find(c=>c.code===b.dataset.editClient);
+      if(!c) return;
+      editingClientCode = c.code;
+      document.getElementById('c-code').value = c.code;
+      document.getElementById('c-name').value = c.name || '';
+      document.getElementById('c-contact').value = c.contact || '';
+      document.getElementById('c-responsavel').value = c.responsavel || '';
+      document.getElementById('c-document').value = c.document || '';
+      document.getElementById('c-notes').value = c.notes || '';
+      document.getElementById('c-form-title').textContent = `Editando: ${c.code} — ${c.name}`;
+      document.getElementById('c-add-btn').textContent = 'Salvar alterações';
+      document.getElementById('c-cancel-edit-btn').style.display = 'inline-block';
+      document.getElementById('c-msg').innerHTML = '';
+      // rola até o formulário, no topo da aba, pra ficar visível
+      root.querySelector('.admin-tab[data-tab="clientes"] .panel').scrollIntoView({behavior:'smooth', block:'start'});
     }));
     root.querySelectorAll('[data-goto-client]').forEach(a=>a.addEventListener('click', (e)=>{
       e.preventDefault();
@@ -3550,6 +3602,19 @@
     refreshAdminSelects(); renderAdminLists(); renderPortfolio();
   });
 
+  function resetClientForm(){
+    editingClientCode = null;
+    ['c-code','c-name','c-contact','c-responsavel','c-document','c-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('c-code').disabled = false;
+    document.getElementById('c-form-title').textContent = 'Novo cliente';
+    document.getElementById('c-add-btn').textContent = 'Adicionar cliente';
+    document.getElementById('c-cancel-edit-btn').style.display = 'none';
+  }
+  document.getElementById('c-cancel-edit-btn').addEventListener('click', ()=>{
+    resetClientForm();
+    document.getElementById('c-msg').innerHTML = '';
+  });
+
   document.getElementById('c-add-btn').addEventListener('click', async ()=>{
     const code = document.getElementById('c-code').value.trim().toUpperCase();
     const name = document.getElementById('c-name').value.trim();
@@ -3559,11 +3624,60 @@
     const notes = document.getElementById('c-notes').value.trim();
     const msg = document.getElementById('c-msg');
     if(!code || !name){ msg.innerHTML = '<div class="msg err">Preencha código e nome.</div>'; return; }
+
+    if(editingClientCode){
+      CLIENTS = await getJSON('clients', CLIENTS);
+      const c = CLIENTS.find(c=>c.code===editingClientCode);
+      if(!c){ msg.innerHTML = '<div class="msg err">Cliente não encontrado (pode ter sido removido).</div>'; return; }
+
+      const codeChanged = code !== editingClientCode;
+      if(codeChanged && CLIENTS.some(other=>other.code===code)){
+        msg.innerHTML = '<div class="msg err">Já existe outro cliente com esse código.</div>';
+        return;
+      }
+      if(codeChanged){
+        // atualiza em cascata todos os registros que referenciam o código antigo, pra não perder o histórico
+        const oldCode = editingClientCode;
+        ENTREGAS = await getJSON('entregas', ENTREGAS);
+        DEVOLUCOES = await getJSON('devolucoes', DEVOLUCOES);
+        ACERTOS = await getJSON('acertos', ACERTOS);
+        PEDIDOS = await getJSON('pedidos', PEDIDOS);
+        VENDAS = await getJSON('vendas', VENDAS);
+        DOCUMENTS = await getJSON('documents', DOCUMENTS);
+        ENTREGAS.forEach(e=>{ if(e.clientCode===oldCode) e.clientCode = code; });
+        DEVOLUCOES.forEach(d=>{ if(d.clientCode===oldCode) d.clientCode = code; });
+        ACERTOS.forEach(a=>{ if(a.clientCode===oldCode) a.clientCode = code; });
+        PEDIDOS.forEach(r=>{ if(r.clientCode===oldCode) r.clientCode = code; });
+        VENDAS.forEach(v=>{ if(v.clientCode===oldCode) v.clientCode = code; });
+        DOCUMENTS.forEach(d=>{ if(d.clientCode===oldCode) d.clientCode = code; });
+        await setJSON('entregas', ENTREGAS);
+        await setJSON('devolucoes', DEVOLUCOES);
+        await setJSON('acertos', ACERTOS);
+        await setJSON('pedidos', PEDIDOS);
+        await setJSON('vendas', VENDAS);
+        await setJSON('documents', DOCUMENTS);
+        c.code = code;
+      }
+
+      c.name = name;
+      c.contact = contact;
+      c.responsavel = responsavel;
+      c.document = document_;
+      c.notes = notes;
+      await setJSON('clients', CLIENTS);
+      msg.innerHTML = codeChanged
+        ? '<div class="msg ok">Alterações salvas — código atualizado em todos os registros vinculados.</div>'
+        : '<div class="msg ok">Alterações salvas.</div>';
+      resetClientForm();
+      refreshAdminSelects(); renderAdminLists();
+      return;
+    }
+
     if(CLIENTS.some(c=>c.code===code)){ msg.innerHTML = '<div class="msg err">Já existe um cliente com esse código.</div>'; return; }
     CLIENTS.push({code, name, contact, responsavel, document: document_, notes, status:'Ativo'});
     await setJSON('clients', CLIENTS);
     msg.innerHTML = '<div class="msg ok">Cliente adicionado.</div>';
-    ['c-code','c-name','c-contact','c-responsavel','c-document','c-notes'].forEach(id=>document.getElementById(id).value='');
+    resetClientForm();
     refreshAdminSelects(); renderAdminLists();
   });
 
