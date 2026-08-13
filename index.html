@@ -1520,6 +1520,12 @@
     DOCUMENTS = await getJSON('documents', []);
     VENDAS = await getJSON('vendas', []);
 
+    // as gravações de "auto-reparo" abaixo (seed inicial, categorias faltando) só valem a
+    // pena tentar se estivermos autenticados como admin — pra qualquer outro visitante,
+    // essas escritas seriam bloqueadas pela segurança do banco (e é assim que tem que ser)
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if(!session) return;
+
     if(PRODUCTS.length === 0 && CLIENTS.length === 0){
       // seed inicial de demonstração, consistente com o contrato e a planilha
       PRODUCTS = [
@@ -3364,7 +3370,11 @@
     }));
 
     root.querySelectorAll('[data-approve-req]').forEach(b=>b.addEventListener('click', async ()=>{
-      const req = PEDIDOS.find(r=>r.id===b.dataset.approveReq);
+      const reqId = b.dataset.approveReq;
+      // busca os pedidos frescos antes de salvar, pra não sobrescrever/apagar sem querer
+      // um pedido novo que outro parceiro tenha enviado nesse meio tempo
+      PEDIDOS = await getJSON('pedidos', PEDIDOS);
+      const req = PEDIDOS.find(r=>r.id===reqId);
       if(!req) return;
       // desconta o estoque agora (momento da aprovação pelo admin autenticado) — pedidos "produção" não têm estoque a descontar
       if(req.type === 'reposicao' && req.color){
@@ -3373,6 +3383,7 @@
         const c = p && (p.colors||[]).find(c=>c.name===req.color);
         if(c){ c.stock = Math.max(0, (Number(c.stock)||0) - Number(req.qty)); await setJSON('products', PRODUCTS); }
       }
+      ENTREGAS = await getJSON('entregas', ENTREGAS);
       const entId = nextSeqId(ENTREGAS, 'ENT');
       ENTREGAS.push({ id: entId, date: todayISO(), clientCode: req.clientCode, productCode: req.productCode, color: req.color||'', qty: req.qty });
       req.status = 'Aprovado';
@@ -3381,7 +3392,9 @@
       refreshAdminSelects(); renderAdminLists(); renderPortfolio();
     }));
     root.querySelectorAll('[data-refuse-req]').forEach(b=>b.addEventListener('click', async ()=>{
-      const req = PEDIDOS.find(r=>r.id===b.dataset.refuseReq);
+      const reqId = b.dataset.refuseReq;
+      PEDIDOS = await getJSON('pedidos', PEDIDOS);
+      const req = PEDIDOS.find(r=>r.id===reqId);
       if(!req) return;
       // o estoque só é descontado na aprovação agora, então recusar não precisa devolver nada
       req.status = 'Recusado';
