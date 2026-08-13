@@ -1454,7 +1454,7 @@
 
 <script>
 (function(){
-  const ADMIN_PASSWORD = "oficina2026"; // altere aqui — esta é uma proteção simples, não é segurança de nível bancário
+  // a senha de admin não fica mais aqui no código — agora é uma conta de verdade no Supabase Auth (ver instruções de segurança)
 
   // ---------- conexão com o banco de dados (Supabase) ----------
   const SUPABASE_URL = "https://fgbmvagormiwgdkkiqda.supabase.co";
@@ -1582,6 +1582,9 @@
       document.getElementById('view-'+btn.dataset.view).classList.add('active');
       if(btn.dataset.view === 'client' && currentClientCode){
         openClientDashboard(currentClientCode);
+      }
+      if(btn.dataset.view === 'admin'){
+        checkAdminSessionAndShow();
       }
     });
   });
@@ -2828,26 +2831,26 @@
     btn.disabled = true; btn.textContent = 'Enviando…';
 
     PRODUCTS = await getJSON('products', PRODUCTS);
-    PEDIDOS = await getJSON('pedidos', PEDIDOS);
     const createdReqs = [];
+    let seqBase = Date.now();
     for(const item of reposicaoCart){
       const p = PRODUCTS.find(p=>p.code===item.productCode);
+      // aqui é só uma LEITURA do estoque atual, pra classificar o pedido — o desconto
+      // de verdade só acontece quando o admin aprovar (é quando ele está autenticado)
       let type = 'reposicao';
       if(p && p.onDemand){
         type = 'producao';
       } else if(p && item.color){
         const c = (p.colors||[]).find(c=>c.name===item.color);
         const stock = c ? Number(c.stock) : 0;
-        if(c && item.qty <= stock){ c.stock = stock - item.qty; type = 'reposicao'; }
-        else { type = 'producao'; }
+        type = (c && item.qty <= stock) ? 'reposicao' : 'producao';
       }
-      const id = nextSeqId(PEDIDOS, 'PED');
-      const req = { id, date: todayISO(), clientCode: currentClientCode, productCode: item.productCode, color: item.color, qty: item.qty, note, status:'Pendente', type };
-      PEDIDOS.push(req);
+      // id temporário só pra exibir na hora — o id definitivo é o que ficar salvo no banco
+      const req = { id: 'PED-tmp'+(seqBase++), date: todayISO(), clientCode: currentClientCode, productCode: item.productCode, color: item.color, qty: item.qty, note, status:'Pendente', type };
+      const { error } = await supabaseClient.rpc('add_pedido', { new_pedido: req });
+      if(error){ console.error('Falha ao enviar pedido', error); continue; }
       createdReqs.push(req);
     }
-    await setJSON('products', PRODUCTS);
-    await setJSON('pedidos', PEDIDOS);
 
     const client = CLIENTS.find(c=>c.code===currentClientCode);
     const clientLabel = client ? `${client.name} (${client.code})` : currentClientCode;
@@ -2858,12 +2861,15 @@
     if(note) text += `\nObservação: ${note}`;
     const link = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 
-    msg.innerHTML = `<div class="msg ok">Pedido enviado! Avise a HL 3D Solutions agora para agilizar:</div>
-      <div style="margin:10px 0;"><a class="btn whatsapp" href="${link}" target="_blank" rel="noopener">Avisar no WhatsApp</a></div>`;
+    msg.innerHTML = createdReqs.length
+      ? `<div class="msg ok">Pedido enviado! Avise a HL 3D Solutions agora para agilizar:</div>
+      <div style="margin:10px 0;"><a class="btn whatsapp" href="${link}" target="_blank" rel="noopener">Avisar no WhatsApp</a></div>`
+      : `<div class="msg err">Não foi possível enviar o pedido agora. Tente novamente em instantes.</div>`;
     reposicaoCart = [];
     document.getElementById('cart-note').value = '';
     renderCart();
     renderConsignadoCatalog();
+    PEDIDOS = await getJSON('pedidos', PEDIDOS);
     renderClientRequests(currentClientCode);
     btn.disabled = false; btn.textContent = 'Enviar pedido de reposição';
   });
@@ -2901,19 +2907,45 @@
       </div>`).join('') : `<div class="empty"><div class="glyph">◇</div>Você ainda não fez nenhum pedido.</div>`;
   }
 
-  // ---------- ADMIN GATE ----------
+  // ---------- ADMIN GATE (autenticação real via Supabase Auth) ----------
+  async function checkAdminSessionAndShow(){
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if(session){
+      document.getElementById('admin-gate').style.display = 'none';
+      document.getElementById('admin-dashboard').style.display = 'block';
+      await refreshData();
+      refreshAdminSelects();
+      renderAdminLists();
+    } else {
+      document.getElementById('admin-gate').style.display = 'block';
+      document.getElementById('admin-dashboard').style.display = 'none';
+    }
+  }
   document.getElementById('admin-access-btn').addEventListener('click', async ()=>{
     const pass = document.getElementById('admin-pass-input').value;
     const msg = document.getElementById('admin-gate-msg');
-    if(pass !== ADMIN_PASSWORD){ msg.innerHTML = '<div class="msg err">Senha incorreta.</div>'; return; }
+    const btn = document.getElementById('admin-access-btn');
+    if(!pass){ msg.innerHTML = '<div class="msg err">Digite a senha.</div>'; return; }
+    btn.disabled = true; btn.textContent = 'Entrando…';
+    const { error } = await supabaseClient.auth.signInWithPassword({ email: ADMIN_EMAIL, password: pass });
+    btn.disabled = false; btn.textContent = 'Entrar';
+    if(error){
+      msg.innerHTML = '<div class="msg err">Senha incorreta.</div>';
+      return;
+    }
     msg.innerHTML = '';
+    document.getElementById('admin-pass-input').value = '';
     document.getElementById('admin-gate').style.display = 'none';
     document.getElementById('admin-dashboard').style.display = 'block';
     await refreshData();
     refreshAdminSelects();
     renderAdminLists();
   });
-  document.getElementById('admin-logout-btn').addEventListener('click', ()=>{
+  document.getElementById('admin-pass-input').addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter') document.getElementById('admin-access-btn').click();
+  });
+  document.getElementById('admin-logout-btn').addEventListener('click', async ()=>{
+    await supabaseClient.auth.signOut();
     document.getElementById('admin-dashboard').style.display = 'none';
     document.getElementById('admin-gate').style.display = 'block';
     document.getElementById('admin-pass-input').value = '';
@@ -3315,7 +3347,7 @@
       renderAdminLists();
     }));
     root.querySelectorAll('[data-del-pedido]').forEach(b=>b.addEventListener('click', async ()=>{
-      if(!confirm('Remover este pedido de reposição do histórico? Se ele ainda estiver pendente, remover aqui NÃO devolve estoque (use "Recusar" antes, se aplicável).')) return;
+      if(!confirm('Remover este pedido de reposição do histórico? Se ele já estiver Aprovado, o estoque foi descontado na aprovação e remover aqui NÃO devolve isso automaticamente.')) return;
       PEDIDOS = await getJSON('pedidos', PEDIDOS);
       PEDIDOS = PEDIDOS.filter(r=>r.id!==b.dataset.delPedido);
       await setJSON('pedidos', PEDIDOS);
@@ -3325,23 +3357,24 @@
     root.querySelectorAll('[data-approve-req]').forEach(b=>b.addEventListener('click', async ()=>{
       const req = PEDIDOS.find(r=>r.id===b.dataset.approveReq);
       if(!req) return;
+      // desconta o estoque agora (momento da aprovação pelo admin autenticado) — pedidos "produção" não têm estoque a descontar
+      if(req.type === 'reposicao' && req.color){
+        PRODUCTS = await getJSON('products', PRODUCTS);
+        const p = PRODUCTS.find(p=>p.code===req.productCode);
+        const c = p && (p.colors||[]).find(c=>c.name===req.color);
+        if(c){ c.stock = Math.max(0, (Number(c.stock)||0) - Number(req.qty)); await setJSON('products', PRODUCTS); }
+      }
       const entId = nextSeqId(ENTREGAS, 'ENT');
       ENTREGAS.push({ id: entId, date: todayISO(), clientCode: req.clientCode, productCode: req.productCode, color: req.color||'', qty: req.qty });
       req.status = 'Aprovado';
       await setJSON('entregas', ENTREGAS);
       await setJSON('pedidos', PEDIDOS);
-      renderAdminLists();
+      refreshAdminSelects(); renderAdminLists(); renderPortfolio();
     }));
     root.querySelectorAll('[data-refuse-req]').forEach(b=>b.addEventListener('click', async ()=>{
       const req = PEDIDOS.find(r=>r.id===b.dataset.refuseReq);
       if(!req) return;
-      // se o pedido era do tipo "reposição", o estoque já tinha sido descontado no envio — devolve ao recusar
-      if(req.type === 'reposicao' && req.color){
-        PRODUCTS = await getJSON('products', PRODUCTS);
-        const p = PRODUCTS.find(p=>p.code===req.productCode);
-        const c = p && (p.colors||[]).find(c=>c.name===req.color);
-        if(c){ c.stock = (Number(c.stock)||0) + Number(req.qty); await setJSON('products', PRODUCTS); }
-      }
+      // o estoque só é descontado na aprovação agora, então recusar não precisa devolver nada
       req.status = 'Recusado';
       await setJSON('pedidos', PEDIDOS);
       refreshAdminSelects(); renderAdminLists(); renderPortfolio();
