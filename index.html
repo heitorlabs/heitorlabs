@@ -250,6 +250,13 @@
     display:flex;align-items:center;gap:16px;padding:18px 22px;border-radius:14px;
     background:var(--panel);border:1px solid var(--line);margin-bottom:22px;
   }
+  #portal-root .id-meta{flex:1;min-width:0;}
+  #portal-root .id-logout-btn{
+    flex-shrink:0;background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
+    padding:8px 14px;border-radius:9px;font-size:12px;font-family:'Space Grotesk';font-weight:600;
+    cursor:pointer;transition:.15s;
+  }
+  #portal-root .id-logout-btn:hover{border-color:var(--red);color:var(--red);}
   #portal-root .id-avatar{
     width:52px;height:52px;border-radius:50%;flex-shrink:0;
     background:var(--grad);display:flex;align-items:center;justify-content:center;padding:2px;
@@ -345,6 +352,28 @@
   #portal-root .ticket.t-venda{border-left-color:var(--green);}
   #portal-root .ticket .glyph{font-size:14px;margin-right:8px;opacity:.85;}
   #portal-root .subnav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  #portal-root .cat-dropdown-wrap{position:relative;margin-bottom:20px;display:inline-block;}
+  #portal-root .cat-dropdown-toggle{
+    display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);
+    color:var(--ink);padding:10px 16px;border-radius:10px;font-size:13px;font-family:'Space Grotesk';
+    cursor:pointer;transition:.15s;
+  }
+  #portal-root .cat-dropdown-toggle:hover{border-color:var(--violet);}
+  #portal-root .cat-dropdown-toggle strong{color:var(--violet);}
+  #portal-root .cat-dropdown-arrow{color:var(--muted);font-size:11px;transition:transform .15s;}
+  #portal-root .cat-dropdown-wrap.open .cat-dropdown-arrow{transform:rotate(180deg);}
+  #portal-root .cat-dropdown-panel{
+    display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:20;min-width:260px;max-width:min(90vw,420px);
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;
+    box-shadow:0 12px 32px rgba(0,0,0,.18);flex-wrap:wrap;gap:6px;
+  }
+  #portal-root .cat-dropdown-wrap.open .cat-dropdown-panel{display:flex;}
+  #portal-root .cat-dropdown-panel button{
+    background:var(--panel-2);border:1px solid var(--line);color:var(--muted);
+    padding:7px 12px;border-radius:8px;font-size:12px;cursor:pointer;transition:.15s;
+  }
+  #portal-root .cat-dropdown-panel button:hover{border-color:var(--violet);color:var(--ink);}
+  #portal-root .cat-dropdown-panel button.active{background:var(--grad);color:#0A0A0D;border-color:transparent;font-weight:700;}
   #portal-root .search-wrap{margin-bottom:14px;}
 
   /* --- prova social (instagram / mercado livre) --- */
@@ -725,6 +754,10 @@
   }
   #portal-root .color-pill:hover{border-color:var(--teal);color:var(--ink);}
   #portal-root .color-pill.out{color:var(--red);border-color:rgba(194,51,73,.4);}
+  #portal-root .color-pill.selected{
+    background:var(--grad);color:#0A0A0D;border-color:transparent;font-weight:700;
+  }
+  #portal-root .card h3.color-selected-active{color:var(--violet);}
   #portal-root .video-badge{
     position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.65);color:#fff;
     font-size:10px;font-family:'IBM Plex Mono';padding:3px 8px;border-radius:999px;
@@ -843,7 +876,13 @@
         </select>
       </div>
 
-      <div class="subnav" id="portfolio-filters"></div>
+      <div class="cat-dropdown-wrap" id="cat-dropdown-wrap">
+        <button type="button" class="cat-dropdown-toggle" id="cat-dropdown-toggle">
+          <span>🏷️ Categoria: <strong id="cat-dropdown-current">Todos</strong></span>
+          <span class="cat-dropdown-arrow">▾</span>
+        </button>
+        <div class="cat-dropdown-panel" id="portfolio-filters"></div>
+      </div>
 
       <div id="portfolio-loading" class="grid-products">
         <div class="skeleton-card"><div class="skeleton-img"></div><div class="skeleton-line" style="width:70%;"></div><div class="skeleton-line" style="width:40%;"></div></div>
@@ -904,6 +943,7 @@
             <div class="name" id="client-name-display">—</div>
             <div class="code" id="client-code-display">—</div>
           </div>
+          <button type="button" id="client-logout-top-btn" class="id-logout-btn" title="Sair da sua área">🚪 Sair</button>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:-8px 0 22px 0;">
           <p style="color:var(--muted);font-size:13px;margin:0;">Este é o seu extrato individual. Fale com a HL 3D Solutions se algum número parecer errado.</p>
@@ -1590,13 +1630,28 @@
     active.forEach(p=>getCategories(p).forEach(c=>set.add(c)));
     const cats = ['Todos', ...Array.from(set)];
     if(!cats.includes(currentCategoryFilter)) currentCategoryFilter = 'Todos';
+    document.getElementById('cat-dropdown-current').textContent = currentCategoryFilter;
     document.getElementById('portfolio-filters').innerHTML = cats.map(c=>`
       <button data-cat="${c}" class="${c===currentCategoryFilter?'active':''}">${c}</button>
     `).join('');
     document.querySelectorAll('#portfolio-filters button').forEach(b=>{
-      b.addEventListener('click', ()=>{ currentCategoryFilter = b.dataset.cat; renderPortfolio(); });
+      b.addEventListener('click', ()=>{
+        currentCategoryFilter = b.dataset.cat;
+        document.getElementById('cat-dropdown-wrap').classList.remove('open');
+        renderPortfolio();
+      });
     });
   }
+  document.getElementById('cat-dropdown-toggle').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    document.getElementById('cat-dropdown-wrap').classList.toggle('open');
+  });
+  document.addEventListener('click', (e)=>{
+    const wrap = document.getElementById('cat-dropdown-wrap');
+    if(wrap && wrap.classList.contains('open') && !wrap.contains(e.target)){
+      wrap.classList.remove('open');
+    }
+  });
 
   function carouselCardHtml(r, rank, isTop, mode){
     const clickAction = mode === 'consignado'
@@ -1770,12 +1825,14 @@
     empty.style.display='none'; grid.style.display='grid';
     // no filtro "Todos" sem busca ativa, os mais vendidos já aparecem em destaque acima, então não repete na grade
     const gridItemsRaw = (currentCategoryFilter==='Todos' && !portfolioSearchQuery) ? searched.filter(p=>!topCodes.includes(p.code)) : searched;
-    const gridItems = sortProducts(gridItemsRaw, portfolioSortOrder);
+    // promoções sempre na frente da listagem, independente da ordenação escolhida
+    const gridItems = sortProducts(gridItemsRaw, portfolioSortOrder)
+      .sort((a,b) => (hasAnyPromo(b)?1:0) - (hasAnyPromo(a)?1:0));
 
     grid.innerHTML = gridItems.map(p=>{
       const colors = p.colors || [];
       const colorsHtml = colors.length ? `<div class="portfolio-colors">${colors.map(c=>`
-        <button type="button" class="color-pill ${Number(c.stock)<=0?'out':''}" onclick="event.stopPropagation();window.hlSwapImage('${p.code}','${c.name.replace(/'/g,"")}')">${c.name}${Number(c.stock)<=0?' • esgotado':''}</button>`).join('')}</div>` : '';
+        <button type="button" class="color-pill ${Number(c.stock)<=0?'out':''}" onclick="event.stopPropagation();window.hlSwapImage('${p.code}','${c.name.replace(/'/g,"")}', this)">${c.name}${Number(c.stock)<=0?' • esgotado':''}</button>`).join('')}</div>` : '';
       const promoInfo = getPromoInfo(p);
       const promoColor = !promoInfo ? colors.find(c=>getPromoInfo(p, c.name)) : null;
       const colorOnlyPromo = !!promoColor;
@@ -1790,9 +1847,9 @@
           ${tagsHtml(p)}
           ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
           ${p.customizable ? `<span class="badge customizavel" style="margin-left:4px;">✨ Personalizável${p.customizableMinQty ? ' (mín. '+p.customizableMinQty+')' : ''}</span>` : ''}
-          <h3>${p.name}</h3>
-          <div id="price-block-${p.code}">${buildCardPriceHtml(p, null)}</div>
+          <h3 id="card-name-${p.code}">${p.name}</h3>
           ${colorsHtml}
+          <div id="price-block-${p.code}">${buildCardPriceHtml(p, null)}</div>
         </div>
       </div>`;
     }).join('');
@@ -1808,7 +1865,7 @@
     renderPortfolio();
   });
 
-  window.hlSwapImage = function(code, colorName){
+  window.hlSwapImage = function(code, colorName, btnEl){
     const p = PRODUCTS.find(p=>p.code===code);
     if(!p) return;
     const c = (p.colors||[]).find(c=>c.name===colorName);
@@ -1826,6 +1883,13 @@
     }
     const priceBlock = document.getElementById('price-block-'+code);
     if(priceBlock) priceBlock.innerHTML = buildCardPriceHtml(p, colorName);
+    // destaca visualmente qual cor está selecionada (pill ativo + nome do produto em tom diferente)
+    if(btnEl){
+      btnEl.parentElement.querySelectorAll('.color-pill').forEach(b=>b.classList.remove('selected'));
+      btnEl.classList.add('selected');
+    }
+    const nameEl = document.getElementById('card-name-'+code);
+    if(nameEl) nameEl.classList.add('color-selected-active');
     modalSelectedColor = colorName;
   };
 
@@ -2304,7 +2368,8 @@
       const vendido = acertosDoProduto.reduce((s,a)=>s+Number(a.qty),0);
       const devido = acertosDoProduto.reduce((s,a)=>s+Number(a.qty)*Number(p.price),0);
       const pago = acertosDoProduto.filter(a=>a.status==='Pago').reduce((s,a)=>s+Number(a.qty)*Number(p.price),0);
-      return { code:p.code, name:p.name, price:p.price, entregue, devolvido, vendido, saldo: entregue-devolvido-vendido, devido, pago, pendente: devido-pago };
+      const saldo = Math.max(0, entregue-devolvido-vendido); // nunca deve aparecer negativo — se aparecer, há um lançamento pra revisar
+      return { code:p.code, name:p.name, price:p.price, entregue, devolvido, vendido, saldo, devido, pago, pendente: devido-pago };
     }).filter(row => row.entregue>0 || row.devolvido>0 || row.vendido>0);
     const totals = products.reduce((acc,r)=>({
       saldo: acc.saldo+r.saldo, devido: acc.devido+r.devido, pago: acc.pago+r.pago, pendente: acc.pendente+r.pendente
@@ -2810,12 +2875,14 @@
     msg.innerHTML = '';
     openClientDashboard(currentClientCode);
   });
-  document.getElementById('client-logout-btn').addEventListener('click', ()=>{
+  function doClientLogout(){
     lockClient();
     document.getElementById('client-dashboard').style.display = 'none';
     document.getElementById('client-gate').style.display = 'block';
     document.getElementById('client-code-input').value = '';
-  });
+  }
+  document.getElementById('client-logout-btn').addEventListener('click', doClientLogout);
+  document.getElementById('client-logout-top-btn').addEventListener('click', doClientLogout);
 
   function renderClientRequests(code){
     const mine = PEDIDOS.filter(r=>r.clientCode===code).slice().reverse();
@@ -3708,7 +3775,20 @@
     const obs = document.getElementById('d-obs').value.trim();
     const msg = document.getElementById('d-msg');
     if(!clientCode || !productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto e quantidade.</div>'; return; }
+
+    ENTREGAS = await getJSON('entregas', ENTREGAS);
     DEVOLUCOES = await getJSON('devolucoes', DEVOLUCOES);
+    ACERTOS = await getJSON('acertos', ACERTOS);
+    const sameItemD = r => r.clientCode===clientCode && r.productCode===productCode && (r.color||'')===(color||'');
+    const entregueD = ENTREGAS.filter(sameItemD).reduce((s,e)=>s+Number(e.qty),0);
+    const devolvidoAntes = DEVOLUCOES.filter(sameItemD).reduce((s,d)=>s+Number(d.qty),0);
+    const vendidoD = ACERTOS.filter(sameItemD).reduce((s,a)=>s+Number(a.qty),0);
+    const saldoDisponivelD = entregueD - devolvidoAntes - vendidoD;
+    if(qty > saldoDisponivelD){
+      msg.innerHTML = `<div class="msg err">Esse cliente só tem ${saldoDisponivelD < 0 ? 0 : saldoDisponivelD} unidade(s) desse produto${color ? ' na cor '+color : ''} em posse no momento — não é possível devolver ${qty}.</div>`;
+      return;
+    }
+
     const id = nextSeqId(DEVOLUCOES, 'DEV');
     DEVOLUCOES.push({id, date, clientCode, productCode, color, qty, state, obs});
     await setJSON('devolucoes', DEVOLUCOES);
@@ -3740,7 +3820,20 @@
     const payDate = document.getElementById('a-paydate').value;
     const msg = document.getElementById('a-msg');
     if(!clientCode || !productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto e quantidade.</div>'; return; }
+
+    ENTREGAS = await getJSON('entregas', ENTREGAS);
+    DEVOLUCOES = await getJSON('devolucoes', DEVOLUCOES);
     ACERTOS = await getJSON('acertos', ACERTOS);
+    const sameItem = r => r.clientCode===clientCode && r.productCode===productCode && (r.color||'')===(color||'');
+    const entregue = ENTREGAS.filter(sameItem).reduce((s,e)=>s+Number(e.qty),0);
+    const devolvido = DEVOLUCOES.filter(sameItem).reduce((s,d)=>s+Number(d.qty),0);
+    const vendidoAntes = ACERTOS.filter(sameItem).reduce((s,a)=>s+Number(a.qty),0);
+    const saldoDisponivel = entregue - devolvido - vendidoAntes;
+    if(qty > saldoDisponivel){
+      msg.innerHTML = `<div class="msg err">Esse cliente só tem ${saldoDisponivel < 0 ? 0 : saldoDisponivel} unidade(s) desse produto${color ? ' na cor '+color : ''} em posse no momento — não é possível lançar um acerto de ${qty}. Confira as entregas/devoluções/acertos já lançados antes de continuar.</div>`;
+      return;
+    }
+
     const id = nextSeqId(ACERTOS, 'ACT');
     ACERTOS.push({id, date, clientCode, productCode, color, qty, status, payDate});
     await setJSON('acertos', ACERTOS);
