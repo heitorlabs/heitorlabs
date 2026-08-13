@@ -1467,6 +1467,16 @@
 
   const root = document.getElementById('portal-root');
   const fmtMoney = v => 'R$ ' + (Number(v)||0).toFixed(2).replace('.', ',');
+  // impede que texto digitado por qualquer pessoa (parceiro, visitante) vire código executável quando exibido na tela
+  function escapeHtml(str){
+    if(str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
   const todayISO = () => new Date().toISOString().slice(0,10);
   function nextSeqId(list, prefix){
     let maxNum = 0;
@@ -2385,14 +2395,14 @@
       ...ENTREGAS.filter(e=>e.clientCode===code).map(e=>({type:'entrega', date:e.date, id:e.id, desc:`Entrega de ${e.qty}x ${productName(e.productCode)}`})),
       ...DEVOLUCOES.filter(d=>d.clientCode===code).map(d=>({type:'devolucao', date:d.date, id:d.id, desc:`Devolução de ${d.qty}x ${productName(d.productCode)}`})),
       ...ACERTOS.filter(a=>a.clientCode===code).map(a=>({type:'acerto', date:a.date, id:a.id, desc:`Acerto: ${a.qty}x ${productName(a.productCode)} — ${fmtMoney(a.qty*productPrice(a.productCode))}`, status:a.status})),
-      ...VENDAS.filter(v=>v.clientCode===code).map(v=>({type:'venda', date:v.date, id:v.id, desc:`✅ Compra paga: ${v.qty}x ${productName(v.productCode)}${v.color ? ' ('+v.color+')' : ''} — ${fmtMoney(v.total)}${v.obs ? ' · '+v.obs : ''}`})),
+      ...VENDAS.filter(v=>v.clientCode===code).map(v=>({type:'venda', date:v.date, id:v.id, desc:`✅ Compra paga: ${v.qty}x ${productName(v.productCode)}${v.color ? ' ('+v.color+')' : ''} — ${fmtMoney(v.total)}${v.obs ? ' · '+escapeHtml(v.obs) : ''}`})),
     ];
     return items.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
   }
   function productName(code){ const p = PRODUCTS.find(p=>p.code===code); return p ? p.name : code; }
   function clientName(code){ const c = CLIENTS.find(c=>c.code===code); return c ? c.name : code; }
   function clientLinkHtml(code){
-    return `<a href="#" class="client-link" data-goto-client="${code}" title="Ver cadastro deste cliente">${clientName(code)} <span class="client-link-code">(${code})</span></a>`;
+    return `<a href="#" class="client-link" data-goto-client="${escapeHtml(code)}" title="Ver cadastro deste cliente">${escapeHtml(clientName(code))} <span class="client-link-code">(${escapeHtml(code)})</span></a>`;
   }
   function productPrice(code){ const p = PRODUCTS.find(p=>p.code===code); return p ? Number(p.price) : 0; }
 
@@ -2832,7 +2842,6 @@
 
     PRODUCTS = await getJSON('products', PRODUCTS);
     const createdReqs = [];
-    let seqBase = Date.now();
     for(const item of reposicaoCart){
       const p = PRODUCTS.find(p=>p.code===item.productCode);
       // aqui é só uma LEITURA do estoque atual, pra classificar o pedido — o desconto
@@ -2845,11 +2854,11 @@
         const stock = c ? Number(c.stock) : 0;
         type = (c && item.qty <= stock) ? 'reposicao' : 'producao';
       }
-      // id temporário só pra exibir na hora — o id definitivo é o que ficar salvo no banco
-      const req = { id: 'PED-tmp'+(seqBase++), date: todayISO(), clientCode: currentClientCode, productCode: item.productCode, color: item.color, qty: item.qty, note, status:'Pendente', type };
-      const { error } = await supabaseClient.rpc('add_pedido', { new_pedido: req });
+      // o ID definitivo (PED-004, etc.) é gerado pelo próprio banco, de forma segura contra colisões
+      const reqDraft = { date: todayISO(), clientCode: currentClientCode, productCode: item.productCode, color: item.color, qty: item.qty, note, status:'Pendente', type };
+      const { data, error } = await supabaseClient.rpc('add_pedido', { new_pedido: reqDraft });
       if(error){ console.error('Falha ao enviar pedido', error); continue; }
-      createdReqs.push(req);
+      createdReqs.push(data || reqDraft);
     }
 
     const client = CLIENTS.find(c=>c.code===currentClientCode);
@@ -2896,7 +2905,7 @@
     document.getElementById('client-requests').innerHTML = mine.length ? mine.map(r=>`
       <div class="ticket">
         <div class="left">
-          <div class="desc">${r.qty}x ${productName(r.productCode)}${r.color ? ' — '+r.color : ''}${r.note ? ' — ' + r.note : ''}</div>
+          <div class="desc">${r.qty}x ${productName(r.productCode)}${r.color ? ' — '+r.color : ''}${r.note ? ' — ' + escapeHtml(r.note) : ''}</div>
           <div class="id">${r.id} · ${fmtDate(r.date)}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
@@ -3273,10 +3282,10 @@
     document.getElementById('c-list').innerHTML = CLIENTS.length ? CLIENTS.map(c=>`
       <div class="list-row" id="client-row-${c.code}" style="flex-direction:column;align-items:stretch;gap:4px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-          <span class="mono">${c.code} — ${c.name} — ${c.contact||'sem contato'}${c.responsavel ? ' · resp.: '+c.responsavel : ''}${c.document ? ' · '+c.document : ''}</span>
+          <span class="mono">${c.code} — ${escapeHtml(c.name)} — ${escapeHtml(c.contact)||'sem contato'}${c.responsavel ? ' · resp.: '+escapeHtml(c.responsavel) : ''}${c.document ? ' · '+escapeHtml(c.document) : ''}</span>
           <span class="actions"><button data-edit-client="${c.code}">Editar</button><button data-del-client="${c.code}">Remover</button></span>
         </div>
-        ${c.notes ? `<div style="color:var(--muted);font-size:11px;white-space:pre-wrap;">${c.notes}</div>` : ''}
+        ${c.notes ? `<div style="color:var(--muted);font-size:11px;white-space:pre-wrap;">${escapeHtml(c.notes)}</div>` : ''}
       </div>
     `).join('') : `<div class="empty">Nenhum cliente cadastrado.</div>`;
 
@@ -3296,7 +3305,7 @@
     `).join('') || `<div class="empty">Nenhum acerto registrado.</div>`;
 
     document.getElementById('v-list').innerHTML = VENDAS.slice().reverse().slice(0,8).map(v=>`
-      <div class="list-row"><span class="mono">${v.id} · ${fmtDate(v.date)} · ${clientLinkHtml(v.clientCode)} · ${v.qty}x ${productName(v.productCode)}${v.color ? ' ('+v.color+')' : ''} · ${fmtMoney(v.total)}${v.obs ? ' · '+v.obs : ''}</span>
+      <div class="list-row"><span class="mono">${v.id} · ${fmtDate(v.date)} · ${clientLinkHtml(v.clientCode)} · ${v.qty}x ${productName(v.productCode)}${v.color ? ' ('+v.color+')' : ''} · ${fmtMoney(v.total)}${v.obs ? ' · '+escapeHtml(v.obs) : ''}</span>
       <span class="actions"><span class="badge pago">Pago</span><button data-del-venda="${v.id}">Remover</button></span></div>
     `).join('') || `<div class="empty">Nenhuma venda direta registrada.</div>`;
 
@@ -3308,7 +3317,7 @@
     const statusClass = { Pendente:'pendente', Aprovado:'aprovado', Recusado:'recusado' };
     document.getElementById('req-list').innerHTML = PEDIDOS.length ? PEDIDOS.slice().reverse().map(r=>`
       <div class="list-row">
-        <span class="mono">${r.id} · ${fmtDate(r.date)} · ${clientLinkHtml(r.clientCode)} · ${r.qty}x ${productName(r.productCode)}${r.color ? ' ('+r.color+')' : ''}${r.note ? ' · "'+r.note+'"' : ''}</span>
+        <span class="mono">${r.id} · ${fmtDate(r.date)} · ${clientLinkHtml(r.clientCode)} · ${r.qty}x ${productName(r.productCode)}${r.color ? ' ('+r.color+')' : ''}${r.note ? ' · "'+escapeHtml(r.note)+'"' : ''}</span>
         <span class="actions">
           ${r.type==='producao' ? '<span class="badge acerto" style="margin-right:6px;">Produção</span>' : ''}
           <span class="badge ${statusClass[r.status]}" style="margin-right:6px;">${r.status}</span>
