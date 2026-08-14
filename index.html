@@ -202,6 +202,7 @@
   #portal-root .stat .l{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-family:'IBM Plex Mono';margin-top:4px;}
   #portal-root .stat.accent-teal .n{color:var(--teal);}
   #portal-root .stat.accent-violet .n{color:var(--violet);}
+  #portal-root .stat.accent-green .n{color:var(--green);}
   #portal-root .stat.accent-coral .n{color:var(--coral);}
   #portal-root .stat.accent-mustard .n{color:var(--mustard);}
 
@@ -285,12 +286,14 @@
   #portal-root .stat::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--line);}
   #portal-root .stat.accent-teal::before{background:var(--teal);}
   #portal-root .stat.accent-violet::before{background:var(--violet);}
+  #portal-root .stat.accent-green::before{background:var(--green);}
   #portal-root .stat.accent-coral::before{background:var(--coral);}
   #portal-root .stat.accent-mustard::before{background:var(--mustard);}
   #portal-root .stat .icon{width:18px;height:18px;margin-bottom:10px;opacity:.85;}
   #portal-root .stat .icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.6;}
   #portal-root .stat.accent-teal .icon{color:var(--teal);}
   #portal-root .stat.accent-violet .icon{color:var(--violet);}
+  #portal-root .stat.accent-green .icon{color:var(--green);}
   #portal-root .stat.accent-coral .icon{color:var(--coral);}
   #portal-root .stat.accent-mustard .icon{color:var(--mustard);}
   #portal-root .stat:not([class*="accent"]) .icon{color:var(--green);}
@@ -980,7 +983,11 @@
           <div class="stat">
             <div class="icon"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
             <div class="n" id="stat-pago">R$ 0</div><div class="l">Já pago</div></div>
+          <div class="stat accent-green">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg></div>
+            <div class="n" id="stat-lucro">R$ 0</div><div class="l">Lucro estimado com vendas</div></div>
         </div>
+        <p style="color:var(--muted);font-size:11px;margin:-14px 0 22px 0;">* Lucro estimado com base no preço sugerido ao público menos o preço consignado — como você define seu preço final de venda, o valor real pode ser diferente.</p>
 
         <h3 style="margin-bottom:12px;font-size:16px;">Saldo por produto</h3>
         <div class="panel" style="padding:0;overflow-x:auto;">
@@ -2416,12 +2423,17 @@
       const devido = acertosDoProduto.reduce((s,a)=>s+Number(a.qty)*Number(p.price),0);
       const pago = acertosDoProduto.filter(a=>a.status==='Pago').reduce((s,a)=>s+Number(a.qty)*Number(p.price),0);
       const saldo = Math.max(0, entregue-devolvido-vendido); // nunca deve aparecer negativo — se aparecer, há um lançamento pra revisar
-      return { code:p.code, name:p.name, price:p.price, entregue, devolvido, vendido, saldo, devido, pago, pendente: devido-pago };
+      // lucro estimado: diferença entre o preço sugerido ao público e o preço consignado, vezes as peças já vendidas.
+      // é uma ESTIMATIVA — o parceiro tem liberdade pra definir o preço final, então o lucro real pode variar.
+      const margemUnit = p.publicPrice != null ? Math.max(0, Number(p.publicPrice) - Number(p.price)) : 0;
+      const lucroEstimado = margemUnit * vendido;
+      return { code:p.code, name:p.name, price:p.price, entregue, devolvido, vendido, saldo, devido, pago, pendente: devido-pago, lucroEstimado };
     }).filter(row => row.entregue>0 || row.devolvido>0 || row.vendido>0);
     const totals = products.reduce((acc,r)=>({
       saldo: acc.saldo+r.saldo, devido: acc.devido+r.devido, pago: acc.pago+r.pago, pendente: acc.pendente+r.pendente,
-      valorEmEstoque: acc.valorEmEstoque + r.saldo*Number(r.price)
-    }), {saldo:0,devido:0,pago:0,pendente:0,valorEmEstoque:0});
+      valorEmEstoque: acc.valorEmEstoque + r.saldo*Number(r.price),
+      lucroEstimado: acc.lucroEstimado + r.lucroEstimado
+    }), {saldo:0,devido:0,pago:0,pendente:0,valorEmEstoque:0,lucroEstimado:0});
     return { products, totals };
   }
 
@@ -2663,6 +2675,7 @@
     document.getElementById('stat-devido').textContent = fmtMoney(totals.devido);
     document.getElementById('stat-pendente').textContent = fmtMoney(totals.pendente);
     document.getElementById('stat-pago').textContent = fmtMoney(totals.pago);
+    document.getElementById('stat-lucro').textContent = fmtMoney(totals.lucroEstimado);
 
     const tbody = document.getElementById('client-product-table');
     tbody.innerHTML = products.length ? products.map(r=>`
