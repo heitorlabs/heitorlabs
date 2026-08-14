@@ -201,6 +201,7 @@
   #portal-root .stat .n{font-family:'Space Grotesk';font-size:24px;font-weight:700;}
   #portal-root .stat .l{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-family:'IBM Plex Mono';margin-top:4px;}
   #portal-root .stat.accent-teal .n{color:var(--teal);}
+  #portal-root .stat.accent-violet .n{color:var(--violet);}
   #portal-root .stat.accent-coral .n{color:var(--coral);}
   #portal-root .stat.accent-mustard .n{color:var(--mustard);}
 
@@ -275,11 +276,13 @@
   #portal-root .stat{position:relative;overflow:hidden;}
   #portal-root .stat::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--line);}
   #portal-root .stat.accent-teal::before{background:var(--teal);}
+  #portal-root .stat.accent-violet::before{background:var(--violet);}
   #portal-root .stat.accent-coral::before{background:var(--coral);}
   #portal-root .stat.accent-mustard::before{background:var(--mustard);}
   #portal-root .stat .icon{width:18px;height:18px;margin-bottom:10px;opacity:.85;}
   #portal-root .stat .icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.6;}
   #portal-root .stat.accent-teal .icon{color:var(--teal);}
+  #portal-root .stat.accent-violet .icon{color:var(--violet);}
   #portal-root .stat.accent-coral .icon{color:var(--coral);}
   #portal-root .stat.accent-mustard .icon{color:var(--mustard);}
   #portal-root .stat:not([class*="accent"]) .icon{color:var(--green);}
@@ -957,6 +960,9 @@
           <div class="stat accent-teal">
             <div class="icon"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>
             <div class="n" id="stat-saldo">0</div><div class="l">Peças em sua posse</div></div>
+          <div class="stat accent-violet">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div class="n" id="stat-valor-estoque">R$ 0</div><div class="l">Valor em estoque (consignado)</div></div>
           <div class="stat accent-coral">
             <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12h6M12 9v6"/></svg></div>
             <div class="n" id="stat-devido">R$ 0</div><div class="l">Total devido</div></div>
@@ -1223,6 +1229,7 @@
             <div id="e-lines-wrap" style="margin-top:14px;display:none;">
               <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-family:'IBM Plex Mono';margin-bottom:8px;">Itens desta entrega</div>
               <div id="e-lines-list"></div>
+              <div id="e-lines-summary"></div>
             </div>
             <div id="e-msg"></div>
             <button class="btn" id="e-add-btn" style="margin-top:14px;">Registrar entrega</button>
@@ -2402,8 +2409,9 @@
       return { code:p.code, name:p.name, price:p.price, entregue, devolvido, vendido, saldo, devido, pago, pendente: devido-pago };
     }).filter(row => row.entregue>0 || row.devolvido>0 || row.vendido>0);
     const totals = products.reduce((acc,r)=>({
-      saldo: acc.saldo+r.saldo, devido: acc.devido+r.devido, pago: acc.pago+r.pago, pendente: acc.pendente+r.pendente
-    }), {saldo:0,devido:0,pago:0,pendente:0});
+      saldo: acc.saldo+r.saldo, devido: acc.devido+r.devido, pago: acc.pago+r.pago, pendente: acc.pendente+r.pendente,
+      valorEmEstoque: acc.valorEmEstoque + r.saldo*Number(r.price)
+    }), {saldo:0,devido:0,pago:0,pendente:0,valorEmEstoque:0});
     return { products, totals };
   }
 
@@ -2624,6 +2632,7 @@
 
     const { products, totals } = clientStats(client.code);
     document.getElementById('stat-saldo').textContent = totals.saldo;
+    document.getElementById('stat-valor-estoque').textContent = fmtMoney(totals.valorEmEstoque);
     document.getElementById('stat-devido').textContent = fmtMoney(totals.devido);
     document.getElementById('stat-pendente').textContent = fmtMoney(totals.pendente);
     document.getElementById('stat-pago').textContent = fmtMoney(totals.pago);
@@ -3818,16 +3827,27 @@
   function renderEntregaLines(){
     const wrap = document.getElementById('e-lines-wrap');
     const list = document.getElementById('e-lines-list');
-    if(entregaLines.length === 0){ wrap.style.display = 'none'; list.innerHTML = ''; return; }
+    const summary = document.getElementById('e-lines-summary');
+    if(entregaLines.length === 0){ wrap.style.display = 'none'; list.innerHTML = ''; summary.innerHTML = ''; return; }
     wrap.style.display = 'block';
     list.innerHTML = entregaLines.map((line, i)=>`
-      <div class="list-row"><span class="mono">${line.qty}x ${escapeHtml(productName(line.productCode))}${line.color ? ' ('+escapeHtml(line.color)+')' : ''}</span>
+      <div class="list-row"><span class="mono">${line.qty}x ${escapeHtml(productName(line.productCode))}${line.color ? ' ('+escapeHtml(line.color)+')' : ''} — ${fmtMoney(productPrice(line.productCode) * line.qty)}</span>
       <span class="actions"><button data-remove-entrega-line="${i}">Remover</button></span></div>
     `).join('');
     list.querySelectorAll('[data-remove-entrega-line]').forEach(b=>b.addEventListener('click', ()=>{
       entregaLines.splice(+b.dataset.removeEntregaLine, 1);
       renderEntregaLines();
     }));
+    // resumo: total de peças e valor total ao preço consignado (o que o parceiro deve ao repassar tudo)
+    const totalQty = entregaLines.reduce((s,l)=>s+Number(l.qty), 0);
+    const totalValue = entregaLines.reduce((s,l)=>s+productPrice(l.productCode)*Number(l.qty), 0);
+    const totalSkus = entregaLines.length;
+    summary.innerHTML = `
+      <div class="cart-total-box">
+        <div class="cart-total-row"><span>Itens diferentes</span><span>${totalSkus}</span></div>
+        <div class="cart-total-row"><span>Total de peças</span><span>${totalQty}</span></div>
+        <div class="cart-total-row grand"><span>Valor total (consignado)</span><span>${fmtMoney(totalValue)}</span></div>
+      </div>`;
   }
   document.getElementById('e-add-line-btn').addEventListener('click', ()=>{
     const productCode = document.getElementById('e-product').value;
@@ -3863,7 +3883,21 @@
       ENTREGAS.push({id, date, clientCode, productCode: line.productCode, color: line.color, qty: line.qty});
     });
     await setJSON('entregas', ENTREGAS);
-    msg.innerHTML = `<div class="msg ok">Entrega registrada — ${lines.length} ${lines.length===1?'item':'itens'}.</div>`;
+    const totalValue = lines.reduce((s,l)=>s+productPrice(l.productCode)*Number(l.qty), 0);
+    msg.innerHTML = `<div class="msg ok">Entrega registrada — ${lines.length} ${lines.length===1?'item':'itens'}, valor total ${fmtMoney(totalValue)}.</div>
+      <button type="button" class="btn secondary" id="e-goto-report-btn" style="margin-top:8px;">Ver relatório deste cliente</button>`;
+    const clientCodeJustSaved = clientCode;
+    document.getElementById('e-goto-report-btn').addEventListener('click', async ()=>{
+      root.querySelectorAll('[data-admin-tab]').forEach(b=>b.classList.remove('active'));
+      root.querySelector('[data-admin-tab="relatorio"]').classList.add('active');
+      root.querySelectorAll('.admin-tab').forEach(t=>t.style.display='none');
+      root.querySelector('.admin-tab[data-tab="relatorio"]').style.display='block';
+      await refreshData();
+      refreshAdminSelects();
+      renderAdminLists();
+      document.getElementById('rep-client').value = clientCodeJustSaved;
+      renderClientReport(clientCodeJustSaved);
+    });
     document.getElementById('e-qty').value = '';
     entregaLines = [];
     renderEntregaLines();
