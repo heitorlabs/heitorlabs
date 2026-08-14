@@ -231,6 +231,14 @@
   #portal-root .ticket .left{display:flex;flex-direction:column;gap:2px;}
   #portal-root .ticket .id{font-family:'IBM Plex Mono';font-size:11px;color:var(--muted);}
   #portal-root .ticket .desc{font-size:13px;}
+  #portal-root .ticket-expandable{cursor:pointer;}
+  #portal-root .ticket-expandable:hover{border-color:var(--violet);}
+  #portal-root .hist-expand-arrow{color:var(--muted);font-size:11px;margin-left:4px;}
+  #portal-root .ticket-breakdown{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;
+    margin:-4px 0 8px 0;padding:8px 16px 10px 16px;
+  }
+  #portal-root .ticket-breakdown-row{font-size:12px;color:var(--muted);padding:3px 0;font-family:'IBM Plex Mono';}
 
   #portal-root .empty{
     text-align:center;padding:50px 20px;color:var(--muted);
@@ -987,8 +995,10 @@
         <div id="client-requests"></div>
 
         <div class="divider"></div>
-        <h3 style="margin-bottom:12px;font-size:16px;">Histórico de movimentações</h3>
-        <div id="client-history"></div>
+        <h3 id="client-history-toggle" style="margin-bottom:12px;font-size:16px;cursor:pointer;display:flex;align-items:center;gap:8px;">
+          Histórico de movimentações <span id="client-history-arrow" style="font-size:13px;color:var(--muted);">▸ ver</span>
+        </h3>
+        <div id="client-history" style="display:none;"></div>
 
         <div class="divider"></div>
         <h3 style="margin-bottom:4px;font-size:16px;">Meus documentos</h3>
@@ -2416,8 +2426,25 @@
   }
 
   function clientHistory(code){
+    // agrupa entregas feitas juntas (mesma "leva") num único item, com os produtos dentro —
+    // entregas antigas, lançadas antes dessa função existir, não têm batchId e viram um "grupo" de 1 item só
+    const batches = {};
+    ENTREGAS.filter(e=>e.clientCode===code).forEach(e=>{
+      const key = e.batchId || ('single-'+e.id);
+      if(!batches[key]) batches[key] = { date: e.date, items: [] };
+      batches[key].items.push(e);
+    });
+    const entregaItems = Object.entries(batches).map(([key, batch])=>{
+      const totalQty = batch.items.reduce((s,i)=>s+Number(i.qty),0);
+      const totalValue = batch.items.reduce((s,i)=>s+Number(i.qty)*productPrice(i.productCode),0);
+      const desc = batch.items.length > 1
+        ? `Entrega — ${batch.items.length} itens (${totalQty} peças) — ${fmtMoney(totalValue)}`
+        : `Entrega de ${batch.items[0].qty}x ${productName(batch.items[0].productCode)}`;
+      return { type:'entrega', date: batch.date, id: key, desc, items: batch.items, totalValue };
+    });
+
     const items = [
-      ...ENTREGAS.filter(e=>e.clientCode===code).map(e=>({type:'entrega', date:e.date, id:e.id, desc:`Entrega de ${e.qty}x ${productName(e.productCode)}`})),
+      ...entregaItems,
       ...DEVOLUCOES.filter(d=>d.clientCode===code).map(d=>({type:'devolucao', date:d.date, id:d.id, desc:`Devolução de ${d.qty}x ${productName(d.productCode)}`})),
       ...ACERTOS.filter(a=>a.clientCode===code).map(a=>({type:'acerto', date:a.date, id:a.id, desc:`Acerto: ${a.qty}x ${productName(a.productCode)} — ${fmtMoney(a.qty*productPrice(a.productCode))}`, status:a.status})),
       ...VENDAS.filter(v=>v.clientCode===code).map(v=>({type:'venda', date:v.date, id:v.id, desc:`✅ Compra paga: ${v.qty}x ${productName(v.productCode)}${v.color ? ' ('+v.color+')' : ''} — ${fmtMoney(v.total)}${v.obs ? ' · '+escapeHtml(v.obs) : ''}`})),
@@ -2651,17 +2678,33 @@
     const badgeClass = { entrega:'entrega', devolucao:'devolucao', acerto:'acerto', venda:'pago' };
     const badgeLabel = { entrega:'Entrega', devolucao:'Devolução', acerto:'Acerto', venda:'Compra paga' };
     const typeGlyph = { entrega:'▲', devolucao:'▼', acerto:'◆', venda:'✓' };
-    document.getElementById('client-history').innerHTML = hist.length ? hist.map(h=>`
-      <div class="ticket t-${h.type}">
+    document.getElementById('client-history').innerHTML = hist.length ? hist.map(h=>{
+      const isGroupedEntrega = h.type === 'entrega' && h.items && h.items.length > 1;
+      const itemsBreakdown = isGroupedEntrega ? `
+        <div class="ticket-breakdown" id="hist-breakdown-${h.id}" style="display:none;">
+          ${h.items.map(i=>`<div class="ticket-breakdown-row">${i.qty}x ${escapeHtml(productName(i.productCode))}${i.color ? ' ('+escapeHtml(i.color)+')' : ''} — ${fmtMoney(Number(i.qty)*productPrice(i.productCode))}</div>`).join('')}
+        </div>` : '';
+      return `
+      <div class="ticket t-${h.type} ${isGroupedEntrega ? 'ticket-expandable' : ''}" ${isGroupedEntrega ? `data-toggle-hist="${h.id}"` : ''}>
         <div class="left">
-          <div class="desc"><span class="glyph">${typeGlyph[h.type]}</span>${h.desc}</div>
-          <div class="id">${h.id} · ${fmtDate(h.date)}</div>
+          <div class="desc"><span class="glyph">${typeGlyph[h.type]}</span>${h.desc}${isGroupedEntrega ? ' <span class="hist-expand-arrow" id="hist-arrow-'+h.id+'">▾</span>' : ''}</div>
+          <div class="id">${h.id.startsWith('B') ? '' : h.id+' · '}${fmtDate(h.date)}</div>
         </div>
         <div>
           <span class="badge ${badgeClass[h.type]}">${badgeLabel[h.type]}</span>
           ${h.status ? `<span class="badge ${h.status.toLowerCase()}" style="margin-left:6px;">${h.status}</span>` : ''}
         </div>
-      </div>`).join('') : `<div class="empty"><div class="glyph">◇</div>Sem movimentações por enquanto.</div>`;
+      </div>${itemsBreakdown}`;
+    }).join('') : `<div class="empty"><div class="glyph">◇</div>Sem movimentações por enquanto.</div>`;
+
+    document.querySelectorAll('[data-toggle-hist]').forEach(el=>el.addEventListener('click', ()=>{
+      const id = el.dataset.toggleHist;
+      const breakdown = document.getElementById('hist-breakdown-'+id);
+      const arrow = document.getElementById('hist-arrow-'+id);
+      const isOpen = breakdown.style.display === 'block';
+      breakdown.style.display = isOpen ? 'none' : 'block';
+      arrow.textContent = isOpen ? '▾' : '▴';
+    }));
 
     renderConsignadoCatalog();
     renderCart();
@@ -2923,6 +2966,13 @@
     document.getElementById('client-code-input').value = '';
   }
   document.getElementById('client-logout-btn').addEventListener('click', doClientLogout);
+  document.getElementById('client-history-toggle').addEventListener('click', ()=>{
+    const hist = document.getElementById('client-history');
+    const arrow = document.getElementById('client-history-arrow');
+    const isOpen = hist.style.display === 'block';
+    hist.style.display = isOpen ? 'none' : 'block';
+    arrow.textContent = isOpen ? '▸ ver' : '▾ esconder';
+  });
   document.getElementById('client-logout-top-btn').addEventListener('click', doClientLogout);
 
   function renderClientRequests(code){
@@ -3878,9 +3928,10 @@
     }
 
     ENTREGAS = await getJSON('entregas', ENTREGAS);
+    const batchId = 'B' + Date.now(); // identifica que esses itens vieram da mesma entrega, pra agrupar no histórico do parceiro
     lines.forEach(line=>{
       const id = nextSeqId(ENTREGAS, 'ENT');
-      ENTREGAS.push({id, date, clientCode, productCode: line.productCode, color: line.color, qty: line.qty});
+      ENTREGAS.push({id, date, clientCode, productCode: line.productCode, color: line.color, qty: line.qty, batchId});
     });
     await setJSON('entregas', ENTREGAS);
     const totalValue = lines.reduce((s,l)=>s+productPrice(l.productCode)*Number(l.qty), 0);
