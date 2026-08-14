@@ -135,11 +135,14 @@
   }
   #portal-root .card .body{padding:14px;display:flex;flex-direction:column;flex:1;}
   #portal-root .card-footer{
-    margin-top:auto;padding-top:10px;display:flex;flex-direction:column;align-items:center;
-    gap:6px;text-align:center;
+    margin-top:auto;padding-top:10px;display:flex;flex-direction:column;align-items:stretch;
+    gap:8px;text-align:center;
   }
-  #portal-root .card-footer .buy-btn{padding:6px 18px;font-size:11px;box-shadow:0 4px 14px rgba(105,71,199,.3);}
-  #portal-root .card-footer .price{margin-top:0;font-size:17px;font-weight:700;font-family:'Space Grotesk';}
+  #portal-root .card-footer .buy-btn{
+    width:100%;box-sizing:border-box;padding:11px 18px;font-size:12.5px;
+    box-shadow:0 4px 14px rgba(105,71,199,.3);justify-content:center;
+  }
+  #portal-root .card .card-footer .price{margin-top:0;font-size:17px;font-weight:700;font-family:'Space Grotesk';}
   #portal-root .card-footer .promo-price-block{align-items:center;}
   #portal-root .tag{
     display:inline-block;font-family:'IBM Plex Mono';font-size:10px;text-transform:uppercase;letter-spacing:.05em;
@@ -1205,16 +1208,24 @@
         <!-- ENTREGAS -->
         <div class="admin-tab" data-tab="entregas" style="display:none;">
           <div class="panel">
-            <h3 style="font-size:14px;margin-bottom:14px;">Registrar entrega (Anexo I)</h3>
+            <h3 style="font-size:14px;margin-bottom:6px;">Registrar entrega (Anexo I)</h3>
+            <p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Escolha o cliente e a data, vá adicionando quantos produtos quiser na lista abaixo, e só depois registre tudo de uma vez — como se fosse uma entrega só, com vários itens.</p>
             <div class="row">
               <div class="field"><label>Cliente</label><select id="e-client"></select></div>
+              <div class="field"><label>Data</label><input id="e-date" type="date"></div>
+            </div>
+            <div class="row">
               <div class="field"><label>Produto</label><select id="e-product"></select></div>
               <div class="field"><label>Cor</label><select id="e-color"></select></div>
               <div class="field"><label>Quantidade</label><input id="e-qty" type="number" min="1" placeholder="10"></div>
-              <div class="field"><label>Data</label><input id="e-date" type="date"></div>
+            </div>
+            <button class="btn secondary" id="e-add-line-btn" type="button">+ Adicionar item à lista</button>
+            <div id="e-lines-wrap" style="margin-top:14px;display:none;">
+              <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-family:'IBM Plex Mono';margin-bottom:8px;">Itens desta entrega</div>
+              <div id="e-lines-list"></div>
             </div>
             <div id="e-msg"></div>
-            <button class="btn" id="e-add-btn">Registrar entrega</button>
+            <button class="btn" id="e-add-btn" style="margin-top:14px;">Registrar entrega</button>
           </div>
           <div class="panel" style="margin-top:20px;"><h3 style="font-size:14px;margin-bottom:8px;">Últimas entregas</h3><div id="e-list"></div></div>
         </div>
@@ -3803,20 +3814,59 @@
     refreshAdminSelects(); renderAdminLists();
   });
 
-  document.getElementById('e-add-btn').addEventListener('click', async ()=>{
-    const clientCode = document.getElementById('e-client').value;
+  let entregaLines = [];
+  function renderEntregaLines(){
+    const wrap = document.getElementById('e-lines-wrap');
+    const list = document.getElementById('e-lines-list');
+    if(entregaLines.length === 0){ wrap.style.display = 'none'; list.innerHTML = ''; return; }
+    wrap.style.display = 'block';
+    list.innerHTML = entregaLines.map((line, i)=>`
+      <div class="list-row"><span class="mono">${line.qty}x ${escapeHtml(productName(line.productCode))}${line.color ? ' ('+escapeHtml(line.color)+')' : ''}</span>
+      <span class="actions"><button data-remove-entrega-line="${i}">Remover</button></span></div>
+    `).join('');
+    list.querySelectorAll('[data-remove-entrega-line]').forEach(b=>b.addEventListener('click', ()=>{
+      entregaLines.splice(+b.dataset.removeEntregaLine, 1);
+      renderEntregaLines();
+    }));
+  }
+  document.getElementById('e-add-line-btn').addEventListener('click', ()=>{
     const productCode = document.getElementById('e-product').value;
     const color = document.getElementById('e-color').value;
     const qty = parseInt(document.getElementById('e-qty').value);
+    const msg = document.getElementById('e-msg');
+    if(!productCode || !qty){ msg.innerHTML = '<div class="msg err">Escolha o produto e a quantidade antes de adicionar à lista.</div>'; return; }
+    msg.innerHTML = '';
+    entregaLines.push({productCode, color, qty});
+    renderEntregaLines();
+    document.getElementById('e-qty').value = '';
+  });
+
+  document.getElementById('e-add-btn').addEventListener('click', async ()=>{
+    const clientCode = document.getElementById('e-client').value;
     const date = document.getElementById('e-date').value;
     const msg = document.getElementById('e-msg');
-    if(!clientCode || !productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha cliente, produto e quantidade.</div>'; return; }
+    if(!clientCode){ msg.innerHTML = '<div class="msg err">Escolha o cliente.</div>'; return; }
+
+    // se não tem nenhum item na listinha, permite lançar rápido só com o que está preenchido no formulário
+    let lines = entregaLines.slice();
+    if(lines.length === 0){
+      const productCode = document.getElementById('e-product').value;
+      const color = document.getElementById('e-color').value;
+      const qty = parseInt(document.getElementById('e-qty').value);
+      if(!productCode || !qty){ msg.innerHTML = '<div class="msg err">Preencha produto e quantidade, ou adicione itens à lista antes de registrar.</div>'; return; }
+      lines = [{productCode, color, qty}];
+    }
+
     ENTREGAS = await getJSON('entregas', ENTREGAS);
-    const id = nextSeqId(ENTREGAS, 'ENT');
-    ENTREGAS.push({id, date, clientCode, productCode, color, qty});
+    lines.forEach(line=>{
+      const id = nextSeqId(ENTREGAS, 'ENT');
+      ENTREGAS.push({id, date, clientCode, productCode: line.productCode, color: line.color, qty: line.qty});
+    });
     await setJSON('entregas', ENTREGAS);
-    msg.innerHTML = '<div class="msg ok">Entrega registrada.</div>';
+    msg.innerHTML = `<div class="msg ok">Entrega registrada — ${lines.length} ${lines.length===1?'item':'itens'}.</div>`;
     document.getElementById('e-qty').value = '';
+    entregaLines = [];
+    renderEntregaLines();
     renderAdminLists();
   });
 
