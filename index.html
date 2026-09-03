@@ -791,6 +791,11 @@
     #print-report th, #print-report td{border:1px solid #999;padding:6px 8px;color:#000;font-size:12px;}
     #print-report h2, #print-report p{color:#000;}
   }
+  body.internal-admin-mode #portal-root > .topbar,
+  body.internal-admin-mode #portal-root > footer,
+  body.internal-admin-mode #admin-logout-btn{display:none !important;}
+  body.internal-admin-mode #portal-root main{max-width:none;padding:0;}
+  body.internal-admin-mode #view-admin{animation:none;}
 </style>
 </head>
 <body>
@@ -808,7 +813,6 @@
       <nav>
         <button data-view="portfolio" class="active">Portfólio</button>
         <button data-view="client">Área do Parceiro</button>
-        <button data-view="admin">Administrador</button>
       </nav>
       <button type="button" id="theme-toggle-btn" title="Alternar tema claro/escuro">🌙</button>
     </div>
@@ -1499,6 +1503,10 @@
   const ADMIN_EMAIL = "hl3dsolutions@gmail.com";
   const INSTAGRAM_URL = "https://instagram.com/hl3dsolutions";
   const MERCADO_LIVRE_URL = "https://lista.mercadolivre.com.br/_CustId_3261421782";
+  // O painel administrativo não faz parte da navegação pública. Ele só é ativado
+  // quando esta página é aberta dentro do portal interno de Ferramentas.
+  const INTERNAL_ADMIN_MODE = new URLSearchParams(location.search).get('internal') === 'admin' && window.self !== window.top;
+  if(INTERNAL_ADMIN_MODE) document.body.classList.add('internal-admin-mode');
 
   const root = document.getElementById('portal-root');
   const fmtMoney = v => 'R$ ' + (Number(v)||0).toFixed(2).replace('.', ',');
@@ -4096,6 +4104,12 @@
       document.querySelectorAll('.cover-logo-full').forEach(img => img.src = brandLogo.src);
     }
     await loadAll();
+    if(INTERNAL_ADMIN_MODE){
+      root.querySelectorAll('.view').forEach(view=>view.classList.remove('active'));
+      document.getElementById('view-admin').classList.add('active');
+      await checkAdminSessionAndShow();
+      return;
+    }
     try{
       const savedCode = localStorage.getItem(CLIENT_SESSION_KEY);
       if(savedCode){
