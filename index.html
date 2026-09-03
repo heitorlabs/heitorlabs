@@ -2754,13 +2754,23 @@
     renderDocList();
   });
 
+  function requestItems(req){
+    if(Array.isArray(req?.items)&&req.items.length)return req.items;
+    return req?.productCode?[{productCode:req.productCode,color:req.color||'',qty:Number(req.qty)||1,type:req.type||'reposicao'}]:[];
+  }
+  function requestHasProduction(req){return requestItems(req).some(item=>(item.type||req.type)==='producao');}
+  function requestItemsHtml(req){
+    return requestItems(req).map(item=>`${Number(item.qty)||1}x ${escapeHtml(productName(item.productCode))}${item.color?' — '+escapeHtml(item.color):''}`).join('<br>');
+  }
+  function requestItemsText(req){
+    return requestItems(req).map(item=>`• ${Number(item.qty)||1}x ${productName(item.productCode)}${item.color?' ('+item.color+')':''}${(item.type||req.type)==='producao'?' [PRODUÇÃO]':''}`).join('\n');
+  }
+
   function whatsappLink(req){
     const client = CLIENTS.find(c=>c.code===req.clientCode);
     const clientLabel = client ? `${client.name} (${client.code})` : req.clientCode;
-    const titulo = req.type === 'producao' ? 'Novo pedido de PRODUÇÃO' : 'Novo pedido de reposição';
-    let text = `${titulo} — ${req.id}\nCliente: ${clientLabel}\nProduto: ${productName(req.productCode)} (${req.productCode})`;
-    if(req.color) text += `\nCor: ${req.color}`;
-    text += `\nQuantidade: ${req.qty}`;
+    const titulo = requestHasProduction(req) ? 'Novo pedido de reposição / produção' : 'Novo pedido de reposição';
+    let text = `${titulo} — ${req.id}\nCliente: ${clientLabel}\n\n${requestItemsText(req)}`;
     if(req.note) text += `\nObservação: ${req.note}`;
     return `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
   }
@@ -3051,8 +3061,8 @@
     const btn = document.getElementById('cart-submit-btn');
     btn.disabled = true; btn.textContent = 'Enviando…';
 
-    PRODUCTS = await getJSON('products', PRODUCTS);
-    const createdReqs = [];
+    await loadPartnerSnapshot(currentClientCode);
+    const orderItems=[];
     for(const item of reposicaoCart){
       const p = PRODUCTS.find(p=>p.code===item.productCode);
       // aqui é só uma LEITURA do estoque atual, pra classificar o pedido — o desconto
@@ -3065,29 +3075,31 @@
         const stock = c ? Number(c.stock) : 0;
         type = (c && item.qty <= stock) ? 'reposicao' : 'producao';
       }
-      // o ID definitivo (PED-004, etc.) é gerado pelo próprio banco, de forma segura contra colisões
-      const reqDraft = { date: todayISO(), clientCode: currentClientCode, productCode: item.productCode, color: item.color, qty: item.qty, note, status:'Pendente', type };
-      let {data,error}=await supabaseClient.rpc('partner_add_pedido',{p_client_code:currentClientCode,new_pedido:reqDraft});
-      if(error&&isMissingSecurityFunction(error))({data,error}=await supabaseClient.rpc('add_pedido',{new_pedido:reqDraft}));
-      if(error){ console.error('Falha ao enviar pedido', error); continue; }
-      createdReqs.push(data || reqDraft);
+      orderItems.push({productCode:item.productCode,color:item.color,qty:item.qty,type});
     }
+
+    // O carrinho inteiro vira um único pedido; o banco gera apenas um número PED.
+    const reqDraft={date:todayISO(),clientCode:currentClientCode,items:orderItems,note,status:'Pendente',type:orderItems.some(item=>item.type==='producao')?'producao':'reposicao'};
+    let {data,error}=await supabaseClient.rpc('partner_add_pedido',{p_client_code:currentClientCode,new_pedido:reqDraft});
+    if(error&&isMissingSecurityFunction(error)){
+      // Compatibilidade temporária antes da atualização da função no Supabase.
+      ({data,error}=await supabaseClient.rpc('add_pedido',{new_pedido:reqDraft}));
+    }
+    const createdOrder=error?null:(data||reqDraft);
+    if(error)console.error('Falha ao enviar pedido',error);
 
     const client = CLIENTS.find(c=>c.code===currentClientCode);
     const clientLabel = client ? `${client.name} (${client.code})` : currentClientCode;
     let text = `Pedido de reposição — ${clientLabel}\n\n`;
-    createdReqs.forEach(r=>{
-      text += `• ${r.qty}x ${productName(r.productCode)}${r.color ? ' ('+r.color+')' : ''}${r.type==='producao' ? ' [PRODUÇÃO]' : ''}\n`;
-    });
+    if(createdOrder)text+=requestItemsText(createdOrder)+'\n';
     if(note) text += `\nObservação: ${note}`;
     const link = `https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 
-    msg.innerHTML = createdReqs.length
+    msg.innerHTML = createdOrder
       ? `<div class="msg ok">Pedido enviado! Avise a HL 3D Solutions agora para agilizar:</div>
       <div style="margin:10px 0;"><a class="btn whatsapp" href="${link}" target="_blank" rel="noopener">Avisar no WhatsApp</a></div>`
       : `<div class="msg err">Não foi possível enviar o pedido agora. Tente novamente em instantes.</div>`;
-    reposicaoCart = [];
-    document.getElementById('cart-note').value = '';
+    if(createdOrder){reposicaoCart=[];document.getElementById('cart-note').value='';}
     renderCart();
     renderConsignadoCatalog();
     await loadPartnerSnapshot(currentClientCode);
@@ -3129,11 +3141,11 @@
     document.getElementById('client-requests').innerHTML = mine.length ? mine.map(r=>`
       <div class="ticket">
         <div class="left">
-          <div class="desc">${r.qty}x ${productName(r.productCode)}${r.color ? ' — '+r.color : ''}${r.note ? ' — ' + escapeHtml(r.note) : ''}</div>
+          <div class="desc">${requestItemsHtml(r)}${r.note ? '<br><small>Observação: '+escapeHtml(r.note)+'</small>' : ''}</div>
           <div class="id">${r.id} · ${fmtDate(r.date)}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
-          ${r.type==='producao' ? '<span class="badge acerto">Produção</span>' : ''}
+          ${requestHasProduction(r) ? '<span class="badge acerto">Inclui produção</span>' : ''}
           ${r.status==='Pendente' ? whatsappBtn(r) : ''}
           <span class="badge ${statusClass[r.status]}">${r.status}</span>
         </div>
@@ -3455,7 +3467,7 @@
         ENTREGAS.forEach(e=>{ if(e.productCode===code && e.color===oldName) e.color = newName; });
         DEVOLUCOES.forEach(d=>{ if(d.productCode===code && d.color===oldName) d.color = newName; });
         ACERTOS.forEach(a=>{ if(a.productCode===code && a.color===oldName) a.color = newName; });
-        PEDIDOS.forEach(r=>{ if(r.productCode===code && r.color===oldName) r.color = newName; });
+        PEDIDOS.forEach(r=>{ if(Array.isArray(r.items))r.items.forEach(item=>{if(item.productCode===code&&item.color===oldName)item.color=newName;});else if(r.productCode===code&&r.color===oldName)r.color=newName; });
         await setJSON('entregas', ENTREGAS);
         await setJSON('devolucoes', DEVOLUCOES);
         await setJSON('acertos', ACERTOS);
@@ -3541,9 +3553,9 @@
     const statusClass = { Pendente:'pendente', Aprovado:'aprovado', Recusado:'recusado' };
     document.getElementById('req-list').innerHTML = PEDIDOS.length ? PEDIDOS.slice().reverse().map(r=>`
       <div class="list-row">
-        <span class="mono">${r.id} · ${fmtDate(r.date)} · ${clientLinkHtml(r.clientCode)} · ${r.qty}x ${productName(r.productCode)}${r.color ? ' ('+r.color+')' : ''}${r.note ? ' · "'+escapeHtml(r.note)+'"' : ''}</span>
+        <span class="mono">${r.id} · ${fmtDate(r.date)} · ${clientLinkHtml(r.clientCode)}<br>${requestItemsHtml(r)}${r.note ? '<br>Observação: "'+escapeHtml(r.note)+'"' : ''}</span>
         <span class="actions">
-          ${r.type==='producao' ? '<span class="badge acerto" style="margin-right:6px;">Produção</span>' : ''}
+          ${requestHasProduction(r) ? '<span class="badge acerto" style="margin-right:6px;">Inclui produção</span>' : ''}
           <span class="badge ${statusClass[r.status]}" style="margin-right:6px;">${r.status}</span>
           ${r.status==='Pendente' ? `<button data-approve-req="${r.id}">Aprovar</button><button data-refuse-req="${r.id}">Recusar</button>` : ''}
           <button data-del-pedido="${r.id}">Remover</button>
@@ -3594,16 +3606,21 @@
       PEDIDOS = await getJSON('pedidos', PEDIDOS);
       const req = PEDIDOS.find(r=>r.id===reqId);
       if(!req) return;
-      // desconta o estoque agora (momento da aprovação pelo admin autenticado) — pedidos "produção" não têm estoque a descontar
-      if(req.type === 'reposicao' && req.color){
-        PRODUCTS = await getJSON('products', PRODUCTS);
-        const p = PRODUCTS.find(p=>p.code===req.productCode);
-        const c = p && (p.colors||[]).find(c=>c.name===req.color);
-        if(c){ c.stock = Math.max(0, (Number(c.stock)||0) - Number(req.qty)); await setJSON('products', PRODUCTS); }
-      }
+      const items=requestItems(req);
+      // Desconta o estoque de cada item de reposição. Itens classificados para produção não reduzem estoque.
+      PRODUCTS=await getJSON('products',PRODUCTS);
+      let stockChanged=false;
+      items.forEach(item=>{
+        if((item.type||req.type)!=='reposicao'||!item.color)return;
+        const product=PRODUCTS.find(p=>p.code===item.productCode),color=product&&(product.colors||[]).find(c=>c.name===item.color);
+        if(color){color.stock=Math.max(0,(Number(color.stock)||0)-Number(item.qty));stockChanged=true;}
+      });
+      if(stockChanged)await setJSON('products',PRODUCTS);
       ENTREGAS = await getJSON('entregas', ENTREGAS);
-      const entId = nextSeqId(ENTREGAS, 'ENT');
-      ENTREGAS.push({ id: entId, date: todayISO(), clientCode: req.clientCode, productCode: req.productCode, color: req.color||'', qty: req.qty });
+      items.forEach(item=>{
+        const entId=nextSeqId(ENTREGAS,'ENT');
+        ENTREGAS.push({id:entId,date:todayISO(),clientCode:req.clientCode,productCode:item.productCode,color:item.color||'',qty:item.qty,batchId:req.id});
+      });
       req.status = 'Aprovado';
       await setJSON('entregas', ENTREGAS);
       await setJSON('pedidos', PEDIDOS);
@@ -3810,7 +3827,7 @@
         ENTREGAS.forEach(e=>{ if(e.productCode===oldCode) e.productCode = code; });
         DEVOLUCOES.forEach(d=>{ if(d.productCode===oldCode) d.productCode = code; });
         ACERTOS.forEach(a=>{ if(a.productCode===oldCode) a.productCode = code; });
-        PEDIDOS.forEach(r=>{ if(r.productCode===oldCode) r.productCode = code; });
+        PEDIDOS.forEach(r=>{ if(Array.isArray(r.items))r.items.forEach(item=>{if(item.productCode===oldCode)item.productCode=code;});else if(r.productCode===oldCode)r.productCode=code; });
         await setJSON('entregas', ENTREGAS);
         await setJSON('devolucoes', DEVOLUCOES);
         await setJSON('acertos', ACERTOS);
