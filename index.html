@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -951,6 +950,7 @@
   #portal-root .product-image-preview{display:grid;grid-template-columns:160px 1fr;gap:16px;align-items:start;margin-top:10px;}
   #portal-root .product-image-preview-box{aspect-ratio:1;border-radius:14px;border:1px dashed var(--line);background:var(--panel-2) center/cover no-repeat;display:grid;place-items:center;color:var(--muted);font-size:12px;text-align:center;padding:12px;}
   #portal-root .image-upload-box{margin:10px 0;padding:13px;border:1px dashed var(--teal);border-radius:12px;background:rgba(14,138,150,.06);}
+  #portal-root .image-upload-box.drag-over{border-style:solid;background:rgba(105,71,199,.12);box-shadow:inset 0 0 0 2px rgba(105,71,199,.25);}
   #portal-root .image-upload-box strong{display:block;font-size:13px;margin-bottom:3px;}
   #portal-root .image-upload-box small{display:block;color:var(--muted);font-size:11px;line-height:1.4;margin-bottom:9px;}
   #portal-root .image-upload-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
@@ -965,6 +965,15 @@
   #portal-root .gallery-order-controls{position:absolute;left:5px;right:5px;bottom:5px;display:flex;justify-content:center;gap:4px;}
   #portal-root .gallery-order-controls button{position:static;width:29px;height:27px;padding:0;border-radius:7px;border:0;background:rgba(18,18,24,.84);color:#fff;cursor:pointer;}
   #portal-root .gallery-order-controls button:disabled{opacity:.3;cursor:not-allowed;}
+  #portal-root .gallery-cover-btn{position:absolute;top:5px;right:5px;padding:5px 7px;border:0;border-radius:7px;background:rgba(105,71,199,.9);color:#fff;font:700 10px 'Space Grotesk';cursor:pointer;}
+  #portal-root .admin-gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:9px;margin-bottom:9px;}
+  #portal-root .admin-gallery-item{overflow:hidden;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);}
+  #portal-root .admin-gallery-thumb{aspect-ratio:1;background:center/cover no-repeat;position:relative;}
+  #portal-root .admin-gallery-index{position:absolute;top:5px;left:5px;padding:3px 6px;border-radius:6px;background:rgba(18,18,24,.78);color:#fff;font:600 9px 'IBM Plex Mono';}
+  #portal-root .admin-gallery-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:6px;}
+  #portal-root .admin-gallery-actions button{min-height:29px;padding:4px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font-size:10px;cursor:pointer;}
+  #portal-root .admin-gallery-actions button[data-set-gallery-cover]{grid-column:1/-1;background:rgba(105,71,199,.1);color:var(--violet);font-weight:700;}
+  #portal-root .admin-gallery-actions button:disabled{opacity:.32;cursor:not-allowed;}
   #portal-root .product-publish-preview{display:grid;grid-template-columns:180px 1fr;gap:18px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel-2);}
   #portal-root .product-publish-preview .preview-image{aspect-ratio:1;border-radius:12px;background:var(--panel) center/cover no-repeat;display:grid;place-items:center;color:var(--muted);font-size:12px;}
   #portal-root .product-publish-preview h4{font:700 19px 'Space Grotesk';margin:0 0 6px;}
@@ -1013,6 +1022,7 @@
     #portal-root .product-cost-facts{grid-template-columns:1fr 1fr;}
     #portal-root .product-image-preview,#portal-root .product-publish-preview{grid-template-columns:1fr;}
     #portal-root .pending-gallery{grid-template-columns:repeat(3,minmax(70px,1fr));}
+    #portal-root .admin-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
     #portal-root .product-image-preview-box,#portal-root .product-publish-preview .preview-image{max-width:220px;width:100%;}
     #portal-root .admin-catalog-toolbar{grid-template-columns:1fr;}
     #portal-root .media-toolbar{grid-template-columns:1fr;}
@@ -1444,12 +1454,12 @@
                 <div class="product-image-preview">
                   <div class="product-image-preview-box" id="p-image-preview-box">Prévia da imagem principal</div>
                   <div>
-                    <div class="image-upload-box"><strong>Imagem principal</strong><small>JPG, PNG ou WEBP são otimizados automaticamente. GIFs animados são preservados.</small><div class="image-upload-actions"><input id="p-main-image-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button type="button" class="btn secondary" id="p-main-image-upload-btn">Escolher e enviar foto</button><span class="upload-status" id="p-main-image-upload-status"></span></div></div>
+                    <div class="image-upload-box" data-image-drop-target="p-main-image-file"><strong>Imagem principal</strong><small>Escolha ou arraste uma foto para cá. JPG, PNG ou WEBP são otimizados; GIFs são preservados.</small><div class="image-upload-actions"><input id="p-main-image-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button type="button" class="btn secondary" id="p-main-image-upload-btn">Escolher e enviar foto</button><span class="upload-status" id="p-main-image-upload-status"></span></div></div>
                     <div class="field"><label for="p-img">URL da imagem principal</label><input id="p-img" type="url" placeholder="https://..." inputmode="url"></div>
                     <div class="field"><label for="p-video">URL do vídeo ou GIF</label><input id="p-video" type="url" placeholder="https://... (.mp4 ou .gif)" inputmode="url"></div>
                   </div>
                 </div>
-                <div class="image-upload-box"><strong>Galeria do produto</strong><small>Selecione várias fotos. Arraste para ordenar no computador ou use as setas no celular.</small><div class="image-upload-actions"><input id="p-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple><button type="button" class="btn secondary" id="p-gallery-upload-btn">Adicionar fotos à galeria</button><span class="upload-status" id="p-gallery-upload-status"></span></div><div class="pending-gallery" id="p-pending-gallery"></div></div>
+                <div class="image-upload-box" data-image-drop-target="p-gallery-files"><strong>Galeria do produto</strong><small>Selecione ou arraste várias fotos. Depois, ordene-as e escolha qualquer uma como capa.</small><div class="image-upload-actions"><input id="p-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple><button type="button" class="btn secondary" id="p-gallery-upload-btn">Adicionar fotos à galeria</button><span class="upload-status" id="p-gallery-upload-status"></span></div><div class="pending-gallery" id="p-pending-gallery"></div></div>
                 <div class="row" style="align-items:center;"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';"><input type="checkbox" id="p-ondemand" style="width:18px;height:18px;">Produto feito somente sob encomenda, sem controle de estoque</label></div>
                 <div class="row" style="align-items:center;"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';"><input type="checkbox" id="p-customizable" style="width:18px;height:18px;">Este produto também pode ser personalizado</label></div>
                 <div class="row" id="p-customizable-minqty-wrap" style="display:none;align-items:center;"><div class="field" style="max-width:260px;"><label for="p-customizable-minqty">Quantidade mínima para personalizar</label><input id="p-customizable-minqty" type="number" min="1" placeholder="Ex.: 5"></div></div>
@@ -1494,7 +1504,7 @@
               <button class="btn" id="bulk-apply-btn" style="display:none;">Confirmar e aplicar</button>
             </div>
           </div>
-          <div class="panel"><h3 style="font-size:17px;margin-bottom:4px;">Catálogo administrativo</h3><p style="color:var(--muted);font-size:13px;margin:0;">Pesquise, ordene, edite, duplique ou arquive produtos sem perder o histórico.</p><div class="admin-catalog-toolbar"><input type="search" id="admin-product-search" class="search-input" placeholder="Buscar por nome, código ou categoria..."><select id="admin-product-status" class="search-input"><option value="active">Produtos publicados</option><option value="archived">Produtos arquivados</option><option value="all">Todos os produtos</option></select><select id="admin-product-sort" class="search-input"><option value="name">Ordenar por nome</option><option value="code">Ordenar por código</option><option value="price-asc">Menor preço</option><option value="price-desc">Maior preço</option><option value="stock-asc">Menor estoque</option><option value="recent">Atualizados recentemente</option></select></div><div class="admin-catalog-summary" id="admin-product-summary"></div><div id="p-list"></div></div>
+          <div class="panel"><h3 style="font-size:17px;margin-bottom:4px;">Catálogo administrativo</h3><p style="color:var(--muted);font-size:13px;margin:0;">Pesquise, ordene, edite, duplique ou arquive produtos sem perder o histórico.</p><div class="admin-catalog-toolbar"><input type="search" id="admin-product-search" class="search-input" placeholder="Buscar por nome, código ou categoria..."><select id="admin-product-status" class="search-input"><option value="active">Produtos publicados</option><option value="no-image">Produtos sem imagem</option><option value="archived">Produtos arquivados</option><option value="all">Todos os produtos</option></select><select id="admin-product-sort" class="search-input"><option value="name">Ordenar por nome</option><option value="code">Ordenar por código</option><option value="price-asc">Menor preço</option><option value="price-desc">Maior preço</option><option value="stock-asc">Menor estoque</option><option value="recent">Atualizados recentemente</option></select></div><div class="admin-catalog-summary" id="admin-product-summary"></div><div id="p-list"></div></div>
         </div>
 
         <!-- MÍDIA -->
@@ -3655,7 +3665,7 @@
   function filteredAdminProducts(){
     const query=adminProductSearch.toLowerCase();
     let list=PRODUCTS.filter(p=>{
-      const statusMatch=adminProductStatus==='all'||(adminProductStatus==='active' ? p.active!==false : p.active===false);
+      const statusMatch=adminProductStatus==='all'||(adminProductStatus==='active'&&p.active!==false)||(adminProductStatus==='archived'&&p.active===false)||(adminProductStatus==='no-image'&&!p.image);
       const text=[p.code,p.name,...getCategories(p)].join(' ').toLowerCase();
       return statusMatch&&(!query||text.includes(query));
     });
@@ -3915,9 +3925,16 @@
   function renderPendingGallery(){
     const wrap=document.getElementById('p-pending-gallery');
     if(!wrap)return;
-    wrap.innerHTML=pendingGallery.map((url,index)=>`<div class="pending-gallery-item" draggable="true" data-pending-gallery-item="${index}" style="background-image:url('${String(url).replace(/'/g,'%27')}')"><span class="gallery-drag-hint" title="Arraste para ordenar">⋮⋮</span><div class="gallery-order-controls"><button type="button" data-move-pending-gallery="${index}|-1" aria-label="Mover foto para a esquerda" ${index===0?'disabled':''}>←</button><button type="button" data-remove-pending-gallery="${index}" aria-label="Remover foto">✕</button><button type="button" data-move-pending-gallery="${index}|1" aria-label="Mover foto para a direita" ${index===pendingGallery.length-1?'disabled':''}>→</button></div></div>`).join('');
+    wrap.innerHTML=pendingGallery.map((url,index)=>`<div class="pending-gallery-item" draggable="true" data-pending-gallery-item="${index}" style="background-image:url('${String(url).replace(/'/g,'%27')}')"><span class="gallery-drag-hint" title="Arraste para ordenar">⋮⋮</span><button type="button" class="gallery-cover-btn" data-pending-gallery-cover="${index}" title="Usar como imagem principal">★ Capa</button><div class="gallery-order-controls"><button type="button" data-move-pending-gallery="${index}|-1" aria-label="Mover foto para a esquerda" ${index===0?'disabled':''}>←</button><button type="button" data-remove-pending-gallery="${index}" aria-label="Remover foto">✕</button><button type="button" data-move-pending-gallery="${index}|1" aria-label="Mover foto para a direita" ${index===pendingGallery.length-1?'disabled':''}>→</button></div></div>`).join('');
     wrap.querySelectorAll('[data-remove-pending-gallery]').forEach(btn=>btn.addEventListener('click',()=>{pendingGallery.splice(Number(btn.dataset.removePendingGallery),1);renderPendingGallery();}));
     wrap.querySelectorAll('[data-move-pending-gallery]').forEach(btn=>btn.addEventListener('click',()=>{const [index,delta]=btn.dataset.movePendingGallery.split('|').map(Number),target=index+delta;if(target<0||target>=pendingGallery.length)return;[pendingGallery[index],pendingGallery[target]]=[pendingGallery[target],pendingGallery[index]];renderPendingGallery();}));
+    wrap.querySelectorAll('[data-pending-gallery-cover]').forEach(btn=>btn.addEventListener('click',()=>{
+      const index=Number(btn.dataset.pendingGalleryCover),selected=pendingGallery[index];if(!selected)return;
+      const current=document.getElementById('p-img').value.trim();pendingGallery.splice(index,1);
+      if(current&&current!==selected&&!pendingGallery.includes(current))pendingGallery.unshift(current);
+      document.getElementById('p-img').value=selected;updateProductImagePreview();updateProductFinalPreview();renderPendingGallery();
+      document.getElementById('p-gallery-upload-status').textContent='Imagem principal trocada. A capa anterior foi preservada na galeria.';
+    }));
     wrap.querySelectorAll('[data-pending-gallery-item]').forEach(item=>{
       item.addEventListener('dragstart',event=>{item.classList.add('dragging');event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',item.dataset.pendingGalleryItem);});
       item.addEventListener('dragend',()=>item.classList.remove('dragging'));
@@ -3944,9 +3961,19 @@
 
   bindSingleImageUpload('p-main-image-file','p-main-image-upload-btn','p-main-image-upload-status','p-img','principal');
   bindSingleImageUpload('p-first-color-file','p-first-color-upload-btn','p-first-color-upload-status','p-first-color-img','variacoes');
+  root.querySelectorAll('[data-image-drop-target]').forEach(box=>{
+    ['dragenter','dragover'].forEach(type=>box.addEventListener(type,event=>{event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='copy';box.classList.add('drag-over');}));
+    ['dragleave','drop'].forEach(type=>box.addEventListener(type,event=>{event.preventDefault();box.classList.remove('drag-over');}));
+    box.addEventListener('drop',event=>{
+      const input=document.getElementById(box.dataset.imageDropTarget),incoming=[...(event.dataTransfer?.files||[])].filter(file=>file.type.startsWith('image/'));
+      if(!input||!incoming.length)return;
+      try{const transfer=new DataTransfer();(input.multiple?incoming:[incoming[0]]).forEach(file=>transfer.items.add(file));input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));}
+      catch(error){const status=box.querySelector('.upload-status');if(status)status.textContent='Não foi possível receber o arquivo arrastado. Use o botão para selecionar.';}
+    });
+  });
   document.getElementById('p-gallery-upload-btn').addEventListener('click',()=>document.getElementById('p-gallery-files').click());
   document.getElementById('p-gallery-files').addEventListener('change',async event=>{
-    const files=[...(event.target.files||[])];if(!files.length)return;
+    const files=[...(event.target.files||[])].filter((file,index,list)=>list.findIndex(item=>item.name===file.name&&item.size===file.size&&item.lastModified===file.lastModified)===index);if(!files.length)return;
     const button=document.getElementById('p-gallery-upload-btn'),status=document.getElementById('p-gallery-upload-status');
     button.disabled=true;
     let uploaded=0;
@@ -4043,10 +4070,11 @@
       const reference=file.reference,labels=reference?[...reference.labels]:[];
       const date=file.createdAt?new Date(file.createdAt).toLocaleDateString('pt-BR'):'data indisponível';
       const productCode=reference?.productCodes?.size?[...reference.productCodes][0]:'';
+      const linkedProduct=productCode?PRODUCTS.find(item=>item.code===productCode):null,canBecomeCover=!!(linkedProduct&&linkedProduct.image!==file.url);
       return `<article class="media-card">
         <div class="media-card-image" style="background-image:url('${String(file.url).replace(/'/g,'%27')}')"><span class="badge ${reference?'aprovado':'pendente'}">${reference?'Em uso':'Não vinculada'}</span></div>
         <div class="media-card-body"><div class="media-card-name" title="${escapeHtml(file.path)}">${escapeHtml(file.name)}</div><div class="media-card-meta">${escapeHtml(labels[0]||file.path)}<br>${formatFileSize(file.size)} · ${date}${labels.length>1?` · +${labels.length-1} vínculo${labels.length===2?'':'s'}`:''}</div>
-        <div class="media-card-actions"><button type="button" data-copy-media="${encodeURIComponent(file.url)}">Copiar link</button>${productCode?`<button type="button" data-open-media-product="${escapeHtml(productCode)}">Ver produto</button>`:''}<button type="button" data-delete-media="${encodeURIComponent(file.path)}" class="danger-action" ${reference?'disabled title="Remova primeiro a imagem do produto"':'title="Excluir arquivo não vinculado"'}>Excluir</button></div></div>
+        <div class="media-card-actions"><button type="button" data-copy-media="${encodeURIComponent(file.url)}">Copiar link</button>${productCode?`<button type="button" data-open-media-product="${escapeHtml(productCode)}">Ver produto</button>`:''}${canBecomeCover?`<button type="button" data-media-cover="${encodeURIComponent(productCode+'|'+file.url)}">★ Usar como capa</button>`:''}<button type="button" data-delete-media="${encodeURIComponent(file.path)}" class="danger-action" ${reference?'disabled title="Remova primeiro a imagem do produto"':'title="Excluir arquivo não vinculado"'}>Excluir</button></div></div>
       </article>`;
     }).join('');
     grid.querySelectorAll('[data-copy-media]').forEach(button=>button.addEventListener('click',async()=>{
@@ -4056,6 +4084,12 @@
       const code=button.dataset.openMediaProduct;await switchAdminTab('produtos',false);
       adminProductSearch=code;document.getElementById('admin-product-search').value=code;renderAdminLists();
       const editButton=[...document.querySelectorAll('[data-edit-product]')].find(item=>item.dataset.editProduct===code);if(editButton)editButton.click();
+    }));
+    grid.querySelectorAll('[data-media-cover]').forEach(button=>button.addEventListener('click',async()=>{
+      const [code,url]=decodeURIComponent(button.dataset.mediaCover).split(/\|(.+)/);if(!code||!url)return;
+      button.disabled=true;button.textContent='Trocando…';
+      try{const changed=await setProductImageAsCover(code,url);document.getElementById('media-msg').innerHTML=changed?'<div class="msg ok">Imagem principal atualizada. A capa anterior foi preservada na galeria.</div>':'<div class="msg ok">Esta imagem já é a capa do produto.</div>';renderMediaLibrary();}
+      catch(error){button.disabled=false;button.textContent='★ Usar como capa';document.getElementById('media-msg').innerHTML=`<div class="msg err">${escapeHtml(error.message||'Não foi possível trocar a capa.')}</div>`;}
     }));
     grid.querySelectorAll('[data-delete-media]').forEach(button=>button.addEventListener('click',async()=>{
       const path=decodeURIComponent(button.dataset.deleteMedia),currentReference=mediaReferenceMap().get(path);
@@ -4153,12 +4187,26 @@
   document.getElementById('p-img').addEventListener('input',updateProductImagePreview);
   document.getElementById('p-active').addEventListener('change',updateProductFinalPreview);
 
+  async function setProductImageAsCover(code,url){
+    if(!code||!url)return false;
+    PRODUCTS=await getJSON('products',PRODUCTS);
+    const product=PRODUCTS.find(item=>item.code===code);if(!product||product.image===url)return false;
+    const previous=product.image||'';
+    product.gallery=(product.gallery||[]).filter(item=>item!==url);
+    if(previous&&previous!==url&&!product.gallery.includes(previous))product.gallery.unshift(previous);
+    product.image=url;product.updatedAt=Date.now();
+    await setJSON('products',PRODUCTS);
+    if(editingProductCode===code){document.getElementById('p-img').value=url;pendingGallery=[...product.gallery];updateProductImagePreview();updateProductFinalPreview();renderPendingGallery();}
+    renderAdminLists();renderPortfolio();
+    return true;
+  }
+
   function renderAdminLists(){
     renderDocList();
     const adminProducts=filteredAdminProducts();
-    const activeCount=PRODUCTS.filter(p=>p.active!==false).length,archivedCount=PRODUCTS.length-activeCount;
+    const activeCount=PRODUCTS.filter(p=>p.active!==false).length,archivedCount=PRODUCTS.length-activeCount,noImageCount=PRODUCTS.filter(p=>!p.image).length;
     const summary=document.getElementById('admin-product-summary');
-    if(summary)summary.innerHTML=`<span>${adminProducts.length} exibido${adminProducts.length===1?'':'s'}</span><span>${activeCount} publicado${activeCount===1?'':'s'}</span><span>${archivedCount} arquivado${archivedCount===1?'':'s'}</span>`;
+    if(summary)summary.innerHTML=`<span>${adminProducts.length} exibido${adminProducts.length===1?'':'s'}</span><span>${activeCount} publicado${activeCount===1?'':'s'}</span><span>${archivedCount} arquivado${archivedCount===1?'':'s'}</span><span>${noImageCount} sem imagem</span>`;
     document.getElementById('p-list').innerHTML = adminProducts.length ? adminProducts.map(p=>{
       const colors = p.colors || [];
       const gallery = p.gallery || [];
@@ -4189,11 +4237,9 @@
         </span>`;
       }).join('');
       const galleryChips = gallery.map((url,gi)=>`
-        <span class="color-chip">📷 Foto ${gi+1}
-          <button data-move-gallery="${p.code}|${gi}|-1" title="Mover para a esquerda" ${gi===0?'disabled':''}>←</button>
-          <button data-move-gallery="${p.code}|${gi}|1" title="Mover para a direita" ${gi===gallery.length-1?'disabled':''}>→</button>
-          <button data-del-gallery="${p.code}|${gi}" title="Remover esta foto">✕</button>
-        </span>`).join('');
+        <div class="admin-gallery-item"><div class="admin-gallery-thumb" style="background-image:url('${String(url).replace(/'/g,'%27')}')"><span class="admin-gallery-index">Foto ${gi+1}</span></div>
+          <div class="admin-gallery-actions"><button data-set-gallery-cover="${p.code}|${gi}" title="Trocar a capa sem excluir a atual">★ Tornar capa</button><button data-move-gallery="${p.code}|${gi}|-1" title="Mover para a esquerda" ${gi===0?'disabled':''}>←</button><button data-del-gallery="${p.code}|${gi}" title="Remover da galeria">✕</button><button data-move-gallery="${p.code}|${gi}|1" title="Mover para a direita" ${gi===gallery.length-1?'disabled':''}>→</button></div>
+        </div>`).join('');
       const bulkPromoInfo = getPromoInfo(p);
       const priceLine = bulkPromoInfo
         ? `Público: <s>${fmtMoney(bulkPromoInfo.base)}</s> 🔥 ${fmtMoney(bulkPromoInfo.promo)} (-${bulkPromoInfo.pct}%) · Consignado: ${fmtMoney(p.price)}`
@@ -4209,7 +4255,7 @@
       return `
       <div class="list-row product-admin-row ${p.active===false?'archived':''}" style="flex-direction:column;align-items:stretch;gap:8px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;cursor:pointer;" data-toggle-product="${p.code}">
-          <span class="product-admin-main"><span style="display:inline-block;transition:transform .15s;transform:rotate(${isExpanded?90:0}deg);">▸</span><span class="product-admin-thumb" style="${p.image?`background-image:url('${String(p.image).replace(/'/g,'%27')}')`:''}"></span><span class="product-admin-title"><strong>${escapeHtml(p.name)}</strong><small>${escapeHtml(p.code)} · ${escapeHtml(catsLine)} · ${priceLine}${costLine}${p.active===false?' · ARQUIVADO':''}</small></span></span>
+          <span class="product-admin-main"><span style="display:inline-block;transition:transform .15s;transform:rotate(${isExpanded?90:0}deg);">▸</span><span class="product-admin-thumb" style="${p.image?`background-image:url('${String(p.image).replace(/'/g,'%27')}')`:''}"></span><span class="product-admin-title"><strong>${escapeHtml(p.name)}</strong><small>${escapeHtml(p.code)} · ${escapeHtml(catsLine)} · ${priceLine}${costLine}${!p.image?' · ⚠ SEM IMAGEM':''}${p.active===false?' · ARQUIVADO':''}</small></span></span>
           <span class="actions">
             <button data-edit-product="${p.code}">Editar</button>
             <button data-duplicate-product="${p.code}">Duplicar</button>
@@ -4230,7 +4276,7 @@
           </div>
           <div style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px;">
             <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-family:'IBM Plex Mono';margin-bottom:6px;">Fotos secundárias (galeria)</div>
-            ${gallery.length ? `<div class="color-chips" style="margin-bottom:8px;">${galleryChips}</div>` : ''}
+            ${gallery.length ? `<div class="admin-gallery-grid">${galleryChips}</div>` : ''}
             <textarea placeholder="Cole uma ou várias URLs de foto, uma por linha" data-gallery-input="${p.code}" rows="3" style="width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);padding:8px 10px;border-radius:8px;font-size:12px;font-family:'Inter';resize:vertical;box-sizing:border-box;"></textarea>
             <div class="image-upload-actions" style="margin-top:6px;"><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple data-gallery-file-upload="${p.code}"><button data-upload-gallery="${p.code}">📷 Enviar fotos</button><button data-add-gallery="${p.code}">+ Adicionar pelos links</button><span class="upload-status" data-gallery-upload-status="${p.code}"></span></div>
           </div>
@@ -4373,6 +4419,12 @@
       });
       await setJSON('products', PRODUCTS);
       renderAdminLists(); renderPortfolio();
+    }));
+    root.querySelectorAll('[data-set-gallery-cover]').forEach(btn=>btn.addEventListener('click',async()=>{
+      const [code,indexRaw]=btn.dataset.setGalleryCover.split('|');
+      const product=PRODUCTS.find(item=>item.code===code),url=product?.gallery?.[Number(indexRaw)];if(!url)return;
+      btn.disabled=true;btn.textContent='Trocando…';
+      try{await setProductImageAsCover(code,url);}catch(error){alert(error.message||'Não foi possível trocar a imagem principal.');btn.disabled=false;btn.textContent='★ Tornar capa';}
     }));
     root.querySelectorAll('[data-del-gallery]').forEach(btn=>btn.addEventListener('click', async ()=>{
       const [code, idxStr] = btn.dataset.delGallery.split('|');
