@@ -943,7 +943,12 @@
   #portal-root .upload-status{color:var(--muted);font-size:12px;}
   #portal-root .pending-gallery{display:grid;grid-template-columns:repeat(5,minmax(80px,1fr));gap:9px;margin-top:10px;}
   #portal-root .pending-gallery-item{position:relative;aspect-ratio:1;border-radius:10px;background:var(--panel-2) center/cover no-repeat;border:1px solid var(--line);overflow:hidden;}
-  #portal-root .pending-gallery-item button{position:absolute;top:5px;right:5px;width:27px;height:27px;padding:0;border-radius:50%;border:0;background:rgba(18,18,24,.82);color:#fff;cursor:pointer;}
+  #portal-root .pending-gallery-item[draggable=true]{cursor:grab;}
+  #portal-root .pending-gallery-item.dragging{opacity:.42;transform:scale(.96);}
+  #portal-root .gallery-drag-hint{position:absolute;top:5px;left:6px;padding:3px 6px;border-radius:7px;background:rgba(18,18,24,.78);color:#fff;font-size:12px;letter-spacing:-2px;}
+  #portal-root .gallery-order-controls{position:absolute;left:5px;right:5px;bottom:5px;display:flex;justify-content:center;gap:4px;}
+  #portal-root .gallery-order-controls button{position:static;width:29px;height:27px;padding:0;border-radius:7px;border:0;background:rgba(18,18,24,.84);color:#fff;cursor:pointer;}
+  #portal-root .gallery-order-controls button:disabled{opacity:.3;cursor:not-allowed;}
   #portal-root .product-publish-preview{display:grid;grid-template-columns:180px 1fr;gap:18px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel-2);}
   #portal-root .product-publish-preview .preview-image{aspect-ratio:1;border-radius:12px;background:var(--panel) center/cover no-repeat;display:grid;place-items:center;color:var(--muted);font-size:12px;}
   #portal-root .product-publish-preview h4{font:700 19px 'Space Grotesk';margin:0 0 6px;}
@@ -961,6 +966,23 @@
   #portal-root .product-admin-title strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   #portal-root .product-admin-title small{display:block;margin-top:3px;color:var(--muted);font:500 11px 'IBM Plex Mono';}
   #portal-root .danger-action{color:var(--red)!important;}
+  #portal-root .media-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 190px 190px auto;gap:10px;margin:14px 0;}
+  #portal-root .media-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0;}
+  #portal-root .media-summary-card{padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--panel-2);}
+  #portal-root .media-summary-card small{display:block;color:var(--muted);font:600 10px 'IBM Plex Mono';text-transform:uppercase;letter-spacing:.05em;}
+  #portal-root .media-summary-card strong{display:block;margin-top:5px;font:700 20px 'Space Grotesk';}
+  #portal-root .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;}
+  #portal-root .media-card{overflow:hidden;border:1px solid var(--line);border-radius:13px;background:var(--panel);}
+  #portal-root .media-card-image{position:relative;aspect-ratio:4/3;background:var(--panel-2) center/cover no-repeat;}
+  #portal-root .media-card-image .badge{position:absolute;top:8px;left:8px;box-shadow:0 3px 12px rgba(0,0,0,.18);}
+  #portal-root .media-card-body{padding:11px;}
+  #portal-root .media-card-name{font:600 12px 'Space Grotesk';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #portal-root .media-card-meta{margin-top:5px;color:var(--muted);font-size:11px;line-height:1.45;min-height:32px;}
+  #portal-root .media-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;}
+  #portal-root .media-card-actions button{min-height:34px;padding:7px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--ink);font:600 11px 'Space Grotesk';cursor:pointer;}
+  #portal-root .media-card-actions button:hover{border-color:var(--teal);}
+  #portal-root .media-card-actions .danger-action:disabled{opacity:.45;cursor:not-allowed;}
+  #portal-root .media-loading{padding:30px;text-align:center;color:var(--muted);}
   @media(max-width:760px){
     #portal-root .product-steps{grid-template-columns:repeat(4,minmax(72px,1fr));overflow-x:auto;}
     #portal-root .product-step-btn{flex-direction:column;gap:3px;font-size:10px;min-height:66px;}
@@ -977,7 +999,12 @@
     #portal-root .pending-gallery{grid-template-columns:repeat(3,minmax(70px,1fr));}
     #portal-root .product-image-preview-box,#portal-root .product-publish-preview .preview-image{max-width:220px;width:100%;}
     #portal-root .admin-catalog-toolbar{grid-template-columns:1fr;}
+    #portal-root .media-toolbar{grid-template-columns:1fr;}
+    #portal-root .media-summary{grid-template-columns:1fr 1fr;}
+    #portal-root .media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+    #portal-root .media-card-actions{grid-template-columns:1fr;}
   }
+  @media(max-width:430px){#portal-root .media-grid{grid-template-columns:1fr;}}
 
   /* --- navegação administrativa agrupada --- */
   #portal-root .admin-workspace{display:grid;grid-template-columns:218px minmax(0,1fr);gap:22px;align-items:start;}
@@ -1319,13 +1346,13 @@
           <div class="admin-mobile-nav">
             <label for="admin-section-select">Área administrativa</label>
             <select id="admin-section-select">
-              <option value="produtos">Catálogo · Produtos</option><option value="clientes">Parceiros · Clientes</option><option value="entregas">Parceiros · Entregas</option><option value="devolucoes">Parceiros · Devoluções</option><option value="acertos">Financeiro · Acertos</option><option value="venda-direta">Financeiro · Venda direta</option><option value="pedidos">Pedidos · Reposição</option><option value="relatorio">Gestão · Relatório</option><option value="documentos">Gestão · Documentos</option>
+              <option value="produtos">Catálogo · Produtos</option><option value="midia">Catálogo · Mídia</option><option value="clientes">Parceiros · Clientes</option><option value="entregas">Parceiros · Entregas</option><option value="devolucoes">Parceiros · Devoluções</option><option value="acertos">Financeiro · Acertos</option><option value="venda-direta">Financeiro · Venda direta</option><option value="pedidos">Pedidos · Reposição</option><option value="relatorio">Gestão · Relatório</option><option value="documentos">Gestão · Documentos</option>
             </select>
           </div>
           <aside class="admin-sidebar" aria-label="Menu administrativo">
             <div class="admin-sidebar-title"><span>HL</span><div><strong>Administração</strong><small>Central de operação</small></div></div>
             <div class="subnav">
-              <div class="admin-nav-group"><span>Catálogo</span><button data-admin-tab="produtos" class="active"><b>◇</b> Produtos</button></div>
+              <div class="admin-nav-group"><span>Catálogo</span><button data-admin-tab="produtos" class="active"><b>◇</b> Produtos</button><button data-admin-tab="midia"><b>▧</b> Mídia</button></div>
               <div class="admin-nav-group"><span>Parceiros</span><button data-admin-tab="clientes"><b>○</b> Clientes</button><button data-admin-tab="entregas"><b>↓</b> Entregas</button><button data-admin-tab="devolucoes"><b>↩</b> Devoluções</button></div>
               <div class="admin-nav-group"><span>Financeiro</span><button data-admin-tab="acertos"><b>$</b> Acertos</button><button data-admin-tab="venda-direta"><b>+</b> Venda direta</button></div>
               <div class="admin-nav-group"><span>Pedidos</span><button data-admin-tab="pedidos"><b>□</b> Reposição <span id="pedidos-badge" class="badge pendente" style="display:none;margin-left:auto;">0</span></button></div>
@@ -1401,12 +1428,12 @@
                 <div class="product-image-preview">
                   <div class="product-image-preview-box" id="p-image-preview-box">Prévia da imagem principal</div>
                   <div>
-                    <div class="image-upload-box"><strong>Imagem principal</strong><small>JPG, PNG, WEBP ou GIF, com até 8 MB.</small><div class="image-upload-actions"><input id="p-main-image-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button type="button" class="btn secondary" id="p-main-image-upload-btn">Escolher e enviar foto</button><span class="upload-status" id="p-main-image-upload-status"></span></div></div>
+                    <div class="image-upload-box"><strong>Imagem principal</strong><small>JPG, PNG ou WEBP são otimizados automaticamente. GIFs animados são preservados.</small><div class="image-upload-actions"><input id="p-main-image-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button type="button" class="btn secondary" id="p-main-image-upload-btn">Escolher e enviar foto</button><span class="upload-status" id="p-main-image-upload-status"></span></div></div>
                     <div class="field"><label for="p-img">URL da imagem principal</label><input id="p-img" type="url" placeholder="https://..." inputmode="url"></div>
                     <div class="field"><label for="p-video">URL do vídeo ou GIF</label><input id="p-video" type="url" placeholder="https://... (.mp4 ou .gif)" inputmode="url"></div>
                   </div>
                 </div>
-                <div class="image-upload-box"><strong>Galeria do produto</strong><small>Selecione várias fotos de uma vez. Você poderá conferir e remover imagens antes de salvar.</small><div class="image-upload-actions"><input id="p-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple><button type="button" class="btn secondary" id="p-gallery-upload-btn">Adicionar fotos à galeria</button><span class="upload-status" id="p-gallery-upload-status"></span></div><div class="pending-gallery" id="p-pending-gallery"></div></div>
+                <div class="image-upload-box"><strong>Galeria do produto</strong><small>Selecione várias fotos. Arraste para ordenar no computador ou use as setas no celular.</small><div class="image-upload-actions"><input id="p-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple><button type="button" class="btn secondary" id="p-gallery-upload-btn">Adicionar fotos à galeria</button><span class="upload-status" id="p-gallery-upload-status"></span></div><div class="pending-gallery" id="p-pending-gallery"></div></div>
                 <div class="row" style="align-items:center;"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';"><input type="checkbox" id="p-ondemand" style="width:18px;height:18px;">Produto feito somente sob encomenda, sem controle de estoque</label></div>
                 <div class="row" style="align-items:center;"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';"><input type="checkbox" id="p-customizable" style="width:18px;height:18px;">Este produto também pode ser personalizado</label></div>
                 <div class="row" id="p-customizable-minqty-wrap" style="display:none;align-items:center;"><div class="field" style="max-width:260px;"><label for="p-customizable-minqty">Quantidade mínima para personalizar</label><input id="p-customizable-minqty" type="number" min="1" placeholder="Ex.: 5"></div></div>
@@ -1452,6 +1479,27 @@
             </div>
           </div>
           <div class="panel"><h3 style="font-size:17px;margin-bottom:4px;">Catálogo administrativo</h3><p style="color:var(--muted);font-size:13px;margin:0;">Pesquise, ordene, edite, duplique ou arquive produtos sem perder o histórico.</p><div class="admin-catalog-toolbar"><input type="search" id="admin-product-search" class="search-input" placeholder="Buscar por nome, código ou categoria..."><select id="admin-product-status" class="search-input"><option value="active">Produtos publicados</option><option value="archived">Produtos arquivados</option><option value="all">Todos os produtos</option></select><select id="admin-product-sort" class="search-input"><option value="name">Ordenar por nome</option><option value="code">Ordenar por código</option><option value="price-asc">Menor preço</option><option value="price-desc">Maior preço</option><option value="stock-asc">Menor estoque</option><option value="recent">Atualizados recentemente</option></select></div><div class="admin-catalog-summary" id="admin-product-summary"></div><div id="p-list"></div></div>
+        </div>
+
+        <!-- MÍDIA -->
+        <div class="admin-tab" data-tab="midia" style="display:none;">
+          <div class="panel">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+              <div><h3 style="font-size:17px;margin-bottom:4px;">Biblioteca de imagens</h3><p style="color:var(--muted);font-size:13px;margin:0;line-height:1.45;">Consulte as fotos enviadas e remova somente arquivos que não estejam vinculados ao catálogo.</p></div>
+              <button type="button" class="btn secondary" id="media-refresh-btn">↻ Atualizar arquivos</button>
+            </div>
+            <div class="media-summary" id="media-summary">
+              <div class="media-summary-card"><small>Arquivos</small><strong>—</strong></div><div class="media-summary-card"><small>Em uso</small><strong>—</strong></div><div class="media-summary-card"><small>Não vinculados</small><strong>—</strong></div><div class="media-summary-card"><small>Espaço usado</small><strong>—</strong></div>
+            </div>
+            <div class="media-toolbar">
+              <input type="search" id="media-search" class="search-input" placeholder="Buscar por produto, pasta ou arquivo...">
+              <select id="media-status" class="search-input"><option value="all">Todos os arquivos</option><option value="used">Somente em uso</option><option value="unused">Não vinculados</option></select>
+              <select id="media-sort" class="search-input"><option value="recent">Mais recentes</option><option value="oldest">Mais antigos</option><option value="size-desc">Maiores arquivos</option><option value="name">Nome do arquivo</option></select>
+              <button type="button" class="btn secondary" id="media-copy-unused-btn">Copiar lista não vinculada</button>
+            </div>
+            <div id="media-msg"></div>
+            <div id="media-grid" class="media-grid"><div class="media-loading">Abra esta área para carregar as imagens.</div></div>
+          </div>
         </div>
 
         <!-- CLIENTES -->
@@ -1803,6 +1851,11 @@
   let KNOWN_CATEGORIES = [];
   let pendingCategories = [];
   let pendingGallery = [];
+  let MEDIA_FILES = [];
+  let mediaLoaded = false;
+  let mediaSearch = '';
+  let mediaStatus = 'all';
+  let mediaSort = 'recent';
   let editingProductCode = null;
   let editingClientCode = null;
   let currentPartnerToken = null;
@@ -3478,6 +3531,7 @@
 
   const ADMIN_SECTIONS={
     produtos:{group:'Catálogo',title:'Produtos',description:'Cadastre, organize e publique os produtos exibidos no catálogo.'},
+    midia:{group:'Catálogo',title:'Mídia',description:'Localize imagens, confira seus vínculos e remova arquivos não utilizados.'},
     clientes:{group:'Parceiros',title:'Clientes',description:'Consulte e mantenha os dados dos parceiros de consignação.'},
     entregas:{group:'Parceiros',title:'Lançar entrega',description:'Registre uma nova remessa de produtos enviada ao parceiro.'},
     devolucoes:{group:'Parceiros',title:'Lançar devolução',description:'Registre os itens devolvidos e atualize o estoque quando necessário.'},
@@ -3496,6 +3550,7 @@
     document.getElementById('admin-section-title').textContent=meta.title;
     document.getElementById('admin-section-description').textContent=meta.description;
     if(refresh){await refreshData();refreshAdminSelects();renderAdminLists();}
+    if(tab==='midia')await loadMediaLibrary();
     if(scroll)document.querySelector('.admin-section-context').scrollIntoView({behavior:'smooth',block:'start'});
   }
   root.querySelectorAll('[data-admin-tab]').forEach(btn=>btn.addEventListener('click',()=>switchAdminTab(btn.dataset.adminTab)));
@@ -3689,14 +3744,54 @@
     box.textContent=url?'':'Prévia da imagem principal';
   }
 
-  async function uploadProductImage(file,folder,forcedCode){
+  function loadImageForOptimization(file){
+    return new Promise((resolve,reject)=>{
+      const url=URL.createObjectURL(file),image=new Image();
+      image.onload=()=>{URL.revokeObjectURL(url);resolve(image);};
+      image.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Não foi possível processar esta imagem.'));};
+      image.src=url;
+    });
+  }
+
+  async function optimizeProductImage(file){
     const allowed={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'};
     if(!file||!allowed[file.type])throw new Error('Use uma imagem JPG, PNG, WEBP ou GIF.');
-    if(file.size>8*1024*1024)throw new Error('A imagem deve ter no máximo 8 MB.');
+    if(file.size>25*1024*1024)throw new Error('A imagem original deve ter no máximo 25 MB.');
+    if(file.type==='image/gif'){
+      if(file.size>8*1024*1024)throw new Error('O GIF deve ter no máximo 8 MB.');
+      return file;
+    }
+    try{
+      const image=await loadImageForOptimization(file);
+      const maxSide=2000,scale=Math.min(1,maxSide/Math.max(image.naturalWidth,image.naturalHeight));
+      if(scale===1&&file.size<=1500*1024)return file;
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+      const context=canvas.getContext('2d',{alpha:true});
+      if(!context)throw new Error('O navegador não conseguiu preparar a imagem.');
+      context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';context.drawImage(image,0,0,canvas.width,canvas.height);
+      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.84));
+      if(!blob)throw new Error('Não foi possível otimizar a imagem.');
+      if(blob.type!=='image/webp'){
+        if(file.size<=8*1024*1024)return file;
+        throw new Error('Este navegador não conseguiu reduzir a imagem.');
+      }
+      if(scale===1&&blob.size>=file.size)return file;
+      return new File([blob],`${file.name.replace(/\.[^.]+$/,'')||'imagem'}.webp`,{type:'image/webp',lastModified:Date.now()});
+    }catch(error){
+      if(file.size<=8*1024*1024)return file;
+      throw error;
+    }
+  }
+
+  async function uploadProductImage(file,folder,forcedCode){
+    const optimizedFile=await optimizeProductImage(file);
+    const allowed={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'};
+    if(optimizedFile.size>8*1024*1024)throw new Error('Mesmo após a otimização, a imagem ultrapassou 8 MB.');
     const productCode=(String(forcedCode||document.getElementById('p-code').value).trim().toLowerCase().replace(/[^a-z0-9-]/g,'')||'rascunho');
     const randomPart=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    const path=`${productCode}/${folder}/${Date.now()}-${randomPart}.${allowed[file.type]}`;
-    const {error}=await supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).upload(path,file,{cacheControl:'31536000',upsert:false,contentType:file.type});
+    const path=`${productCode}/${folder}/${Date.now()}-${randomPart}.${allowed[optimizedFile.type]}`;
+    const {error}=await supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).upload(path,optimizedFile,{cacheControl:'31536000',upsert:false,contentType:optimizedFile.type});
     if(error){
       const detail=String(error.message||'');
       if(/bucket|not found/i.test(detail))throw new Error('O espaço de imagens ainda não foi configurado. Execute o SQL atualizado no Supabase.');
@@ -3705,14 +3800,22 @@
     }
     const {data}=supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(path);
     if(!data?.publicUrl)throw new Error('A imagem foi enviada, mas o link público não pôde ser gerado.');
+    mediaLoaded=false;
     return data.publicUrl;
   }
 
   function renderPendingGallery(){
     const wrap=document.getElementById('p-pending-gallery');
     if(!wrap)return;
-    wrap.innerHTML=pendingGallery.map((url,index)=>`<div class="pending-gallery-item" style="background-image:url('${String(url).replace(/'/g,'%27')}')"><button type="button" data-remove-pending-gallery="${index}" aria-label="Remover foto">✕</button></div>`).join('');
+    wrap.innerHTML=pendingGallery.map((url,index)=>`<div class="pending-gallery-item" draggable="true" data-pending-gallery-item="${index}" style="background-image:url('${String(url).replace(/'/g,'%27')}')"><span class="gallery-drag-hint" title="Arraste para ordenar">⋮⋮</span><div class="gallery-order-controls"><button type="button" data-move-pending-gallery="${index}|-1" aria-label="Mover foto para a esquerda" ${index===0?'disabled':''}>←</button><button type="button" data-remove-pending-gallery="${index}" aria-label="Remover foto">✕</button><button type="button" data-move-pending-gallery="${index}|1" aria-label="Mover foto para a direita" ${index===pendingGallery.length-1?'disabled':''}>→</button></div></div>`).join('');
     wrap.querySelectorAll('[data-remove-pending-gallery]').forEach(btn=>btn.addEventListener('click',()=>{pendingGallery.splice(Number(btn.dataset.removePendingGallery),1);renderPendingGallery();}));
+    wrap.querySelectorAll('[data-move-pending-gallery]').forEach(btn=>btn.addEventListener('click',()=>{const [index,delta]=btn.dataset.movePendingGallery.split('|').map(Number),target=index+delta;if(target<0||target>=pendingGallery.length)return;[pendingGallery[index],pendingGallery[target]]=[pendingGallery[target],pendingGallery[index]];renderPendingGallery();}));
+    wrap.querySelectorAll('[data-pending-gallery-item]').forEach(item=>{
+      item.addEventListener('dragstart',event=>{item.classList.add('dragging');event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',item.dataset.pendingGalleryItem);});
+      item.addEventListener('dragend',()=>item.classList.remove('dragging'));
+      item.addEventListener('dragover',event=>{event.preventDefault();event.dataTransfer.dropEffect='move';});
+      item.addEventListener('drop',event=>{event.preventDefault();const from=Number(event.dataTransfer.getData('text/plain')),to=Number(item.dataset.pendingGalleryItem);if(!Number.isInteger(from)||from===to)return;const [moved]=pendingGallery.splice(from,1);pendingGallery.splice(to,0,moved);renderPendingGallery();});
+    });
   }
 
   function bindSingleImageUpload(inputId,buttonId,statusId,targetId,folder){
@@ -3720,7 +3823,7 @@
     button.addEventListener('click',()=>input.click());
     input.addEventListener('change',async ()=>{
       const file=input.files?.[0];if(!file)return;
-      button.disabled=true;status.textContent='Enviando…';
+      button.disabled=true;status.textContent='Otimizando e enviando…';
       try{
         const url=await uploadProductImage(file,folder);
         document.getElementById(targetId).value=url;
@@ -3741,7 +3844,7 @@
     let uploaded=0;
     try{
       for(const file of files){
-        status.textContent=`Enviando ${uploaded+1} de ${files.length}…`;
+        status.textContent=`Otimizando ${uploaded+1} de ${files.length}…`;
         const url=await uploadProductImage(file,'galeria');
         if(!pendingGallery.includes(url))pendingGallery.push(url);
         uploaded++;renderPendingGallery();
@@ -3749,6 +3852,130 @@
       status.textContent=`${uploaded} foto${uploaded===1?'':'s'} adicionada${uploaded===1?'':'s'}.`;
     }catch(error){status.textContent=`${uploaded?uploaded+' enviada(s). ':''}${error.message||'Falha no envio.'}`;}
     finally{button.disabled=false;event.target.value='';}
+  });
+
+  function storagePathFromUrl(url){
+    if(!url)return null;
+    const marker=`/storage/v1/object/public/${PRODUCT_IMAGE_BUCKET}/`;
+    const clean=String(url).split('#')[0].split('?')[0],index=clean.indexOf(marker);
+    if(index<0)return null;
+    try{return decodeURIComponent(clean.slice(index+marker.length));}catch(e){return clean.slice(index+marker.length);}
+  }
+
+  function mediaReferenceMap(){
+    const references=new Map();
+    const add=(url,label,productCode)=>{
+      const path=storagePathFromUrl(url);if(!path)return;
+      if(!references.has(path))references.set(path,{labels:new Set(),productCodes:new Set()});
+      references.get(path).labels.add(label);
+      if(productCode)references.get(path).productCodes.add(productCode);
+    };
+    PRODUCTS.forEach(product=>{
+      const label=`${product.code} · ${product.name}`;
+      add(product.image,`${label} (principal)`,product.code);
+      (product.gallery||[]).forEach((url,index)=>add(url,`${label} (galeria ${index+1})`,product.code));
+      (product.colors||[]).forEach(color=>add(color.image,`${label} (${color.name})`,product.code));
+    });
+    const draftCode=(document.getElementById('p-code')?.value||'').trim().toUpperCase()||null;
+    add(document.getElementById('p-img')?.value,'Cadastro em edição (principal)',draftCode);
+    add(document.getElementById('p-first-color-img')?.value,'Cadastro em edição (variação)',draftCode);
+    pendingGallery.forEach((url,index)=>add(url,`Cadastro em edição (galeria ${index+1})`,draftCode));
+    return references;
+  }
+
+  function formatFileSize(bytes){
+    const value=Number(bytes)||0;if(value<1024)return `${value} B`;
+    if(value<1024*1024)return `${(value/1024).toFixed(1).replace('.',',')} KB`;
+    return `${(value/(1024*1024)).toFixed(2).replace('.',',')} MB`;
+  }
+
+  async function listProductImageFiles(){
+    const files=[],queue=[''];
+    while(queue.length){
+      const prefix=queue.shift();let offset=0;
+      while(true){
+        const {data,error}=await supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).list(prefix,{limit:1000,offset,sortBy:{column:'name',order:'asc'}});
+        if(error)throw error;
+        const entries=Array.isArray(data)?data:[];
+        for(const entry of entries){
+          if(!entry?.name||entry.name==='.emptyFolderPlaceholder')continue;
+          const path=prefix?`${prefix}/${entry.name}`:entry.name;
+          const isFile=!!entry.metadata||!!entry.id;
+          if(isFile){
+            const {data:publicData}=supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(path);
+            files.push({path,name:entry.name,size:Number(entry.metadata?.size)||0,createdAt:entry.created_at||entry.updated_at||entry.last_accessed_at||'',url:publicData?.publicUrl||''});
+          }else if(path.split('/').length<6)queue.push(path);
+        }
+        if(entries.length<1000)break;
+        offset+=entries.length;
+      }
+    }
+    return files;
+  }
+
+  function renderMediaLibrary(){
+    const grid=document.getElementById('media-grid'),summary=document.getElementById('media-summary');if(!grid||!summary)return;
+    const references=mediaReferenceMap();
+    const enriched=MEDIA_FILES.map(file=>({...file,reference:references.get(file.path)||null}));
+    const used=enriched.filter(file=>file.reference).length,totalSize=enriched.reduce((sum,file)=>sum+file.size,0);
+    summary.innerHTML=`<div class="media-summary-card"><small>Arquivos</small><strong>${enriched.length}</strong></div><div class="media-summary-card"><small>Em uso</small><strong>${used}</strong></div><div class="media-summary-card"><small>Não vinculados</small><strong>${enriched.length-used}</strong></div><div class="media-summary-card"><small>Espaço usado</small><strong>${formatFileSize(totalSize)}</strong></div>`;
+    const query=mediaSearch.toLowerCase();
+    const filtered=enriched.filter(file=>{
+      const statusMatch=mediaStatus==='all'||(mediaStatus==='used'&&file.reference)||(mediaStatus==='unused'&&!file.reference);
+      const labels=file.reference?[...file.reference.labels].join(' '):'';
+      return statusMatch&&(!query||`${file.path} ${labels}`.toLowerCase().includes(query));
+    }).sort((a,b)=>{
+      if(mediaSort==='oldest')return String(a.createdAt).localeCompare(String(b.createdAt));
+      if(mediaSort==='size-desc')return b.size-a.size;
+      if(mediaSort==='name')return a.path.localeCompare(b.path,'pt-BR');
+      return String(b.createdAt).localeCompare(String(a.createdAt));
+    });
+    if(!filtered.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1;"><div class="glyph">▧</div>Nenhuma imagem encontrada com estes filtros.</div>';return;}
+    grid.innerHTML=filtered.map(file=>{
+      const reference=file.reference,labels=reference?[...reference.labels]:[];
+      const date=file.createdAt?new Date(file.createdAt).toLocaleDateString('pt-BR'):'data indisponível';
+      const productCode=reference?.productCodes?.size?[...reference.productCodes][0]:'';
+      return `<article class="media-card">
+        <div class="media-card-image" style="background-image:url('${String(file.url).replace(/'/g,'%27')}')"><span class="badge ${reference?'aprovado':'pendente'}">${reference?'Em uso':'Não vinculada'}</span></div>
+        <div class="media-card-body"><div class="media-card-name" title="${escapeHtml(file.path)}">${escapeHtml(file.name)}</div><div class="media-card-meta">${escapeHtml(labels[0]||file.path)}<br>${formatFileSize(file.size)} · ${date}${labels.length>1?` · +${labels.length-1} vínculo${labels.length===2?'':'s'}`:''}</div>
+        <div class="media-card-actions"><button type="button" data-copy-media="${encodeURIComponent(file.url)}">Copiar link</button>${productCode?`<button type="button" data-open-media-product="${escapeHtml(productCode)}">Ver produto</button>`:''}<button type="button" data-delete-media="${encodeURIComponent(file.path)}" class="danger-action" ${reference?'disabled title="Remova primeiro a imagem do produto"':'title="Excluir arquivo não vinculado"'}>Excluir</button></div></div>
+      </article>`;
+    }).join('');
+    grid.querySelectorAll('[data-copy-media]').forEach(button=>button.addEventListener('click',async()=>{
+      try{await navigator.clipboard.writeText(decodeURIComponent(button.dataset.copyMedia));button.textContent='Link copiado';setTimeout(()=>button.textContent='Copiar link',1400);}catch(e){document.getElementById('media-msg').innerHTML='<div class="msg err">Não foi possível copiar automaticamente. Abra a imagem e copie o endereço.</div>';}
+    }));
+    grid.querySelectorAll('[data-open-media-product]').forEach(button=>button.addEventListener('click',async()=>{
+      const code=button.dataset.openMediaProduct;await switchAdminTab('produtos',false);
+      adminProductSearch=code;document.getElementById('admin-product-search').value=code;renderAdminLists();
+      const editButton=[...document.querySelectorAll('[data-edit-product]')].find(item=>item.dataset.editProduct===code);if(editButton)editButton.click();
+    }));
+    grid.querySelectorAll('[data-delete-media]').forEach(button=>button.addEventListener('click',async()=>{
+      const path=decodeURIComponent(button.dataset.deleteMedia),currentReference=mediaReferenceMap().get(path);
+      if(currentReference){document.getElementById('media-msg').innerHTML='<div class="msg err">Esta imagem voltou a ser usada e não pode ser excluída. Atualize a biblioteca.</div>';return;}
+      if(!confirm(`Excluir definitivamente o arquivo “${path}”? Esta ação não pode ser desfeita.`))return;
+      button.disabled=true;button.textContent='Excluindo…';
+      const {error}=await supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).remove([path]);
+      if(error){button.disabled=false;button.textContent='Excluir';document.getElementById('media-msg').innerHTML=`<div class="msg err">${escapeHtml(error.message||'Não foi possível excluir a imagem.')}</div>`;return;}
+      MEDIA_FILES=MEDIA_FILES.filter(file=>file.path!==path);document.getElementById('media-msg').innerHTML='<div class="msg ok">Imagem não vinculada excluída.</div>';renderMediaLibrary();
+    }));
+  }
+
+  async function loadMediaLibrary(force=false){
+    const grid=document.getElementById('media-grid'),message=document.getElementById('media-msg');if(!grid)return;
+    if(mediaLoaded&&!force){renderMediaLibrary();return;}
+    grid.innerHTML='<div class="media-loading" style="grid-column:1/-1;">Carregando imagens do catálogo…</div>';message.innerHTML='';
+    try{MEDIA_FILES=await listProductImageFiles();mediaLoaded=true;renderMediaLibrary();}
+    catch(error){grid.innerHTML='<div class="empty" style="grid-column:1/-1;"><div class="glyph">!</div>Não foi possível carregar as imagens.</div>';message.innerHTML=`<div class="msg err">${escapeHtml(error.message||'Confira a configuração do armazenamento.')}</div>`;}
+  }
+
+  document.getElementById('media-refresh-btn').addEventListener('click',async event=>{const button=event.currentTarget;button.disabled=true;button.textContent='Atualizando…';await loadMediaLibrary(true);button.disabled=false;button.textContent='↻ Atualizar arquivos';});
+  document.getElementById('media-search').addEventListener('input',event=>{mediaSearch=event.target.value.trim();renderMediaLibrary();});
+  document.getElementById('media-status').addEventListener('change',event=>{mediaStatus=event.target.value;renderMediaLibrary();});
+  document.getElementById('media-sort').addEventListener('change',event=>{mediaSort=event.target.value;renderMediaLibrary();});
+  document.getElementById('media-copy-unused-btn').addEventListener('click',async()=>{
+    const references=mediaReferenceMap(),paths=MEDIA_FILES.filter(file=>!references.has(file.path)).map(file=>file.path);
+    if(!paths.length){document.getElementById('media-msg').innerHTML='<div class="msg ok">Não há imagens não vinculadas.</div>';return;}
+    try{await navigator.clipboard.writeText(paths.join('\n'));document.getElementById('media-msg').innerHTML=`<div class="msg ok">Lista com ${paths.length} arquivo${paths.length===1?'':'s'} copiada.</div>`;}catch(e){document.getElementById('media-msg').innerHTML='<div class="msg err">O navegador não permitiu copiar a lista.</div>';}
   });
 
   function updateProductFinalPreview(){
@@ -3855,6 +4082,8 @@
       }).join('');
       const galleryChips = gallery.map((url,gi)=>`
         <span class="color-chip">📷 Foto ${gi+1}
+          <button data-move-gallery="${p.code}|${gi}|-1" title="Mover para a esquerda" ${gi===0?'disabled':''}>←</button>
+          <button data-move-gallery="${p.code}|${gi}|1" title="Mover para a direita" ${gi===gallery.length-1?'disabled':''}>→</button>
           <button data-del-gallery="${p.code}|${gi}" title="Remover esta foto">✕</button>
         </span>`).join('');
       const bulkPromoInfo = getPromoInfo(p);
@@ -3993,7 +4222,7 @@
     root.querySelectorAll('[data-color-image-file]').forEach(input=>input.addEventListener('change',async ()=>{
       const code=input.dataset.colorImageFile,file=input.files?.[0];if(!file)return;
       const button=root.querySelector(`[data-upload-color-image="${code}"]`),target=root.querySelector(`[data-color-image-input="${code}"]`);
-      button.disabled=true;button.textContent='Enviando…';
+      button.disabled=true;button.textContent='Otimizando…';
       try{target.value=await uploadProductImage(file,'variacoes',code);button.textContent='✓ Foto enviada';}
       catch(error){alert(error.message||'Não foi possível enviar a foto.');button.textContent='📷 Enviar foto';}
       finally{button.disabled=false;input.value='';}
@@ -4002,7 +4231,7 @@
     root.querySelectorAll('[data-edit-color-file]').forEach(input=>input.addEventListener('change',async ()=>{
       const key=input.dataset.editColorFile,file=input.files?.[0];if(!file)return;
       const code=key.split('|')[0],button=root.querySelector(`[data-upload-edit-color="${key}"]`),target=root.querySelector(`[data-edit-color-image="${key}"]`);
-      button.disabled=true;button.textContent='Enviando…';
+      button.disabled=true;button.textContent='Otimizando…';
       try{target.value=await uploadProductImage(file,'variacoes',code);button.textContent='✓ Enviada';}
       catch(error){alert(error.message||'Não foi possível enviar a foto.');button.textContent='📷 Enviar foto';}
       finally{button.disabled=false;input.value='';}
@@ -4013,7 +4242,7 @@
       const button=root.querySelector(`[data-upload-gallery="${code}"]`),status=root.querySelector(`[data-gallery-upload-status="${code}"]`);
       button.disabled=true;let uploaded=0,urls=[];
       try{
-        for(const file of files){status.textContent=`Enviando ${uploaded+1} de ${files.length}…`;urls.push(await uploadProductImage(file,'galeria',code));uploaded++;}
+        for(const file of files){status.textContent=`Otimizando ${uploaded+1} de ${files.length}…`;urls.push(await uploadProductImage(file,'galeria',code));uploaded++;}
         PRODUCTS=await getJSON('products',PRODUCTS);
         const product=PRODUCTS.find(item=>item.code===code);if(!product)throw new Error('Produto não encontrado.');
         product.gallery=product.gallery||[];urls.forEach(url=>{if(!product.gallery.includes(url))product.gallery.push(url);});product.updatedAt=Date.now();
@@ -4045,6 +4274,13 @@
       p.gallery = (p.gallery||[]).filter((_,i)=>i!==Number(idxStr));
       await setJSON('products', PRODUCTS);
       renderAdminLists(); renderPortfolio();
+    }));
+    root.querySelectorAll('[data-move-gallery]').forEach(btn=>btn.addEventListener('click',async ()=>{
+      const [code,indexRaw,deltaRaw]=btn.dataset.moveGallery.split('|'),index=Number(indexRaw),target=index+Number(deltaRaw);
+      PRODUCTS=await getJSON('products',PRODUCTS);
+      const product=PRODUCTS.find(item=>item.code===code);if(!product||target<0||target>=(product.gallery||[]).length)return;
+      [product.gallery[index],product.gallery[target]]=[product.gallery[target],product.gallery[index]];product.updatedAt=Date.now();
+      await setJSON('products',PRODUCTS);renderAdminLists();renderPortfolio();
     }));
 
     root.querySelectorAll('[data-add-color]').forEach(btn=>btn.addEventListener('click', async ()=>{
