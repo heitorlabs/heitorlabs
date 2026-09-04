@@ -898,6 +898,109 @@
     #portal-root .social-proof-links{grid-template-columns:1fr;}
     #portal-root .social-proof-btn.custom{grid-column:auto;}
   }
+
+  /* --- cadastro de produtos 2.0 --- */
+  #portal-root .product-form-shell{overflow:hidden;padding:0;}
+  #portal-root .product-form-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 22px;border-bottom:1px solid var(--line);}
+  #portal-root .product-form-head h3{font-size:18px;}
+  #portal-root .product-form-head p{margin:4px 0 0;color:var(--muted);font-size:13px;}
+  #portal-root .product-form-status{padding:6px 10px;border-radius:999px;background:var(--panel-2);color:var(--muted);font:600 12px 'IBM Plex Mono';white-space:nowrap;}
+  #portal-root .product-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid var(--line);background:var(--panel-2);}
+  #portal-root .product-step-btn{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;min-height:54px;padding:10px;border:0;border-right:1px solid var(--line);background:transparent;color:var(--muted);font:700 12px 'Space Grotesk';cursor:pointer;}
+  #portal-root .product-step-btn:last-child{border-right:0;}
+  #portal-root .product-step-btn .step-number{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--panel);border:1px solid var(--line);font:600 11px 'IBM Plex Mono';}
+  #portal-root .product-step-btn.active{color:var(--violet);background:var(--panel);}
+  #portal-root .product-step-btn.active .step-number{background:var(--violet);border-color:var(--violet);color:#fff;}
+  #portal-root .product-step-btn.done .step-number{background:var(--green);border-color:var(--green);color:#fff;}
+  #portal-root .product-form-body{padding:22px;}
+  #portal-root .product-form-step{display:none;}
+  #portal-root .product-form-step.active{display:block;animation:fade .18s ease;}
+  #portal-root .product-step-title{margin-bottom:16px;}
+  #portal-root .product-step-title h4{font:700 16px 'Space Grotesk';margin:0 0 4px;}
+  #portal-root .product-step-title p{margin:0;color:var(--muted);font-size:13px;line-height:1.45;}
+  #portal-root .product-price-preview{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:4px 0 16px;}
+  #portal-root .product-price-preview>div{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel-2);}
+  #portal-root .product-price-preview span{display:block;color:var(--muted);font:500 11px 'IBM Plex Mono';text-transform:uppercase;}
+  #portal-root .product-price-preview strong{display:block;margin-top:4px;font:700 17px 'Space Grotesk';}
+  #portal-root .product-cost-link{display:grid;grid-template-columns:minmax(240px,1fr) auto;gap:10px 14px;align-items:end;margin:2px 0 16px;padding:14px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,rgba(14,138,150,.08),rgba(105,71,199,.08));}
+  #portal-root .product-cost-link .field{margin:0;}
+  #portal-root .product-cost-actions{display:flex;gap:7px;align-items:center;}
+  #portal-root .product-cost-actions .btn{white-space:nowrap;}
+  #portal-root .product-cost-summary{grid-column:1/-1;padding-top:10px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;line-height:1.5;}
+  #portal-root .product-cost-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:9px;}
+  #portal-root .product-cost-facts span{display:block;padding:8px;border-radius:9px;background:var(--panel);border:1px solid var(--line);}
+  #portal-root .product-cost-facts small{display:block;color:var(--muted);font:500 10px 'IBM Plex Mono';text-transform:uppercase;}
+  #portal-root .product-cost-facts strong{display:block;margin-top:3px;color:var(--ink);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #portal-root .cost-stale-warning{display:block;margin-top:9px;padding:8px 10px;border-radius:8px;background:rgba(200,90,40,.12);color:var(--coral);font-size:12px;}
+  #portal-root .product-image-preview{display:grid;grid-template-columns:160px 1fr;gap:16px;align-items:start;margin-top:10px;}
+  #portal-root .product-image-preview-box{aspect-ratio:1;border-radius:14px;border:1px dashed var(--line);background:var(--panel-2) center/cover no-repeat;display:grid;place-items:center;color:var(--muted);font-size:12px;text-align:center;padding:12px;}
+  #portal-root .product-publish-preview{display:grid;grid-template-columns:180px 1fr;gap:18px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel-2);}
+  #portal-root .product-publish-preview .preview-image{aspect-ratio:1;border-radius:12px;background:var(--panel) center/cover no-repeat;display:grid;place-items:center;color:var(--muted);font-size:12px;}
+  #portal-root .product-publish-preview h4{font:700 19px 'Space Grotesk';margin:0 0 6px;}
+  #portal-root .product-publish-preview .preview-code{color:var(--muted);font:500 11px 'IBM Plex Mono';}
+  #portal-root .product-publish-preview .preview-desc{white-space:pre-wrap;color:var(--muted);font-size:13px;line-height:1.45;margin:10px 0;}
+  #portal-root .product-form-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 22px;border-top:1px solid var(--line);background:var(--panel-2);}
+  #portal-root .product-form-footer .footer-side{display:flex;gap:8px;flex-wrap:wrap;}
+  #portal-root .admin-catalog-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 190px 170px;gap:10px;margin:14px 0 12px;}
+  #portal-root .admin-catalog-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;color:var(--muted);font-size:12px;}
+  #portal-root .admin-catalog-summary span{padding:5px 9px;border:1px solid var(--line);border-radius:999px;background:var(--panel-2);}
+  #portal-root .product-admin-row.archived{opacity:.68;}
+  #portal-root .product-admin-thumb{width:48px;height:48px;border-radius:10px;background:var(--panel-2) center/cover no-repeat;border:1px solid var(--line);flex:0 0 auto;}
+  #portal-root .product-admin-main{display:flex;align-items:center;gap:10px;min-width:0;flex:1;}
+  #portal-root .product-admin-title{min-width:0;}
+  #portal-root .product-admin-title strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #portal-root .product-admin-title small{display:block;margin-top:3px;color:var(--muted);font:500 11px 'IBM Plex Mono';}
+  #portal-root .danger-action{color:var(--red)!important;}
+  @media(max-width:760px){
+    #portal-root .product-steps{grid-template-columns:repeat(4,minmax(72px,1fr));overflow-x:auto;}
+    #portal-root .product-step-btn{flex-direction:column;gap:3px;font-size:10px;min-height:66px;}
+    #portal-root .product-form-head{padding:16px;align-items:flex-start;}
+    #portal-root .product-form-body{padding:16px;}
+    #portal-root .product-form-footer{padding:13px 16px;align-items:stretch;flex-direction:column-reverse;}
+    #portal-root .product-form-footer .footer-side{display:grid;grid-template-columns:1fr 1fr;}
+    #portal-root .product-form-footer .btn{justify-content:center;}
+    #portal-root .product-price-preview{grid-template-columns:1fr;}
+    #portal-root .product-cost-link{grid-template-columns:1fr;}
+    #portal-root .product-cost-actions{display:grid;grid-template-columns:1fr 1fr;}
+    #portal-root .product-cost-facts{grid-template-columns:1fr 1fr;}
+    #portal-root .product-image-preview,#portal-root .product-publish-preview{grid-template-columns:1fr;}
+    #portal-root .product-image-preview-box,#portal-root .product-publish-preview .preview-image{max-width:220px;width:100%;}
+    #portal-root .admin-catalog-toolbar{grid-template-columns:1fr;}
+  }
+
+  /* --- navegação administrativa agrupada --- */
+  #portal-root .admin-workspace{display:grid;grid-template-columns:218px minmax(0,1fr);gap:22px;align-items:start;}
+  #portal-root .admin-sidebar{position:sticky;top:94px;border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:14px;box-shadow:0 10px 30px rgba(31,25,43,.05);}
+  #portal-root .admin-sidebar-title{display:flex;align-items:center;gap:10px;padding:6px 6px 15px;margin-bottom:5px;border-bottom:1px solid var(--line);}
+  #portal-root .admin-sidebar-title>span{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:var(--grad);color:#0A0A0D;font:800 13px 'Space Grotesk';}
+  #portal-root .admin-sidebar-title strong{display:block;font:700 13px 'Space Grotesk';}
+  #portal-root .admin-sidebar-title small{display:block;color:var(--muted);font-size:10px;margin-top:2px;}
+  #portal-root .admin-sidebar .subnav{display:block;margin:0;}
+  #portal-root .admin-nav-group{padding:10px 0 4px;border-bottom:1px solid var(--line);}
+  #portal-root .admin-nav-group:last-child{border-bottom:0;}
+  #portal-root .admin-nav-group>span{display:block;padding:0 8px 6px;color:var(--muted);font:600 10px 'IBM Plex Mono';text-transform:uppercase;letter-spacing:.08em;}
+  #portal-root .admin-nav-group button{display:flex;align-items:center;gap:9px;width:100%;min-height:39px;margin:2px 0;padding:8px 9px;border:0;border-radius:9px;background:transparent;color:var(--muted);font:600 12px 'Space Grotesk';text-align:left;text-transform:none;letter-spacing:0;}
+  #portal-root .admin-nav-group button b{display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--panel-2);color:var(--violet);font:700 12px 'IBM Plex Mono';}
+  #portal-root .admin-nav-group button:hover{background:var(--panel-2);color:var(--ink);}
+  #portal-root .admin-nav-group button.active{background:linear-gradient(90deg,rgba(14,138,150,.14),rgba(105,71,199,.12));color:var(--ink);box-shadow:inset 3px 0 0 var(--violet);}
+  #portal-root .admin-nav-group button.active b{background:var(--violet);color:#fff;}
+  #portal-root .admin-content{min-width:0;}
+  #portal-root .admin-section-context{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px;padding:2px 2px 12px;border-bottom:1px solid var(--line);}
+  #portal-root .admin-section-context span{display:block;color:var(--violet);font:600 10px 'IBM Plex Mono';text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+  #portal-root .admin-section-context h2{font-size:24px;}
+  #portal-root .admin-section-context p{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.4;}
+  #portal-root .admin-mobile-nav{display:none;}
+  body.internal-admin-mode #portal-root .admin-sidebar{top:14px;}
+  @media(max-width:820px){
+    #portal-root .admin-workspace{display:block;}
+    #portal-root .admin-sidebar{display:none;}
+    #portal-root .admin-mobile-nav{display:block;position:sticky;top:67px;z-index:30;margin-bottom:16px;padding:10px;border:1px solid var(--line);border-radius:13px;background:color-mix(in srgb,var(--panel) 94%,transparent);backdrop-filter:blur(14px);box-shadow:0 8px 24px rgba(31,25,43,.08);}
+    #portal-root .admin-mobile-nav label{margin-bottom:5px;font-size:10px;}
+    #portal-root .admin-mobile-nav select{min-height:44px;font-size:14px;font-weight:600;}
+    #portal-root .admin-section-context{align-items:flex-start;}
+    #portal-root .admin-section-context h2{font-size:21px;}
+    body.internal-admin-mode #portal-root .admin-mobile-nav{top:8px;}
+  }
 </style>
 </head>
 <body>
@@ -1197,98 +1300,117 @@
           <h1>Gerenciar operação</h1>
         </div>
 
-        <div class="subnav">
-          <button data-admin-tab="produtos" class="active">Produtos</button>
-          <button data-admin-tab="clientes">Clientes</button>
-          <button data-admin-tab="entregas">Lançar entrega</button>
-          <button data-admin-tab="devolucoes">Lançar devolução</button>
-          <button data-admin-tab="acertos">Lançar acerto</button>
-          <button data-admin-tab="venda-direta">Venda direta (fora do consignado)</button>
-          <button data-admin-tab="pedidos">Pedidos de reposição <span id="pedidos-badge" class="badge pendente" style="display:none;margin-left:4px;">0</span></button>
-          <button data-admin-tab="relatorio">Relatório</button>
-          <button data-admin-tab="documentos">Documentos</button>
-        </div>
+        <div class="admin-workspace">
+          <div class="admin-mobile-nav">
+            <label for="admin-section-select">Área administrativa</label>
+            <select id="admin-section-select">
+              <option value="produtos">Catálogo · Produtos</option><option value="clientes">Parceiros · Clientes</option><option value="entregas">Parceiros · Entregas</option><option value="devolucoes">Parceiros · Devoluções</option><option value="acertos">Financeiro · Acertos</option><option value="venda-direta">Financeiro · Venda direta</option><option value="pedidos">Pedidos · Reposição</option><option value="relatorio">Gestão · Relatório</option><option value="documentos">Gestão · Documentos</option>
+            </select>
+          </div>
+          <aside class="admin-sidebar" aria-label="Menu administrativo">
+            <div class="admin-sidebar-title"><span>HL</span><div><strong>Administração</strong><small>Central de operação</small></div></div>
+            <div class="subnav">
+              <div class="admin-nav-group"><span>Catálogo</span><button data-admin-tab="produtos" class="active"><b>◇</b> Produtos</button></div>
+              <div class="admin-nav-group"><span>Parceiros</span><button data-admin-tab="clientes"><b>○</b> Clientes</button><button data-admin-tab="entregas"><b>↓</b> Entregas</button><button data-admin-tab="devolucoes"><b>↩</b> Devoluções</button></div>
+              <div class="admin-nav-group"><span>Financeiro</span><button data-admin-tab="acertos"><b>$</b> Acertos</button><button data-admin-tab="venda-direta"><b>+</b> Venda direta</button></div>
+              <div class="admin-nav-group"><span>Pedidos</span><button data-admin-tab="pedidos"><b>□</b> Reposição <span id="pedidos-badge" class="badge pendente" style="display:none;margin-left:auto;">0</span></button></div>
+              <div class="admin-nav-group"><span>Gestão</span><button data-admin-tab="relatorio"><b>▥</b> Relatório</button><button data-admin-tab="documentos"><b>⌑</b> Documentos</button></div>
+            </div>
+          </aside>
+          <div class="admin-content">
+            <div class="admin-section-context">
+              <div><span id="admin-section-group">Catálogo</span><h2 id="admin-section-title">Produtos</h2><p id="admin-section-description">Cadastre, organize e publique os produtos exibidos no catálogo.</p></div>
+              <button type="button" class="btn secondary" id="admin-section-top-btn" style="display:none;">Voltar ao início</button>
+            </div>
 
         <!-- PRODUTOS -->
         <div class="admin-tab" data-tab="produtos">
-          <div class="panel" style="margin-bottom:20px;">
-            <h3 style="font-size:14px;margin-bottom:14px;" id="p-form-title">Novo produto</h3>
-            <div class="row">
-              <div class="field"><label>Prefixo</label>
-                <select id="p-prefix">
-                  <option value="">— escolher —</option>
-                  <option value="CHA">CHA — Chaveiros</option>
-                  <option value="TOY">TOY — Brinquedos</option>
-                  <option value="FID">FID — Fidgets</option>
-                  <option value="PET">PET — Pets / Mascotes</option>
-                  <option value="FLX">FLX — Flexíveis / Articulados</option>
-                  <option value="DEC">DEC — Decoração</option>
-                  <option value="UTI">UTI — Utilidades</option>
-                  <option value="PER">PER — Personalizados sob encomenda</option>
-                  <option value="COL">COL — Colecionáveis</option>
-                  <option value="ORN">ORN — Vasos / Ornamentos</option>
-                </select>
+          <div class="panel product-form-shell" style="margin-bottom:20px;">
+            <div class="product-form-head">
+              <div><h3 id="p-form-title">Novo produto</h3><p>Preencha uma etapa por vez e confira a prévia antes de publicar.</p></div>
+              <span class="product-form-status" id="p-form-status">Novo cadastro</span>
+            </div>
+            <div class="product-steps" role="tablist" aria-label="Etapas do cadastro de produto">
+              <button type="button" class="product-step-btn active" data-product-step="0" role="tab" aria-selected="true"><span class="step-number">1</span><span>Identificação</span></button>
+              <button type="button" class="product-step-btn" data-product-step="1" role="tab" aria-selected="false"><span class="step-number">2</span><span>Preços</span></button>
+              <button type="button" class="product-step-btn" data-product-step="2" role="tab" aria-selected="false"><span class="step-number">3</span><span>Mídia e estoque</span></button>
+              <button type="button" class="product-step-btn" data-product-step="3" role="tab" aria-selected="false"><span class="step-number">4</span><span>Revisar</span></button>
+            </div>
+            <div class="product-form-body">
+              <div class="product-form-step active" data-product-step-panel="0" role="tabpanel">
+                <div class="product-step-title"><h4>Identificação do produto</h4><p>Defina o código, o nome que aparecerá no catálogo e as categorias de pesquisa.</p></div>
+                <div class="row">
+                  <div class="field"><label for="p-prefix">Prefixo</label>
+                    <select id="p-prefix">
+                      <option value="">— escolher —</option><option value="CHA">CHA — Chaveiros</option><option value="TOY">TOY — Brinquedos</option><option value="FID">FID — Fidgets</option><option value="PET">PET — Pets / Mascotes</option><option value="FLX">FLX — Flexíveis / Articulados</option><option value="DEC">DEC — Decoração</option><option value="UTI">UTI — Utilidades</option><option value="PER">PER — Personalizados sob encomenda</option><option value="COL">COL — Colecionáveis</option><option value="ORN">ORN — Vasos / Ornamentos</option>
+                    </select>
+                  </div>
+                  <div class="field"><label for="p-code">Código</label><input id="p-code" placeholder="CHA0001" autocomplete="off"></div>
+                  <div class="field" style="flex:2;"><label for="p-name">Nome do produto</label><input id="p-name" placeholder="Chaveiro 3D Foguete" autocomplete="off"></div>
+                </div>
+                <div class="field">
+                  <label for="p-desc">Descrição e medidas</label>
+                  <textarea id="p-desc" rows="4" placeholder="Ex.: 6 cm de altura, produzido em PLA, acabamento resistente e fácil de limpar."></textarea>
+                </div>
+                <div class="field">
+                  <label for="p-cat-input">Categorias de pesquisa</label>
+                  <div id="p-cat-selected" class="color-chips" style="margin-bottom:8px;"></div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;"><input type="text" id="p-cat-input" placeholder="Ex.: Chaveiros" list="known-categories-list" style="flex:1;min-width:160px;" autocomplete="off"><button type="button" id="p-cat-add-btn" class="btn secondary">+ Adicionar</button><datalist id="known-categories-list"></datalist></div>
+                  <div id="p-cat-known-list" style="margin-top:8px;"></div>
+                </div>
               </div>
-              <div class="field"><label>Código</label><input id="p-code" placeholder="CHA0001"></div>
-              <div class="field" style="flex:2;"><label>Nome</label><input id="p-name" placeholder="Chaveiro 3D Foguete"></div>
-            </div>
-            <p style="color:var(--muted);font-size:11px;margin:-8px 0 12px 0;">Escolher um prefixo já sugere o próximo número livre — mas você pode digitar ou editar o código livremente.</p>
-            <div class="field">
-              <label>Categorias (filtros) — clique numa existente ou digite uma nova</label>
-              <div id="p-cat-selected" class="color-chips" style="margin-bottom:8px;"></div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                <input type="text" id="p-cat-input" placeholder="Ex.: Chaveiro 3D" list="known-categories-list" style="flex:1;min-width:160px;">
-                <button type="button" id="p-cat-add-btn" class="btn secondary" style="padding:8px 14px;font-size:12px;">+ Adicionar categoria</button>
-                <datalist id="known-categories-list"></datalist>
+
+              <div class="product-form-step" data-product-step-panel="1" role="tabpanel">
+                <div class="product-step-title"><h4>Preços e publicação</h4><p>O preço ao público é obrigatório para impedir a exposição acidental do valor de repasse.</p></div>
+                <div class="row">
+                  <div class="field"><label for="p-public-price">Preço ao público (R$)</label><input id="p-public-price" type="number" min="0.01" step="0.01" placeholder="25,00" inputmode="decimal"></div>
+                  <div class="field"><label for="p-price">Repasse ao consignante (R$)</label><input id="p-price" type="number" min="0" step="0.01" placeholder="18,75" inputmode="decimal"></div>
+                  <div class="field"><label for="p-promo-price">Preço promocional (R$)</label><input id="p-promo-price" type="number" min="0.01" step="0.01" placeholder="Opcional" inputmode="decimal"></div>
+                </div>
+                <div class="product-cost-link">
+                  <div class="field"><label for="p-cost-calculation">Cálculo de custo vinculado</label><select id="p-cost-calculation"><option value="">— Não vincular cálculo —</option></select></div>
+                  <div class="product-cost-actions"><button type="button" class="btn secondary" id="p-refresh-calculations-btn">Atualizar cálculos</button><button type="button" class="btn secondary" id="p-use-calculated-price-btn" style="display:none;">Usar preço sugerido</button></div>
+                  <div id="p-cost-calculation-summary" class="product-cost-summary">Selecione um cálculo salvo no portal de ferramentas para acompanhar custo, material, máquina e atualização.</div>
+                </div>
+                <div class="product-price-preview" aria-live="polite">
+                  <div><span>Margem do parceiro</span><strong id="p-margin-preview">—</strong></div>
+                  <div><span>Margem da HL no repasse</span><strong id="p-hl-margin-preview">—</strong></div>
+                  <div><span>Desconto promocional</span><strong id="p-discount-preview">—</strong></div>
+                  <div><span>Situação</span><strong id="p-price-status-preview">Aguardando</strong></div>
+                </div>
+                <label style="display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';"><input type="checkbox" id="p-active" checked style="width:18px;height:18px;">Publicar no catálogo assim que salvar</label>
               </div>
-              <div id="p-cat-known-list" style="margin-top:8px;"></div>
-            </div>
-            <div class="row">
-              <div class="field"><label>Preço ao público (R$)</label><input id="p-public-price" type="number" step="0.01" placeholder="25.00"></div>
-              <div class="field"><label>Preço consignado — repasse (R$)</label><input id="p-price" type="number" step="0.01" placeholder="8.00"></div>
-            </div>
-            <div class="row">
-              <div class="field"><label>🔥 Preço promocional (opcional)</label><input id="p-promo-price" type="number" step="0.01" placeholder="Ex.: 19.90"></div>
-            </div>
-            <p style="color:var(--muted);font-size:11px;margin:-8px 0 12px 0;">Preencher aqui um valor menor que o preço ao público coloca o item em destaque como promoção no site. Deixe em branco pra remover a promoção.</p>
-            <div class="row">
-              <div class="field" style="flex:2;"><label>URL da imagem principal (opcional)</label><input id="p-img" placeholder="https://..."></div>
-              <div class="field" style="flex:2;"><label>URL do vídeo/GIF (opcional)</label><input id="p-video" placeholder="https://... (.mp4 ou .gif)"></div>
-            </div>
-            <div class="row">
-              <div class="field" style="flex:1;"><label>Descrição / medidas (opcional)</label><input id="p-desc" placeholder="Ex.: 6cm de altura, resina flexível, base emborrachada"></div>
-            </div>
-            <div class="row" style="align-items:center;">
-              <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);cursor:pointer;">
-                <input type="checkbox" id="p-ondemand" style="width:16px;height:16px;">
-                Item personalizado feito só sob encomenda (sem controle de estoque, sempre aparece como "Sob encomenda")
-              </label>
-            </div>
-            <div class="row" style="align-items:center;">
-              <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);cursor:pointer;">
-                <input type="checkbox" id="p-customizable" style="width:16px;height:16px;">
-                ✨ Este item também pode ser feito personalizado, além da versão padrão (adiciona um aviso na descrição e a categoria "Personalizável" automaticamente)
-              </label>
-            </div>
-            <div class="row" id="p-customizable-minqty-wrap" style="display:none;align-items:center;">
-              <div class="field" style="max-width:220px;">
-                <label>Quantidade mínima para personalizar</label>
-                <input id="p-customizable-minqty" type="number" min="1" placeholder="Ex.: 5">
+
+              <div class="product-form-step" data-product-step-panel="2" role="tabpanel">
+                <div class="product-step-title"><h4>Fotografias, vídeo e estoque</h4><p>Cole links públicos das mídias. A imagem principal será mostrada imediatamente na prévia.</p></div>
+                <div class="product-image-preview">
+                  <div class="product-image-preview-box" id="p-image-preview-box">Prévia da imagem principal</div>
+                  <div>
+                    <div class="field"><label for="p-img">URL da imagem principal</label><input id="p-img" type="url" placeholder="https://..." inputmode="url"></div>
+                    <div class="field"><label for="p-video">URL do vídeo ou GIF</label><input id="p-video" type="url" placeholder="https://... (.mp4 ou .gif)" inputmode="url"></div>
+                  </div>
+                </div>
+                <div class="row" style="align-items:center;"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';"><input type="checkbox" id="p-ondemand" style="width:18px;height:18px;">Produto feito somente sob encomenda, sem controle de estoque</label></div>
+                <div class="row" style="align-items:center;"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';"><input type="checkbox" id="p-customizable" style="width:18px;height:18px;">Este produto também pode ser personalizado</label></div>
+                <div class="row" id="p-customizable-minqty-wrap" style="display:none;align-items:center;"><div class="field" style="max-width:260px;"><label for="p-customizable-minqty">Quantidade mínima para personalizar</label><input id="p-customizable-minqty" type="number" min="1" placeholder="Ex.: 5"></div></div>
+                <div id="p-first-color-wrap">
+                  <div class="product-step-title" style="margin-top:18px;"><h4>Primeira variação</h4><p>Depois de salvar, você poderá acrescentar outras cores e fotografias no catálogo administrativo.</p></div>
+                  <div class="row"><div class="field"><label for="p-first-color-name">Nome da cor</label><input id="p-first-color-name" placeholder="Azul"></div><div class="field"><label for="p-first-color-stock">Estoque inicial</label><input id="p-first-color-stock" type="number" min="0" placeholder="10"></div><div class="field" style="flex:2;"><label for="p-first-color-img">URL da foto desta cor</label><input id="p-first-color-img" type="url" placeholder="https://..."></div></div>
+                </div>
               </div>
-              <p style="color:var(--muted);font-size:11px;margin:0;">Deixe em branco se não tiver mínimo — o cliente vê esse número no aviso de personalização.</p>
-            </div>
-            <div id="p-first-color-wrap">
-              <div style="font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;font-family:'IBM Plex Mono';margin:10px 0 6px 0;">Primeira cor (opcional — dá pra adicionar mais depois)</div>
-              <div class="row">
-                <div class="field"><label>Nome da cor</label><input id="p-first-color-name" placeholder="Azul"></div>
-                <div class="field"><label>Estoque inicial</label><input id="p-first-color-stock" type="number" min="0" placeholder="10"></div>
-                <div class="field" style="flex:2;"><label>URL da foto desta cor (opcional)</label><input id="p-first-color-img" placeholder="https://..."></div>
+
+              <div class="product-form-step" data-product-step-panel="3" role="tabpanel">
+                <div class="product-step-title"><h4>Confira antes de salvar</h4><p>Esta é uma prévia resumida do produto. Volte às etapas anteriores se precisar corrigir alguma informação.</p></div>
+                <div class="product-publish-preview">
+                  <div class="preview-image" id="p-final-preview-image">Sem imagem</div>
+                  <div><span class="preview-code" id="p-final-preview-code">Código ainda não informado</span><h4 id="p-final-preview-name">Nome do produto</h4><div id="p-final-preview-categories"></div><div class="preview-desc" id="p-final-preview-desc">Adicione uma descrição para apresentar o produto.</div><div class="price-buy-row"><span class="price" id="p-final-preview-price">R$ 0,00</span><span class="badge aprovado" id="p-final-preview-status">Publicado</span></div></div>
+                </div>
               </div>
+              <div id="p-msg" style="margin-top:14px;"></div>
             </div>
-            <div id="p-msg"></div>
-            <div style="display:flex;gap:8px;">
-              <button class="btn" id="p-add-btn">Adicionar produto</button>
-              <button class="btn secondary" id="p-cancel-edit-btn" style="display:none;">Cancelar edição</button>
+            <div class="product-form-footer">
+              <div class="footer-side"><button type="button" class="btn secondary" id="p-cancel-edit-btn" style="display:none;">Cancelar edição</button></div>
+              <div class="footer-side"><button type="button" class="btn secondary" id="p-step-prev-btn" style="display:none;">← Voltar</button><button type="button" class="btn" id="p-step-next-btn">Continuar →</button><button type="button" class="btn" id="p-add-btn" style="display:none;">Adicionar produto</button></div>
             </div>
           </div>
           <div class="panel" style="margin-bottom:20px;">
@@ -1312,7 +1434,7 @@
               <button class="btn" id="bulk-apply-btn" style="display:none;">Confirmar e aplicar</button>
             </div>
           </div>
-          <div class="panel"><h3 style="font-size:14px;margin-bottom:8px;">Catálogo atual</h3><div id="p-list"></div></div>
+          <div class="panel"><h3 style="font-size:17px;margin-bottom:4px;">Catálogo administrativo</h3><p style="color:var(--muted);font-size:13px;margin:0;">Pesquise, ordene, edite, duplique ou arquive produtos sem perder o histórico.</p><div class="admin-catalog-toolbar"><input type="search" id="admin-product-search" class="search-input" placeholder="Buscar por nome, código ou categoria..."><select id="admin-product-status" class="search-input"><option value="active">Produtos publicados</option><option value="archived">Produtos arquivados</option><option value="all">Todos os produtos</option></select><select id="admin-product-sort" class="search-input"><option value="name">Ordenar por nome</option><option value="code">Ordenar por código</option><option value="price-asc">Menor preço</option><option value="price-desc">Maior preço</option><option value="stock-asc">Menor estoque</option><option value="recent">Atualizados recentemente</option></select></div><div class="admin-catalog-summary" id="admin-product-summary"></div><div id="p-list"></div></div>
         </div>
 
         <!-- CLIENTES -->
@@ -1525,6 +1647,9 @@
           <div class="panel"><h3 style="font-size:14px;margin-bottom:8px;">Documentos cadastrados</h3><div id="doc-list"></div></div>
         </div>
 
+          </div>
+        </div>
+
         <button class="btn secondary" id="admin-logout-btn" style="margin-top:24px;">Sair do modo administrador</button>
       </div>
     </section>
@@ -1650,7 +1775,7 @@
     return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} às ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
 
-  let PRODUCTS = [], CLIENTS = [], ENTREGAS = [], DEVOLUCOES = [], ACERTOS = [], PEDIDOS = [], DOCUMENTS = [], VENDAS = [];
+  let PRODUCTS = [], CLIENTS = [], ENTREGAS = [], DEVOLUCOES = [], ACERTOS = [], PEDIDOS = [], DOCUMENTS = [], VENDAS = [], CALCULATIONS = [], PRODUCT_COST_LINKS = [];
   let PUBLIC_PRODUCTS = [], PUBLIC_CATEGORIES = [], PUBLIC_SALES = [];
   let currentClientCode = null;
   let modalSelectedColor = null;
@@ -1658,6 +1783,8 @@
   let pendingCategories = [];
   let editingProductCode = null;
   let editingClientCode = null;
+  const CALCULATIONS_KEY='custos_calculos_salvos';
+  const PRODUCT_COST_LINKS_KEY='product_cost_links';
 
   function isMissingSecurityFunction(error){
     const detail=`${error?.code||''} ${error?.message||''}`.toLowerCase();
@@ -1710,6 +1837,7 @@
     if(p.category) return [p.category];
     return [];
   }
+  function isPubliclySellable(p){return !!p&&p.active!==false&&Number(p.publicPrice)>0;}
 
   async function loadAll(){
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -1760,6 +1888,8 @@
     KNOWN_CATEGORIES = await getJSON('categories', KNOWN_CATEGORIES);
     DOCUMENTS = await getJSON('documents', DOCUMENTS);
     VENDAS = await getJSON('vendas', VENDAS);
+    CALCULATIONS = await getJSON(CALCULATIONS_KEY, CALCULATIONS);
+    PRODUCT_COST_LINKS = await getJSON(PRODUCT_COST_LINKS_KEY, PRODUCT_COST_LINKS);
   }
   async function saveAll(){
     await setJSON('products', PRODUCTS);
@@ -1899,7 +2029,7 @@
         <div class="carousel-rank">${rank}</div>
         <div class="carousel-img" style="${r.p.image ? `background-image:url('${r.p.image.replace(/'/g,"")}')` : ''}">${r.p.image ? '' : 'sem foto'}</div>
         <div class="carousel-body">
-          <div class="carousel-name">${r.p.name}</div>
+          <div class="carousel-name">${escapeHtml(r.p.name)}</div>
           <div class="carousel-count">${mode === 'consignado' ? '+ Adicionar ao carrinho' : r.qty + ' vendidas'}</div>
         </div>
       </div>`;
@@ -1908,7 +2038,7 @@
   function renderPromoCarousel(wrapId, listId, mode){
     const wrap = document.getElementById(wrapId);
     if(!wrap) return;
-    const promoProducts = PRODUCTS.filter(p => p.active !== false && hasAnyPromo(p));
+    const promoProducts = PRODUCTS.filter(p => (mode==='consignado' ? p.active!==false : isPubliclySellable(p)) && hasAnyPromo(p));
     if(promoProducts.length === 0){ wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
     const clickBase = mode === 'consignado' ? null : null;
@@ -1936,7 +2066,7 @@
         <div class="promo-ribbon">🔥 -${info.pct}%</div>
         <div class="carousel-img" style="${promoImage ? `background-image:url('${promoImage.replace(/'/g,"")}')` : ''}">${promoImage ? '' : 'sem foto'}</div>
         <div class="carousel-body">
-          <div class="carousel-name">${p.name}${colorLabel}</div>
+          <div class="carousel-name">${escapeHtml(p.name)}${escapeHtml(colorLabel)}</div>
           <div class="promo-carousel-price">
             <span class="promo-old-price">${fmtMoney(info.base)}</span>
             <span class="promo-new-price">${fmtMoney(info.promo)}</span>
@@ -1952,7 +2082,7 @@
     if(!wrap) return;
     const cutoff = Date.now() - NEW_ARRIVAL_DAYS * 24 * 60 * 60 * 1000;
     const newProducts = PRODUCTS
-      .filter(p => p.active !== false && p.createdAt && p.createdAt >= cutoff)
+      .filter(p => isPubliclySellable(p) && p.createdAt && p.createdAt >= cutoff)
       .sort((a,b) => b.createdAt - a.createdAt)
       .slice(0, 4);
     if(newProducts.length === 0){ wrap.style.display = 'none'; return; }
@@ -1964,7 +2094,7 @@
         <div class="new-ribbon">🆕 novo</div>
         <div class="carousel-img" style="${p.image ? `background-image:url('${p.image.replace(/'/g,"")}')` : ''}">${p.image ? '' : 'sem foto'}</div>
         <div class="carousel-body">
-          <div class="carousel-name">${p.name}</div>
+          <div class="carousel-name">${escapeHtml(p.name)}</div>
           <div class="carousel-count">${fmtMoney(displayPrice)}</div>
         </div>
       </div>`;
@@ -1975,7 +2105,7 @@
     const sold = {};
     ACERTOS.forEach(a=>{ sold[a.productCode] = (sold[a.productCode]||0) + Number(a.qty); });
     const rankedAll = Object.entries(sold).sort((a,b)=>b[1]-a[1])
-      .map(([code, qty])=>({ p: PRODUCTS.find(p=>p.code===code), qty })).filter(r=>r.p);
+      .map(([code, qty])=>({ p: PRODUCTS.find(p=>p.code===code), qty })).filter(r=>r.p&&(mode==='consignado'||isPubliclySellable(r.p)));
     const top10 = rankedAll.slice(0,10);
 
     const wrap = document.getElementById(wrapId);
@@ -2046,7 +2176,7 @@
     const loading = document.getElementById('portfolio-loading');
     const empty = document.getElementById('portfolio-empty');
     loading.style.display = 'none';
-    const active = PRODUCTS.filter(p => p.active !== false);
+    const active = PRODUCTS.filter(isPubliclySellable);
     renderPortfolioFilters(active);
     const reset = document.getElementById('catalog-reset-btn');
     if(reset){
@@ -2093,7 +2223,7 @@
           ${tagsHtml(p)}
           ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
           ${p.customizable ? `<span class="badge customizavel" style="margin-left:4px;">✨ Personalizável${p.customizableMinQty ? ' (mín. '+p.customizableMinQty+')' : ''}</span>` : ''}
-          <h3 id="card-name-${p.code}">${p.name}</h3>
+          <h3 id="card-name-${p.code}">${escapeHtml(p.name)}</h3>
           ${colorsHtml}
           <div id="price-block-${p.code}">${buildCardPriceHtml(p, null)}</div>
         </div>
@@ -3051,7 +3181,7 @@
           ${tagsHtml(p)}
           ${p.onDemand ? '<span class="badge acerto" style="margin-left:4px;">Sob encomenda</span>' : ''}
           ${p.customizable ? `<span class="badge customizavel" style="margin-left:4px;">✨ Personalizável${p.customizableMinQty ? ' (mín. '+p.customizableMinQty+')' : ''}</span>` : ''}
-          <h3>${p.name}</h3>
+          <h3>${escapeHtml(p.name)}</h3>
           <div class="code">${p.code}</div>
           ${publicPriceHtml}
           <div class="price" style="margin-top:6px;color:var(--teal);"><span class="lbl">Seu preço (repasse)</span>${fmtMoney(p.price)}</div>
@@ -3315,17 +3445,30 @@
     document.getElementById('admin-pass-input').value = '';
   });
 
-  root.querySelectorAll('[data-admin-tab]').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      root.querySelectorAll('[data-admin-tab]').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      root.querySelectorAll('.admin-tab').forEach(t=>t.style.display='none');
-      root.querySelector(`.admin-tab[data-tab="${btn.dataset.adminTab}"]`).style.display='block';
-      await refreshData();
-      refreshAdminSelects();
-      renderAdminLists();
-    });
-  });
+  const ADMIN_SECTIONS={
+    produtos:{group:'Catálogo',title:'Produtos',description:'Cadastre, organize e publique os produtos exibidos no catálogo.'},
+    clientes:{group:'Parceiros',title:'Clientes',description:'Consulte e mantenha os dados dos parceiros de consignação.'},
+    entregas:{group:'Parceiros',title:'Lançar entrega',description:'Registre uma nova remessa de produtos enviada ao parceiro.'},
+    devolucoes:{group:'Parceiros',title:'Lançar devolução',description:'Registre os itens devolvidos e atualize o estoque quando necessário.'},
+    acertos:{group:'Financeiro',title:'Lançar acerto',description:'Registre vendas informadas pelo parceiro e a situação do pagamento.'},
+    'venda-direta':{group:'Financeiro',title:'Venda direta',description:'Registre compras avulsas pagas pelo parceiro fora do estoque consignado.'},
+    pedidos:{group:'Pedidos',title:'Reposição',description:'Analise e aprove os pedidos de reposição enviados pelos parceiros.'},
+    relatorio:{group:'Gestão',title:'Relatório',description:'Consolide saldos, vendas e valores por parceiro.'},
+    documentos:{group:'Gestão',title:'Documentos',description:'Envie contratos e comprovantes para a área individual dos parceiros.'}
+  };
+  async function switchAdminTab(tab,refresh=true,scroll=true){
+    const meta=ADMIN_SECTIONS[tab];if(!meta)return;
+    root.querySelectorAll('[data-admin-tab]').forEach(btn=>btn.classList.toggle('active',btn.dataset.adminTab===tab));
+    root.querySelectorAll('.admin-tab').forEach(panel=>panel.style.display=panel.dataset.tab===tab?'block':'none');
+    document.getElementById('admin-section-select').value=tab;
+    document.getElementById('admin-section-group').textContent=meta.group;
+    document.getElementById('admin-section-title').textContent=meta.title;
+    document.getElementById('admin-section-description').textContent=meta.description;
+    if(refresh){await refreshData();refreshAdminSelects();renderAdminLists();}
+    if(scroll)document.querySelector('.admin-section-context').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  root.querySelectorAll('[data-admin-tab]').forEach(btn=>btn.addEventListener('click',()=>switchAdminTab(btn.dataset.adminTab)));
+  document.getElementById('admin-section-select').addEventListener('change',e=>switchAdminTab(e.target.value));
   document.getElementById('req-refresh-btn').addEventListener('click', async ()=>{
     const btn = document.getElementById('req-refresh-btn');
     btn.disabled = true; btn.textContent = 'Atualizando…';
@@ -3337,7 +3480,7 @@
 
   function refreshAdminSelects(){
     const clientOpts = CLIENTS.map(c=>`<option value="${c.code}">${c.code} — ${c.name}</option>`).join('');
-    const productOpts = PRODUCTS.map(p=>`<option value="${p.code}">${p.code} — ${p.name}</option>`).join('');
+    const productOpts = PRODUCTS.map(p=>`<option value="${escapeHtml(p.code)}">${escapeHtml(p.code)} — ${escapeHtml(p.name)}</option>`).join('');
     ['e-client','d-client','a-client','v-client'].forEach(id=>document.getElementById(id).innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>');
     document.getElementById('rep-client').innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>';
     document.getElementById('doc-client').innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>';
@@ -3357,6 +3500,8 @@
       bulkCategorySelect.innerHTML = '<option value="">Todos os produtos</option>' + KNOWN_CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join('');
       bulkCategorySelect.value = currentVal;
     }
+    const selectedCalculation=document.getElementById('p-cost-calculation')?.value||'';
+    renderCostCalculationOptions(selectedCalculation);
   }
 
   function updateColorSelect(productSelectId, colorSelectId, opts){
@@ -3382,10 +3527,211 @@
 
   let expandedProductCode = null;
   let editingColorKey = null; // formato "CODIGO_PRODUTO|NOME_DA_COR"
+  let adminProductSearch = '';
+  let adminProductStatus = 'active';
+  let adminProductSort = 'name';
+  let currentProductStep = 0;
+
+  function adminProductStock(p){
+    if(p.onDemand) return Number.MAX_SAFE_INTEGER;
+    return (p.colors||[]).reduce((sum,color)=>sum+(Number(color.stock)||0),0);
+  }
+  function filteredAdminProducts(){
+    const query=adminProductSearch.toLowerCase();
+    let list=PRODUCTS.filter(p=>{
+      const statusMatch=adminProductStatus==='all'||(adminProductStatus==='active' ? p.active!==false : p.active===false);
+      const text=[p.code,p.name,...getCategories(p)].join(' ').toLowerCase();
+      return statusMatch&&(!query||text.includes(query));
+    });
+    list=list.slice().sort((a,b)=>{
+      if(adminProductSort==='code')return String(a.code).localeCompare(String(b.code),'pt-BR');
+      if(adminProductSort==='price-asc')return Number(a.publicPrice||0)-Number(b.publicPrice||0);
+      if(adminProductSort==='price-desc')return Number(b.publicPrice||0)-Number(a.publicPrice||0);
+      if(adminProductSort==='stock-asc')return adminProductStock(a)-adminProductStock(b);
+      if(adminProductSort==='recent')return Number(b.updatedAt||b.createdAt||0)-Number(a.updatedAt||a.createdAt||0);
+      return String(a.name||'').localeCompare(String(b.name||''),'pt-BR');
+    });
+    return list;
+  }
+
+  function calcProductName(calc){
+    return calc?.inputs?.['calc-product-name'] || calc?.id || 'Cálculo sem nome';
+  }
+  function calcUnitCost(calc){
+    const qty=Math.max(1,Number(calc?.result?.qtyPieces)||1);
+    return (Number(calc?.result?.custosTotal)||0)/qty;
+  }
+  function calculationById(id){
+    return CALCULATIONS.find(calc=>calc.id===id);
+  }
+  function productCostLink(code){
+    return PRODUCT_COST_LINKS.find(link=>link.productCode===code);
+  }
+  function selectedCostCalculation(){
+    const select=document.getElementById('p-cost-calculation');
+    return select ? calculationById(select.value) : null;
+  }
+  function renderCostCalculationOptions(selectedId){
+    const select=document.getElementById('p-cost-calculation');
+    if(!select)return;
+    const sorted=CALCULATIONS.slice().sort((a,b)=>String(b.updatedAt||b.createdAt||'').localeCompare(String(a.updatedAt||a.createdAt||'')));
+    select.innerHTML='<option value="">— Não vincular cálculo —</option>'+sorted.map(calc=>{
+      const cost=calcUnitCost(calc),suggested=Number(calc?.result?.precoPorPeca)||0;
+      return `<option value="${escapeHtml(calc.id)}">${escapeHtml(calcProductName(calc))} · custo ${fmtMoney(cost)} · sugerido ${fmtMoney(suggested)}</option>`;
+    }).join('');
+    select.value=selectedId&&sorted.some(calc=>calc.id===selectedId)?selectedId:'';
+    renderSelectedCostCalculation();
+  }
+  function renderSelectedCostCalculation(){
+    const calc=selectedCostCalculation();
+    const box=document.getElementById('p-cost-calculation-summary');
+    const useBtn=document.getElementById('p-use-calculated-price-btn');
+    if(!box||!useBtn)return;
+    if(!calc){
+      box.textContent=CALCULATIONS.length
+        ? 'Selecione um cálculo salvo para acompanhar custo, material, máquina e atualização.'
+        : 'Nenhum cálculo salvo foi encontrado. Salve um cálculo no portal de ferramentas e clique em “Atualizar cálculos”.';
+      useBtn.style.display='none';
+      updateProductPricePreview();
+      return;
+    }
+    const cost=calcUnitCost(calc);
+    const material=calc?.rates?.material?.name||'Não informado';
+    const machine=calc?.rates?.equip?.name||'Não informada';
+    const grams=Number(calc?.inputs?.['calc-material-qty'])||0;
+    const hours=Number(calc?.inputs?.['calc-equip-hours'])||0;
+    const updatedRaw=calc.updatedAt||calc.createdAt;
+    const updated=updatedRaw&&!isNaN(new Date(updatedRaw).getTime())?new Date(updatedRaw).toLocaleDateString('pt-BR'):'Sem data';
+    const link=editingProductCode?productCostLink(editingProductCode):null;
+    const stale=!!(link&&link.calculationId===calc.id&&String(link.calculationUpdatedAt||'')!==String(calc.updatedAt||calc.createdAt||''));
+    box.innerHTML=`<strong>${escapeHtml(calcProductName(calc))}</strong>
+      <div class="product-cost-facts">
+        <span><small>Custo por unidade</small><strong>${fmtMoney(cost)}</strong></span>
+        <span><small>Material</small><strong>${escapeHtml(material)} · ${grams.toLocaleString('pt-BR')} g</strong></span>
+        <span><small>Máquina</small><strong>${escapeHtml(machine)} · ${hours.toLocaleString('pt-BR')} h</strong></span>
+        <span><small>Último cálculo</small><strong>${updated}</strong></span>
+      </div>${stale?'<span class="cost-stale-warning">Este cálculo foi atualizado depois do último salvamento do produto. Revise os preços e salve novamente.</span>':''}`;
+    useBtn.style.display='inline-flex';
+    updateProductPricePreview();
+  }
+
+  async function saveProductCostLink(productCode,previousCode){
+    PRODUCT_COST_LINKS=await getJSON(PRODUCT_COST_LINKS_KEY,PRODUCT_COST_LINKS);
+    const codes=new Set([productCode,previousCode].filter(Boolean));
+    PRODUCT_COST_LINKS=PRODUCT_COST_LINKS.filter(link=>!codes.has(link.productCode));
+    const calc=selectedCostCalculation();
+    if(calc){
+      PRODUCT_COST_LINKS.push({
+        productCode,
+        calculationId:calc.id,
+        calculationUpdatedAt:calc.updatedAt||calc.createdAt||null,
+        linkedAt:new Date().toISOString()
+      });
+    }
+    await setJSON(PRODUCT_COST_LINKS_KEY,PRODUCT_COST_LINKS);
+  }
+
+  function updateProductPricePreview(){
+    const publicPrice=parseFloat(document.getElementById('p-public-price').value);
+    const consigPrice=parseFloat(document.getElementById('p-price').value);
+    const promoPrice=parseFloat(document.getElementById('p-promo-price').value);
+    const marginEl=document.getElementById('p-margin-preview');
+    const hlMarginEl=document.getElementById('p-hl-margin-preview');
+    const discountEl=document.getElementById('p-discount-preview');
+    const statusEl=document.getElementById('p-price-status-preview');
+    marginEl.textContent=!isNaN(publicPrice)&&!isNaN(consigPrice)&&publicPrice>0 ? `${Math.max(0,((publicPrice-consigPrice)/publicPrice)*100).toFixed(1).replace('.',',')}%` : '—';
+    const calc=selectedCostCalculation(),unitCost=calc?calcUnitCost(calc):NaN;
+    hlMarginEl.textContent=!isNaN(consigPrice)&&consigPrice>0&&Number.isFinite(unitCost) ? `${(((consigPrice-unitCost)/consigPrice)*100).toFixed(1).replace('.',',')}%` : '—';
+    discountEl.textContent=!isNaN(publicPrice)&&!isNaN(promoPrice)&&promoPrice>0&&promoPrice<publicPrice ? `${((1-promoPrice/publicPrice)*100).toFixed(1).replace('.',',')}%` : '—';
+    if(isNaN(publicPrice)||publicPrice<=0)statusEl.textContent='Informe o preço público';
+    else if(isNaN(consigPrice)||consigPrice<0)statusEl.textContent='Informe o repasse';
+    else if(consigPrice>publicPrice)statusEl.textContent='Repasse acima do público';
+    else if(Number.isFinite(unitCost)&&consigPrice<unitCost)statusEl.textContent='Repasse abaixo do custo';
+    else if(!isNaN(promoPrice)&&(promoPrice<=0||promoPrice>=publicPrice))statusEl.textContent='Promoção inválida';
+    else statusEl.textContent='Valores válidos';
+  }
+
+  function updateProductImagePreview(){
+    const url=document.getElementById('p-img').value.trim();
+    const box=document.getElementById('p-image-preview-box');
+    box.style.backgroundImage=url?`url("${url.replace(/"/g,'%22')}")`:'';
+    box.textContent=url?'':'Prévia da imagem principal';
+  }
+
+  function updateProductFinalPreview(){
+    const code=document.getElementById('p-code').value.trim().toUpperCase();
+    const name=document.getElementById('p-name').value.trim();
+    const desc=document.getElementById('p-desc').value.trim();
+    const image=document.getElementById('p-img').value.trim();
+    const price=parseFloat(document.getElementById('p-public-price').value);
+    const promo=parseFloat(document.getElementById('p-promo-price').value);
+    const previewImage=document.getElementById('p-final-preview-image');
+    previewImage.style.backgroundImage=image?`url("${image.replace(/"/g,'%22')}")`:'';
+    previewImage.textContent=image?'':'Sem imagem';
+    document.getElementById('p-final-preview-code').textContent=code||'Código ainda não informado';
+    document.getElementById('p-final-preview-name').textContent=name||'Nome do produto';
+    document.getElementById('p-final-preview-desc').textContent=desc||'Adicione uma descrição para apresentar o produto.';
+    document.getElementById('p-final-preview-categories').innerHTML=pendingCategories.length?pendingCategories.map(c=>`<span class="tag ${tagColorFor(c)}">${escapeHtml(c)}</span>`).join(' '):'<span class="tag teal">Sem categoria</span>';
+    document.getElementById('p-final-preview-price').textContent=fmtMoney(!isNaN(promo)&&promo>0&&promo<price?promo:price);
+    const status=document.getElementById('p-final-preview-status');
+    status.textContent=document.getElementById('p-active').checked?'Publicado':'Rascunho';
+    status.className=`badge ${document.getElementById('p-active').checked?'aprovado':'pendente'}`;
+  }
+
+  function showProductStep(step){
+    currentProductStep=Math.max(0,Math.min(3,Number(step)||0));
+    root.querySelectorAll('[data-product-step]').forEach(btn=>{
+      const index=Number(btn.dataset.productStep),active=index===currentProductStep;
+      btn.classList.toggle('active',active);btn.classList.toggle('done',index<currentProductStep);btn.setAttribute('aria-selected',String(active));
+    });
+    root.querySelectorAll('[data-product-step-panel]').forEach(panel=>panel.classList.toggle('active',Number(panel.dataset.productStepPanel)===currentProductStep));
+    document.getElementById('p-step-prev-btn').style.display=currentProductStep?'inline-flex':'none';
+    document.getElementById('p-step-next-btn').style.display=currentProductStep<3?'inline-flex':'none';
+    document.getElementById('p-add-btn').style.display=currentProductStep===3?'inline-flex':'none';
+    if(currentProductStep===3)updateProductFinalPreview();
+  }
+
+  root.querySelectorAll('[data-product-step]').forEach(btn=>btn.addEventListener('click',()=>showProductStep(btn.dataset.productStep)));
+  document.getElementById('p-step-prev-btn').addEventListener('click',()=>showProductStep(currentProductStep-1));
+  document.getElementById('p-step-next-btn').addEventListener('click',()=>{
+    const msg=document.getElementById('p-msg');msg.innerHTML='';
+    if(currentProductStep===0&&(!document.getElementById('p-code').value.trim()||!document.getElementById('p-name').value.trim())){msg.innerHTML='<div class="msg err">Informe o código e o nome para continuar.</div>';return;}
+    if(currentProductStep===1){
+      const publicPrice=parseFloat(document.getElementById('p-public-price').value),consigPrice=parseFloat(document.getElementById('p-price').value),promoRaw=document.getElementById('p-promo-price').value.trim(),promoPrice=parseFloat(promoRaw);
+      if(isNaN(publicPrice)||publicPrice<=0||isNaN(consigPrice)||consigPrice<0){msg.innerHTML='<div class="msg err">Informe preços público e de repasse válidos.</div>';return;}
+      if(consigPrice>publicPrice){msg.innerHTML='<div class="msg err">O repasse não pode ser maior que o preço ao público.</div>';return;}
+      if(promoRaw&&(!Number.isFinite(promoPrice)||promoPrice<=0||promoPrice>=publicPrice)){msg.innerHTML='<div class="msg err">O preço promocional deve ser maior que zero e menor que o preço ao público.</div>';return;}
+    }
+    showProductStep(currentProductStep+1);
+  });
+  ['p-public-price','p-price','p-promo-price'].forEach(id=>document.getElementById(id).addEventListener('input',updateProductPricePreview));
+  document.getElementById('p-cost-calculation').addEventListener('change',renderSelectedCostCalculation);
+  document.getElementById('p-refresh-calculations-btn').addEventListener('click',async ()=>{
+    const selected=document.getElementById('p-cost-calculation').value;
+    const btn=document.getElementById('p-refresh-calculations-btn');
+    btn.disabled=true;btn.textContent='Atualizando…';
+    CALCULATIONS=await getJSON(CALCULATIONS_KEY,[]);
+    renderCostCalculationOptions(selected);
+    btn.disabled=false;btn.textContent='Atualizar cálculos';
+  });
+  document.getElementById('p-use-calculated-price-btn').addEventListener('click',()=>{
+    const calc=selectedCostCalculation();
+    if(!calc)return;
+    const suggested=Number(calc?.result?.precoPorPeca)||0;
+    if(suggested<=0){document.getElementById('p-msg').innerHTML='<div class="msg err">Este cálculo não possui um preço sugerido válido.</div>';return;}
+    document.getElementById('p-public-price').value=suggested.toFixed(2);
+    updateProductPricePreview();updateProductFinalPreview();
+  });
+  document.getElementById('p-img').addEventListener('input',updateProductImagePreview);
+  document.getElementById('p-active').addEventListener('change',updateProductFinalPreview);
 
   function renderAdminLists(){
     renderDocList();
-    document.getElementById('p-list').innerHTML = PRODUCTS.length ? PRODUCTS.map(p=>{
+    const adminProducts=filteredAdminProducts();
+    const activeCount=PRODUCTS.filter(p=>p.active!==false).length,archivedCount=PRODUCTS.length-activeCount;
+    const summary=document.getElementById('admin-product-summary');
+    if(summary)summary.innerHTML=`<span>${adminProducts.length} exibido${adminProducts.length===1?'':'s'}</span><span>${activeCount} publicado${activeCount===1?'':'s'}</span><span>${archivedCount} arquivado${archivedCount===1?'':'s'}</span>`;
+    document.getElementById('p-list').innerHTML = adminProducts.length ? adminProducts.map(p=>{
       const colors = p.colors || [];
       const gallery = p.gallery || [];
       const isExpanded = expandedProductCode === p.code;
@@ -3420,18 +3766,23 @@
       const priceLine = bulkPromoInfo
         ? `Público: <s>${fmtMoney(bulkPromoInfo.base)}</s> 🔥 ${fmtMoney(bulkPromoInfo.promo)} (-${bulkPromoInfo.pct}%) · Consignado: ${fmtMoney(p.price)}`
         : `Público: ${p.publicPrice!=null ? fmtMoney(p.publicPrice) : '—'} · Consignado: ${fmtMoney(p.price)}`;
+      const costLink=productCostLink(p.code),linkedCalc=costLink&&calculationById(costLink.calculationId);
+      const unitCost=linkedCalc?calcUnitCost(linkedCalc):null;
+      const hlMargin=unitCost!==null&&Number(p.price)>0?((Number(p.price)-unitCost)/Number(p.price))*100:null;
+      const costStale=!!(linkedCalc&&String(costLink.calculationUpdatedAt||'')!==String(linkedCalc.updatedAt||linkedCalc.createdAt||''));
+      const costLine=linkedCalc
+        ? ` · Custo: ${fmtMoney(unitCost)} · Margem HL: ${hlMargin===null?'—':hlMargin.toFixed(1).replace('.',',')+'%'}${costStale?' · ⚠ cálculo atualizado':''}`
+        : ' · sem cálculo vinculado';
       const catsLine = getCategories(p).join(', ') || 'sem categoria';
       return `
-      <div class="list-row" style="flex-direction:column;align-items:stretch;gap:8px;">
+      <div class="list-row product-admin-row ${p.active===false?'archived':''}" style="flex-direction:column;align-items:stretch;gap:8px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;cursor:pointer;" data-toggle-product="${p.code}">
-          <span class="mono">
-            <span style="display:inline-block;transition:transform .15s;transform:rotate(${isExpanded?90:0}deg);margin-right:4px;">▸</span>
-            ${p.code} — ${p.name} (${catsLine}) — ${priceLine}${p.video ? ' · 🎬' : ''}${p.onDemand ? ' · <span class="badge acerto">Sob encomenda</span>' : ''}${p.customizable ? ` · <span class="badge customizavel">✨ Personalizável${p.customizableMinQty ? ' (mín. '+p.customizableMinQty+')' : ''}</span>` : ''}
-          </span>
+          <span class="product-admin-main"><span style="display:inline-block;transition:transform .15s;transform:rotate(${isExpanded?90:0}deg);">▸</span><span class="product-admin-thumb" style="${p.image?`background-image:url('${String(p.image).replace(/'/g,'%27')}')`:''}"></span><span class="product-admin-title"><strong>${escapeHtml(p.name)}</strong><small>${escapeHtml(p.code)} · ${escapeHtml(catsLine)} · ${priceLine}${costLine}${p.active===false?' · ARQUIVADO':''}</small></span></span>
           <span class="actions">
             <button data-edit-product="${p.code}">Editar</button>
-            <button data-toggle-ondemand="${p.code}">${p.onDemand ? 'Desmarcar sob encomenda' : 'Marcar sob encomenda'}</button>
-            <button data-del-product="${p.code}">Remover produto</button>
+            <button data-duplicate-product="${p.code}">Duplicar</button>
+            <button data-toggle-active-product="${p.code}">${p.active===false?'Publicar':'Arquivar'}</button>
+            <button data-del-product="${p.code}" class="danger-action">Excluir</button>
           </span>
         </div>
         <div style="display:${isExpanded ? 'flex' : 'none'};flex-direction:column;gap:8px;">
@@ -3451,7 +3802,7 @@
           </div>
         </div>
       </div>`;
-    }).join('') : `<div class="empty">Nenhum produto cadastrado.</div>`;
+    }).join('') : `<div class="empty">Nenhum produto encontrado com os filtros selecionados.</div>`;
 
     root.querySelectorAll('[data-toggle-product]').forEach(el=>el.addEventListener('click', (e)=>{
       if(e.target.closest('.actions')) return; // não expande/recolhe se clicou nos botões de ação
@@ -3469,6 +3820,39 @@
       p.onDemand = !p.onDemand;
       await setJSON('products', PRODUCTS);
       renderAdminLists(); renderPortfolio();
+    }));
+
+    root.querySelectorAll('[data-toggle-active-product]').forEach(btn=>btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      PRODUCTS=await getJSON('products',PRODUCTS);
+      const p=PRODUCTS.find(item=>item.code===btn.dataset.toggleActiveProduct);
+      if(!p)return;
+      p.active=p.active===false;
+      p.updatedAt=Date.now();
+      await setJSON('products',PRODUCTS);
+      refreshAdminSelects();renderAdminLists();renderPortfolio();
+    }));
+
+    root.querySelectorAll('[data-duplicate-product]').forEach(btn=>btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      PRODUCTS=await getJSON('products',PRODUCTS);
+      const source=PRODUCTS.find(item=>item.code===btn.dataset.duplicateProduct);
+      if(!source)return;
+      const prefixMatch=String(source.code||'').match(/^[A-Z]+/),prefix=prefixMatch?prefixMatch[0]:'PRO';
+      const copy=JSON.parse(JSON.stringify(source));
+      copy.code=nextCodeForPrefix(prefix);
+      copy.name=`${source.name} — cópia`;
+      copy.active=false;
+      copy.colors=(copy.colors||[]).map(color=>({...color,stock:0}));
+      copy.createdAt=Date.now();
+      copy.updatedAt=Date.now();
+      PRODUCTS.push(copy);
+      await setJSON('products',PRODUCTS);
+      adminProductStatus='archived';
+      document.getElementById('admin-product-status').value='archived';
+      renderAdminLists();
+      const editButton=root.querySelector(`[data-edit-product="${copy.code}"]`);
+      if(editButton)editButton.click();
     }));
 
     root.querySelectorAll('[data-edit-product]').forEach(btn=>btn.addEventListener('click', ()=>{
@@ -3490,14 +3874,19 @@
       document.getElementById('p-desc').value = p.description || '';
       document.getElementById('p-ondemand').checked = !!p.onDemand;
       document.getElementById('p-customizable').checked = !!p.customizable;
+      document.getElementById('p-active').checked = p.active !== false;
       document.getElementById('p-customizable-minqty').value = p.customizableMinQty != null ? p.customizableMinQty : '';
       document.getElementById('p-customizable-minqty-wrap').style.display = p.customizable ? 'flex' : 'none';
       document.getElementById('p-first-color-wrap').style.display = 'none';
       document.getElementById('p-form-title').textContent = `Editando: ${p.code} — ${p.name}`;
+      document.getElementById('p-form-status').textContent = p.active===false ? 'Produto arquivado' : 'Produto publicado';
       document.getElementById('p-add-btn').textContent = 'Salvar alterações';
       document.getElementById('p-cancel-edit-btn').style.display = 'inline-block';
       document.getElementById('p-msg').innerHTML = '';
       renderCategoryPicker();
+      const costLink=productCostLink(p.code);
+      renderCostCalculationOptions(costLink?.calculationId||'');
+      updateProductPricePreview();updateProductImagePreview();showProductStep(0);
       document.querySelector('.admin-tab[data-tab="produtos"] .panel').scrollIntoView({ behavior:'smooth', block:'start' });
     }));
 
@@ -3506,6 +3895,7 @@
       const input = root.querySelector(`[data-gallery-input="${code}"]`);
       const urls = input.value.split('\n').map(u=>u.trim()).filter(Boolean);
       if(urls.length === 0) return;
+      if(urls.some(url=>!/^https:\/\//i.test(url))){alert('Todas as fotos da galeria precisam começar com https://.');return;}
       PRODUCTS = await getJSON('products', PRODUCTS);
       const p = PRODUCTS.find(p=>p.code===code);
       if(!p) return;
@@ -3541,6 +3931,9 @@
       PRODUCTS = await getJSON('products', PRODUCTS);
       const p = PRODUCTS.find(p=>p.code===code);
       if(!p) return;
+      const base=Number(p.publicPrice);
+      if(promoPrice!==null&&(!Number.isFinite(promoPrice)||promoPrice<=0||promoPrice>=base)){alert('A promoção da cor deve ser maior que zero e menor que o preço ao público.');return;}
+      if(image&&!/^https:\/\//i.test(image)){alert('A foto da cor precisa começar com https://.');return;}
       p.colors = p.colors || [];
       if(p.colors.some(c=>c.name.toLowerCase()===name.toLowerCase())){
         alert('Essa cor já existe para este produto.'); return;
@@ -3565,6 +3958,7 @@
       const newName = nameInput.value.trim();
       const newImage = imageInput.value.trim();
       if(!newName){ alert('O nome da cor não pode ficar em branco.'); return; }
+      if(newImage&&!/^https:\/\//i.test(newImage)){alert('A foto da cor precisa começar com https://.');return;}
 
       PRODUCTS = await getJSON('products', PRODUCTS);
       const p = PRODUCTS.find(p=>p.code===code);
@@ -3583,14 +3977,17 @@
         DEVOLUCOES = await getJSON('devolucoes', DEVOLUCOES);
         ACERTOS = await getJSON('acertos', ACERTOS);
         PEDIDOS = await getJSON('pedidos', PEDIDOS);
+        VENDAS = await getJSON('vendas', VENDAS);
         ENTREGAS.forEach(e=>{ if(e.productCode===code && e.color===oldName) e.color = newName; });
         DEVOLUCOES.forEach(d=>{ if(d.productCode===code && d.color===oldName) d.color = newName; });
         ACERTOS.forEach(a=>{ if(a.productCode===code && a.color===oldName) a.color = newName; });
         PEDIDOS.forEach(r=>{ if(Array.isArray(r.items))r.items.forEach(item=>{if(item.productCode===code&&item.color===oldName)item.color=newName;});else if(r.productCode===code&&r.color===oldName)r.color=newName; });
+        VENDAS.forEach(v=>{if(v.productCode===code&&v.color===oldName)v.color=newName;});
         await setJSON('entregas', ENTREGAS);
         await setJSON('devolucoes', DEVOLUCOES);
         await setJSON('acertos', ACERTOS);
         await setJSON('pedidos', PEDIDOS);
+        await setJSON('vendas', VENDAS);
         c.name = newName;
       }
       c.image = newImage;
@@ -3610,7 +4007,9 @@
       const answer = window.prompt(`Preço promocional para a cor "${colorName}" (preço ao público atual: ${fmtMoney(base)}).\nDeixe em branco pra remover a promoção desta cor.`, current);
       if(answer === null) return; // cancelou
       const trimmed = answer.trim();
-      c.promoPrice = trimmed === '' ? null : parseFloat(trimmed);
+      const value=trimmed===''?null:parseFloat(trimmed);
+      if(value!==null&&(!Number.isFinite(value)||value<=0||value>=Number(base))){alert('A promoção deve ser maior que zero e menor que o preço ao público.');return;}
+      c.promoPrice = value;
       await setJSON('products', PRODUCTS);
       renderAdminLists(); renderPortfolio();
     }));
@@ -3728,6 +4127,12 @@
       const items=requestItems(req);
       // Desconta o estoque de cada item de reposição. Itens classificados para produção não reduzem estoque.
       PRODUCTS=await getJSON('products',PRODUCTS);
+      const shortage=items.find(item=>{
+        if((item.type||req.type)!=='reposicao'||!item.color)return false;
+        const product=PRODUCTS.find(p=>p.code===item.productCode),color=product&&(product.colors||[]).find(c=>c.name===item.color);
+        return !color||Number(color.stock)<Number(item.qty);
+      });
+      if(shortage){alert(`Não foi possível aprovar: o estoque de ${productName(shortage.productCode)}${shortage.color?' ('+shortage.color+')':''} mudou e não atende mais à quantidade solicitada. Atualize o pedido ou o estoque.`);return;}
       let stockChanged=false;
       items.forEach(item=>{
         if((item.type||req.type)!=='reposicao'||!item.color)return;
@@ -3757,8 +4162,17 @@
     }));
 
     root.querySelectorAll('[data-del-product]').forEach(b=>b.addEventListener('click', async ()=>{
-      PRODUCTS = PRODUCTS.filter(p=>p.code!==b.dataset.delProduct);
-      await setJSON('products', PRODUCTS); refreshAdminSelects(); renderAdminLists(); renderPortfolio();
+      const code=b.dataset.delProduct;
+      const linkedCount=[ENTREGAS,DEVOLUCOES,ACERTOS,VENDAS].reduce((sum,list)=>sum+list.filter(item=>item.productCode===code).length,0)+PEDIDOS.reduce((sum,request)=>sum+requestItems(request).filter(item=>item.productCode===code).length,0);
+      const warning=linkedCount?`\n\nEste produto possui ${linkedCount} registro(s) histórico(s) vinculado(s). A exclusão pode prejudicar relatórios antigos. Prefira arquivar.`:'';
+      if(!confirm(`Excluir definitivamente o produto ${code}? Esta ação não pode ser desfeita.${warning}`))return;
+      PRODUCTS=await getJSON('products',PRODUCTS);
+      PRODUCTS = PRODUCTS.filter(p=>p.code!==code);
+      await setJSON('products', PRODUCTS);
+      PRODUCT_COST_LINKS=await getJSON(PRODUCT_COST_LINKS_KEY,PRODUCT_COST_LINKS);
+      PRODUCT_COST_LINKS=PRODUCT_COST_LINKS.filter(link=>link.productCode!==code);
+      await setJSON(PRODUCT_COST_LINKS_KEY,PRODUCT_COST_LINKS);
+      refreshAdminSelects(); renderAdminLists(); renderPortfolio();
     }));
     root.querySelectorAll('[data-del-client]').forEach(b=>b.addEventListener('click', async ()=>{
       if(!confirm('Remover este cliente? O histórico de entregas/devoluções/acertos dele NÃO é apagado, mas ele deixa de aparecer na lista de clientes ativos.')) return;
@@ -3785,11 +4199,7 @@
     root.querySelectorAll('[data-goto-client]').forEach(a=>a.addEventListener('click', (e)=>{
       e.preventDefault();
       const code = a.dataset.gotoClient;
-      // troca pra aba de clientes
-      root.querySelectorAll('[data-admin-tab]').forEach(b=>b.classList.remove('active'));
-      root.querySelector('[data-admin-tab="clientes"]').classList.add('active');
-      root.querySelectorAll('.admin-tab').forEach(t=>t.style.display='none');
-      root.querySelector('.admin-tab[data-tab="clientes"]').style.display='block';
+      switchAdminTab('clientes',false,false);
       // rola até o cliente e dá um destaque visual temporário
       setTimeout(()=>{
         const row = document.getElementById('client-row-'+code);
@@ -3801,6 +4211,10 @@
       }, 50);
     }));
   }
+
+  document.getElementById('admin-product-search').addEventListener('input',e=>{adminProductSearch=e.target.value.trim();renderAdminLists();});
+  document.getElementById('admin-product-status').addEventListener('change',e=>{adminProductStatus=e.target.value;renderAdminLists();});
+  document.getElementById('admin-product-sort').addEventListener('change',e=>{adminProductSort=e.target.value;renderAdminLists();});
 
   // ---------- seletor de categorias ----------
   function renderCategoryPicker(){
@@ -3850,14 +4264,22 @@
     document.getElementById('p-prefix').value = '';
     document.getElementById('p-ondemand').checked = false;
     document.getElementById('p-customizable').checked = false;
+    document.getElementById('p-active').checked = true;
     document.getElementById('p-customizable-minqty').value = '';
     document.getElementById('p-customizable-minqty-wrap').style.display = 'none';
     document.getElementById('p-code').disabled = false;
     document.getElementById('p-form-title').textContent = 'Novo produto';
+    document.getElementById('p-form-status').textContent = 'Novo cadastro';
     document.getElementById('p-add-btn').textContent = 'Adicionar produto';
     document.getElementById('p-cancel-edit-btn').style.display = 'none';
     document.getElementById('p-first-color-wrap').style.display = 'block';
+    document.getElementById('p-image-preview-box').style.backgroundImage = '';
+    document.getElementById('p-image-preview-box').textContent = 'Prévia da imagem principal';
+    document.getElementById('p-cost-calculation').value = '';
+    renderSelectedCostCalculation();
     renderCategoryPicker();
+    updateProductPricePreview();
+    showProductStep(0);
   }
   document.getElementById('p-cancel-edit-btn').addEventListener('click', ()=>{
     resetProductForm();
@@ -3919,14 +4341,22 @@
     const descriptionRaw = document.getElementById('p-desc').value.trim();
     const onDemand = document.getElementById('p-ondemand').checked;
     const customizable = document.getElementById('p-customizable').checked;
+    const active = document.getElementById('p-active').checked;
     const minQtyRaw = document.getElementById('p-customizable-minqty').value;
     const customizableMinQty = minQtyRaw.trim() === '' ? null : Math.max(1, parseInt(minQtyRaw) || 1);
     const msg = document.getElementById('p-msg');
-    if(!code || !name || isNaN(price)){ msg.innerHTML = '<div class="msg err">Preencha ao menos código, nome e valor consignado.</div>'; return; }
+    if(!/^[A-Z0-9-]{2,20}$/.test(code)){ msg.innerHTML = '<div class="msg err">Informe um código com 2 a 20 caracteres, usando apenas letras, números ou hífen.</div>'; showProductStep(0); return; }
+    if(!name){ msg.innerHTML = '<div class="msg err">Informe o nome do produto.</div>'; showProductStep(0); return; }
+    if(isNaN(publicPrice)||publicPrice<=0||isNaN(price)||price<0){ msg.innerHTML = '<div class="msg err">Informe preços público e de repasse válidos.</div>'; showProductStep(1); return; }
+    if(price>publicPrice){ msg.innerHTML='<div class="msg err">O repasse não pode ser maior que o preço ao público.</div>'; showProductStep(1); return; }
+    if(promoPrice!==null&&(!Number.isFinite(promoPrice)||promoPrice<=0||promoPrice>=publicPrice)){ msg.innerHTML='<div class="msg err">O preço promocional deve ser maior que zero e menor que o preço ao público.</div>'; showProductStep(1); return; }
+    if(image&&!/^https:\/\//i.test(image)){ msg.innerHTML='<div class="msg err">A imagem principal precisa começar com https://.</div>'; showProductStep(2); return; }
+    if(video&&!/^https:\/\//i.test(video)){ msg.innerHTML='<div class="msg err">O vídeo precisa começar com https://.</div>'; showProductStep(2); return; }
 
     PRODUCTS = await getJSON('products', PRODUCTS);
 
     if(editingProductCode){
+      const previousCode=editingProductCode;
       const p = PRODUCTS.find(p=>p.code===editingProductCode);
       if(!p){ msg.innerHTML = '<div class="msg err">Produto não encontrado (pode ter sido removido).</div>'; return; }
 
@@ -3943,14 +4373,17 @@
         DEVOLUCOES = await getJSON('devolucoes', DEVOLUCOES);
         ACERTOS = await getJSON('acertos', ACERTOS);
         PEDIDOS = await getJSON('pedidos', PEDIDOS);
+        VENDAS = await getJSON('vendas', VENDAS);
         ENTREGAS.forEach(e=>{ if(e.productCode===oldCode) e.productCode = code; });
         DEVOLUCOES.forEach(d=>{ if(d.productCode===oldCode) d.productCode = code; });
         ACERTOS.forEach(a=>{ if(a.productCode===oldCode) a.productCode = code; });
         PEDIDOS.forEach(r=>{ if(Array.isArray(r.items))r.items.forEach(item=>{if(item.productCode===oldCode)item.productCode=code;});else if(r.productCode===oldCode)r.productCode=code; });
+        VENDAS.forEach(v=>{if(v.productCode===oldCode)v.productCode=code;});
         await setJSON('entregas', ENTREGAS);
         await setJSON('devolucoes', DEVOLUCOES);
         await setJSON('acertos', ACERTOS);
         await setJSON('pedidos', PEDIDOS);
+        await setJSON('vendas', VENDAS);
         p.code = code;
       }
 
@@ -3958,7 +4391,7 @@
       p.name = name;
       p.categories = synced.categories;
       delete p.category;
-      p.publicPrice = isNaN(publicPrice) ? null : publicPrice;
+      p.publicPrice = publicPrice;
       p.price = price;
       p.promoPrice = promoPrice;
       p.image = image;
@@ -3967,9 +4400,12 @@
       p.onDemand = onDemand;
       p.customizable = customizable;
       p.customizableMinQty = customizable ? customizableMinQty : null;
+      p.active = active;
+      p.updatedAt = Date.now();
       await setJSON('products', PRODUCTS);
+      await saveProductCostLink(code,previousCode);
       msg.innerHTML = codeChanged
-        ? '<div class="msg ok">Alterações salvas — código atualizado em todos os registros vinculados (entregas, devoluções, acertos e pedidos).</div>'
+        ? '<div class="msg ok">Alterações salvas — código atualizado nos registros vinculados.</div>'
         : '<div class="msg ok">Alterações salvas.</div>';
       resetProductForm();
       refreshAdminSelects(); renderAdminLists(); renderPortfolio();
@@ -3980,17 +4416,20 @@
     const colors = [];
     const firstColorName = document.getElementById('p-first-color-name').value.trim();
     if(firstColorName){
+      const firstColorImage=document.getElementById('p-first-color-img').value.trim();
+      if(firstColorImage&&!/^https:\/\//i.test(firstColorImage)){msg.innerHTML='<div class="msg err">A foto da primeira cor precisa começar com https://.</div>';showProductStep(2);return;}
       colors.push({
         name: firstColorName,
         stock: Math.max(0, parseInt(document.getElementById('p-first-color-stock').value) || 0),
-        image: document.getElementById('p-first-color-img').value.trim(),
+        image: firstColorImage,
       });
     }
     PRODUCTS.push((()=>{
       const synced = applyCustomizableSync(descriptionRaw, [...pendingCategories], customizable, customizableMinQty);
-      return {code, name, categories: synced.categories, price, publicPrice: isNaN(publicPrice) ? null : publicPrice, promoPrice, image, video, description: synced.description, onDemand, customizable, customizableMinQty: customizable ? customizableMinQty : null, colors, gallery:[], active:true, createdAt: Date.now()};
+      return {code, name, categories: synced.categories, price, publicPrice, promoPrice, image, video, description: synced.description, onDemand, customizable, customizableMinQty: customizable ? customizableMinQty : null, colors, gallery:[], active, createdAt: Date.now(), updatedAt:Date.now()};
     })());
     await setJSON('products', PRODUCTS);
+    await saveProductCostLink(code);
     msg.innerHTML = '<div class="msg ok">Produto adicionado.</div>';
     resetProductForm();
     refreshAdminSelects(); renderAdminLists(); renderPortfolio();
@@ -4012,6 +4451,7 @@
     msg.innerHTML = ''; preview.innerHTML = ''; applyBtn.style.display = 'none';
 
     if(isNaN(pct) || pct === 0){ msg.innerHTML = '<div class="msg err">Informe um percentual diferente de zero (ex.: 10 ou -10).</div>'; return; }
+    if(1+(pct/100)<=0){msg.innerHTML='<div class="msg err">O reajuste não pode reduzir os preços a zero ou a valores negativos.</div>';return;}
 
     const affected = getBulkTargetProducts().filter(p=>{
       if(target === 'public' || target === 'both'){ if(p.publicPrice != null) return true; }
@@ -4021,6 +4461,12 @@
     if(affected.length === 0){ msg.innerHTML = '<div class="msg err">Nenhum produto encontrado com essa combinação de filtros.</div>'; return; }
 
     const factor = 1 + (pct / 100);
+    const invalidMargins=affected.filter(p=>{
+      const nextPublic=(target==='public'||target==='both')&&p.publicPrice!=null?Number(p.publicPrice)*factor:Number(p.publicPrice);
+      const nextConsig=(target==='price'||target==='both')&&p.price!=null?Number(p.price)*factor:Number(p.price);
+      return Number.isFinite(nextPublic)&&Number.isFinite(nextConsig)&&nextConsig>nextPublic;
+    });
+    if(invalidMargins.length){msg.innerHTML=`<div class="msg err">O reajuste deixaria o repasse acima do preço público em ${invalidMargins.length} produto(s). Ajuste o percentual ou aplique a alteração nos dois preços.</div>`;return;}
     const rows = affected.slice(0, 6).map(p=>{
       const lines = [];
       if((target === 'public' || target === 'both') && p.publicPrice != null){
@@ -4029,7 +4475,7 @@
       if((target === 'price' || target === 'both') && p.price != null){
         lines.push(`Consignado: ${fmtMoney(p.price)} → <strong style="color:var(--teal);">${fmtMoney(p.price * factor)}</strong>`);
       }
-      return `<div class="list-row"><span class="mono">${p.code} — ${p.name}</span><span style="font-size:11px;color:var(--muted);">${lines.join(' · ')}</span></div>`;
+      return `<div class="list-row"><span class="mono">${escapeHtml(p.code)} — ${escapeHtml(p.name)}</span><span style="font-size:11px;color:var(--muted);">${lines.join(' · ')}</span></div>`;
     }).join('');
     const moreLabel = affected.length > 6 ? `<div style="color:var(--muted);font-size:11px;margin-top:6px;">+ ${affected.length - 6} produto(s) a mais...</div>` : '';
 
@@ -4060,6 +4506,8 @@
       let touched = false;
       if((target === 'public' || target === 'both') && fresh.publicPrice != null){
         fresh.publicPrice = Math.round(fresh.publicPrice * factor * 100) / 100;
+        if(fresh.promoPrice!=null&&Number(fresh.promoPrice)>=fresh.publicPrice)fresh.promoPrice=null;
+        (fresh.colors||[]).forEach(color=>{if(color.promoPrice!=null&&Number(color.promoPrice)>=fresh.publicPrice)color.promoPrice=null;});
         touched = true;
       }
       if((target === 'price' || target === 'both') && fresh.price != null){
@@ -4067,6 +4515,7 @@
         touched = true;
       }
       if(touched) count++;
+      if(touched)fresh.updatedAt=Date.now();
     });
     await setJSON('products', PRODUCTS);
 
@@ -4223,13 +4672,7 @@
       <button type="button" class="btn secondary" id="e-goto-report-btn" style="margin-top:8px;">Ver relatório deste cliente</button>`;
     const clientCodeJustSaved = clientCode;
     document.getElementById('e-goto-report-btn').addEventListener('click', async ()=>{
-      root.querySelectorAll('[data-admin-tab]').forEach(b=>b.classList.remove('active'));
-      root.querySelector('[data-admin-tab="relatorio"]').classList.add('active');
-      root.querySelectorAll('.admin-tab').forEach(t=>t.style.display='none');
-      root.querySelector('.admin-tab[data-tab="relatorio"]').style.display='block';
-      await refreshData();
-      refreshAdminSelects();
-      renderAdminLists();
+      await switchAdminTab('relatorio',true,false);
       document.getElementById('rep-client').value = clientCodeJustSaved;
       renderClientReport(clientCodeJustSaved);
     });
