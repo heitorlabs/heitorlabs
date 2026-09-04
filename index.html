@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -622,6 +623,21 @@
     position:relative;max-height:90vh;overflow-y:auto;
   }
   #portal-root .modal-box .body{padding:18px;}
+  #portal-root .crop-modal{z-index:85;}
+  #portal-root .crop-box{max-width:620px;width:100%;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.35);}
+  #portal-root .crop-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:13px;}
+  #portal-root .crop-head h3{font:700 19px 'Space Grotesk';margin:0;}
+  #portal-root .crop-head p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.4;}
+  #portal-root .crop-stage{position:relative;width:min(100%,520px);margin:0 auto;aspect-ratio:1;overflow:hidden;border-radius:13px;background-color:#d7d7dc;background-image:linear-gradient(45deg,#eee 25%,transparent 25%),linear-gradient(-45deg,#eee 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#eee 75%),linear-gradient(-45deg,transparent 75%,#eee 75%);background-size:22px 22px;background-position:0 0,0 11px,11px -11px,-11px 0;box-shadow:inset 0 0 0 2px rgba(105,71,199,.65);touch-action:none;cursor:grab;}
+  #portal-root .crop-stage.dragging{cursor:grabbing;}
+  #portal-root .crop-stage canvas{display:block;width:100%;height:100%;}
+  #portal-root .crop-guide{position:absolute;inset:8.33%;border:1px dashed rgba(255,255,255,.82);box-shadow:0 0 0 1px rgba(0,0,0,.18);pointer-events:none;}
+  #portal-root .crop-controls{display:grid;grid-template-columns:auto auto minmax(160px,1fr) auto;gap:8px;align-items:center;margin-top:13px;}
+  #portal-root .crop-controls button{min-height:40px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);color:var(--ink);font-weight:700;cursor:pointer;}
+  #portal-root .crop-zoom{display:flex;align-items:center;gap:8px;padding:0 6px;color:var(--muted);font-size:11px;}
+  #portal-root .crop-zoom input{padding:0;min-height:auto;accent-color:var(--violet);}
+  #portal-root .crop-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:15px;padding-top:14px;border-top:1px solid var(--line);}
+  @media(max-width:620px){#portal-root .crop-modal{padding:8px;align-items:flex-end;}#portal-root .crop-box{border-radius:16px 16px 0 0;padding:14px;max-height:96vh;overflow:auto;}#portal-root .crop-controls{grid-template-columns:1fr 1fr;}#portal-root .crop-zoom{grid-column:1/-1;grid-row:1;}#portal-root .crop-footer{display:grid;grid-template-columns:1fr 1fr;}#portal-root .crop-footer .btn{justify-content:center;}}
 
   /* --- carrossel de fotos/vídeo do produto --- */
   #portal-root .carousel{position:relative;width:100%;height:280px;background:#000;overflow:hidden;}
@@ -1424,7 +1440,7 @@
               </div>
 
               <div class="product-form-step" data-product-step-panel="2" role="tabpanel">
-                <div class="product-step-title"><h4>Fotografias, vídeo e estoque</h4><p>Envie fotos do celular ou computador. Os links serão preenchidos automaticamente.</p></div>
+                <div class="product-step-title"><h4>Fotografias, vídeo e estoque</h4><p>Envie fotos do celular ou computador. Antes do envio, você poderá recortar, girar e ajustar o enquadramento.</p></div>
                 <div class="product-image-preview">
                   <div class="product-image-preview-box" id="p-image-preview-box">Prévia da imagem principal</div>
                   <div>
@@ -1734,6 +1750,20 @@
       </div>
     </div>
   </footer>
+
+  <div class="modal-backdrop crop-modal" id="image-crop-modal" role="dialog" aria-modal="true" aria-labelledby="image-crop-title" aria-hidden="true">
+    <div class="crop-box" tabindex="-1">
+      <div class="crop-head"><div><h3 id="image-crop-title">Ajustar fotografia</h3><p>Arraste a imagem para posicioná-la. A área quadrada será usada no catálogo.</p></div></div>
+      <div class="crop-stage" id="image-crop-stage"><canvas id="image-crop-canvas" width="800" height="800"></canvas><div class="crop-guide" aria-hidden="true"></div></div>
+      <div class="crop-controls">
+        <button type="button" id="image-crop-left" title="Girar para a esquerda">↶ Girar</button>
+        <button type="button" id="image-crop-right" title="Girar para a direita">Girar ↷</button>
+        <label class="crop-zoom" for="image-crop-zoom"><span>Zoom</span><input id="image-crop-zoom" type="range" min="1" max="3" step="0.01" value="1"></label>
+        <button type="button" id="image-crop-reset">Redefinir</button>
+      </div>
+      <div class="crop-footer"><button type="button" class="btn secondary" id="image-crop-cancel">Cancelar</button><button type="button" class="btn" id="image-crop-confirm">Usar esta imagem</button></div>
+    </div>
+  </div>
 
   <div class="modal-backdrop" id="product-modal" role="dialog" aria-modal="true" aria-labelledby="modal-name" aria-hidden="true">
     <div class="modal-box" tabindex="-1">
@@ -3753,6 +3783,83 @@
     });
   }
 
+  let imageCropState=null;
+  function cropBaseScale(){
+    if(!imageCropState)return 1;
+    const quarterTurn=Math.abs(imageCropState.rotation%180)===90;
+    const width=quarterTurn?imageCropState.image.naturalHeight:imageCropState.image.naturalWidth;
+    const height=quarterTurn?imageCropState.image.naturalWidth:imageCropState.image.naturalHeight;
+    return Math.max(800/width,800/height);
+  }
+  function constrainImageCrop(){
+    if(!imageCropState)return;
+    const quarterTurn=Math.abs(imageCropState.rotation%180)===90;
+    const width=quarterTurn?imageCropState.image.naturalHeight:imageCropState.image.naturalWidth;
+    const height=quarterTurn?imageCropState.image.naturalWidth:imageCropState.image.naturalHeight;
+    const scale=cropBaseScale()*imageCropState.zoom;
+    const maxX=Math.max(0,(width*scale-800)/2),maxY=Math.max(0,(height*scale-800)/2);
+    imageCropState.offsetX=Math.max(-maxX,Math.min(maxX,imageCropState.offsetX));
+    imageCropState.offsetY=Math.max(-maxY,Math.min(maxY,imageCropState.offsetY));
+  }
+  function drawImageCrop(){
+    if(!imageCropState)return;
+    constrainImageCrop();
+    const canvas=document.getElementById('image-crop-canvas'),context=canvas.getContext('2d',{alpha:true});
+    context.clearRect(0,0,800,800);context.save();
+    context.translate(400+imageCropState.offsetX,400+imageCropState.offsetY);
+    context.rotate(imageCropState.rotation*Math.PI/180);
+    const scale=cropBaseScale()*imageCropState.zoom;context.scale(scale,scale);
+    context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';
+    context.drawImage(imageCropState.image,-imageCropState.image.naturalWidth/2,-imageCropState.image.naturalHeight/2);
+    context.restore();
+  }
+  function resetImageCrop(){
+    if(!imageCropState)return;
+    imageCropState.rotation=0;imageCropState.zoom=1;imageCropState.offsetX=0;imageCropState.offsetY=0;
+    document.getElementById('image-crop-zoom').value='1';drawImageCrop();
+  }
+  function finishImageCrop(result,error){
+    if(!imageCropState)return;
+    const state=imageCropState;imageCropState=null;
+    const modal=document.getElementById('image-crop-modal');modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.style.overflow='';
+    if(error)state.reject(error);else state.resolve(result);
+  }
+  function openImageCropper(file){
+    if(file.type==='image/gif')return Promise.resolve(file);
+    return loadImageForOptimization(file).then(image=>new Promise((resolve,reject)=>{
+      imageCropState={file,image,rotation:0,zoom:1,offsetX:0,offsetY:0,resolve,reject,pointerId:null,lastX:0,lastY:0};
+      const modal=document.getElementById('image-crop-modal');modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+      document.getElementById('image-crop-zoom').value='1';drawImageCrop();document.getElementById('image-crop-confirm').focus();
+    }));
+  }
+  async function exportImageCrop(){
+    if(!imageCropState)return;
+    const state=imageCropState,output=document.createElement('canvas');output.width=1600;output.height=1600;
+    const context=output.getContext('2d',{alpha:true});
+    if(!context){finishImageCrop(null,new Error('O navegador não conseguiu preparar o recorte.'));return;}
+    constrainImageCrop();context.clearRect(0,0,1600,1600);context.save();
+    context.translate(800+state.offsetX*2,800+state.offsetY*2);context.rotate(state.rotation*Math.PI/180);
+    const scale=cropBaseScale()*state.zoom*2;context.scale(scale,scale);context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';
+    context.drawImage(state.image,-state.image.naturalWidth/2,-state.image.naturalHeight/2);context.restore();
+    const blob=await new Promise(resolve=>output.toBlob(resolve,'image/webp',.9));
+    if(!blob){finishImageCrop(null,new Error('Não foi possível gerar a imagem ajustada.'));return;}
+    const name=`${state.file.name.replace(/\.[^.]+$/,'')||'imagem'}-ajustada.webp`;
+    finishImageCrop(new File([blob],name,{type:'image/webp',lastModified:Date.now()}));
+  }
+  document.getElementById('image-crop-left').addEventListener('click',()=>{if(!imageCropState)return;imageCropState.rotation=(imageCropState.rotation+270)%360;imageCropState.offsetX=0;imageCropState.offsetY=0;drawImageCrop();});
+  document.getElementById('image-crop-right').addEventListener('click',()=>{if(!imageCropState)return;imageCropState.rotation=(imageCropState.rotation+90)%360;imageCropState.offsetX=0;imageCropState.offsetY=0;drawImageCrop();});
+  document.getElementById('image-crop-reset').addEventListener('click',resetImageCrop);
+  document.getElementById('image-crop-zoom').addEventListener('input',event=>{if(!imageCropState)return;imageCropState.zoom=Number(event.target.value)||1;drawImageCrop();});
+  document.getElementById('image-crop-cancel').addEventListener('click',()=>finishImageCrop(null,new Error('Envio cancelado.')));
+  document.getElementById('image-crop-confirm').addEventListener('click',exportImageCrop);
+  document.getElementById('image-crop-modal').addEventListener('click',event=>{if(event.target.id==='image-crop-modal')finishImageCrop(null,new Error('Envio cancelado.'));});
+  const imageCropStage=document.getElementById('image-crop-stage');
+  imageCropStage.addEventListener('pointerdown',event=>{if(!imageCropState)return;imageCropState.pointerId=event.pointerId;imageCropState.lastX=event.clientX;imageCropState.lastY=event.clientY;imageCropStage.setPointerCapture(event.pointerId);imageCropStage.classList.add('dragging');});
+  imageCropStage.addEventListener('pointermove',event=>{if(!imageCropState||imageCropState.pointerId!==event.pointerId)return;const rect=imageCropStage.getBoundingClientRect(),factor=800/rect.width;imageCropState.offsetX+=(event.clientX-imageCropState.lastX)*factor;imageCropState.offsetY+=(event.clientY-imageCropState.lastY)*factor;imageCropState.lastX=event.clientX;imageCropState.lastY=event.clientY;drawImageCrop();});
+  const stopCropDrag=event=>{if(!imageCropState||imageCropState.pointerId!==event.pointerId)return;imageCropState.pointerId=null;imageCropStage.classList.remove('dragging');};
+  imageCropStage.addEventListener('pointerup',stopCropDrag);imageCropStage.addEventListener('pointercancel',stopCropDrag);
+  root.addEventListener('keydown',event=>{if(event.key==='Escape'&&imageCropState){event.preventDefault();finishImageCrop(null,new Error('Envio cancelado.'));}});
+
   async function optimizeProductImage(file){
     const allowed={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'};
     if(!file||!allowed[file.type])throw new Error('Use uma imagem JPG, PNG, WEBP ou GIF.');
@@ -3785,7 +3892,8 @@
   }
 
   async function uploadProductImage(file,folder,forcedCode){
-    const optimizedFile=await optimizeProductImage(file);
+    const adjustedFile=await openImageCropper(file);
+    const optimizedFile=await optimizeProductImage(adjustedFile);
     const allowed={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'};
     if(optimizedFile.size>8*1024*1024)throw new Error('Mesmo após a otimização, a imagem ultrapassou 8 MB.');
     const productCode=(String(forcedCode||document.getElementById('p-code').value).trim().toLowerCase().replace(/[^a-z0-9-]/g,'')||'rascunho');
@@ -3823,7 +3931,7 @@
     button.addEventListener('click',()=>input.click());
     input.addEventListener('change',async ()=>{
       const file=input.files?.[0];if(!file)return;
-      button.disabled=true;status.textContent='Otimizando e enviando…';
+      button.disabled=true;status.textContent=file.type==='image/gif'?'Enviando GIF…':'Aguardando ajuste da imagem…';
       try{
         const url=await uploadProductImage(file,folder);
         document.getElementById(targetId).value=url;
@@ -3844,7 +3952,7 @@
     let uploaded=0;
     try{
       for(const file of files){
-        status.textContent=`Otimizando ${uploaded+1} de ${files.length}…`;
+        status.textContent=`Ajuste a foto ${uploaded+1} de ${files.length}…`;
         const url=await uploadProductImage(file,'galeria');
         if(!pendingGallery.includes(url))pendingGallery.push(url);
         uploaded++;renderPendingGallery();
