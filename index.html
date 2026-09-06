@@ -3597,7 +3597,14 @@
     if(!code||!/^\d{4,8}$/.test(pin)){msg.innerHTML='<div class="msg err">Informe seu código e o PIN de 4 a 8 números.</div>';return;}
     const btn=document.getElementById('client-access-btn');btn.disabled=true;btn.textContent='Verificando…';
     let unlocked=false;
-    try{unlocked=await unlockClient(code,pin);}catch(e){msg.innerHTML='<div class="msg err">Não foi possível verificar o acesso agora. Tente novamente.</div>';}
+    try{unlocked=await unlockClient(code,pin);}catch(e){
+      console.error('Falha no acesso do parceiro',e);
+      const detail=String(e?.message||'');
+      const needsSql=/encode|partner_login|function|schema|permission|42501|PGRST/i.test(detail);
+      msg.innerHTML=needsSql
+        ? '<div class="msg err">A função de acesso precisa ser atualizada. Execute novamente o arquivo de segurança corrigido no Supabase.</div>'
+        : '<div class="msg err">Não foi possível verificar o acesso agora. Confira sua conexão e tente novamente.</div>';
+    }
     btn.disabled=false;btn.textContent='Acessar minha conta';
     if(!unlocked){ if(!msg.innerHTML)msg.innerHTML = '<div class="msg err">Código ou PIN inválido. Após cinco tentativas, o acesso fica temporariamente bloqueado.</div>'; return; }
     msg.innerHTML = '';
