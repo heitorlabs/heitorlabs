@@ -3266,11 +3266,27 @@
     const {data,error}=await supabaseClient.rpc('partner_login',{p_client_code:normalized,p_pin:String(pin||'')});
     if(error)throw error;
     const login=typeof data==='string'?JSON.parse(data):data;
-    if(!login?.accessToken||!applyPartnerSnapshot(login.snapshot))return false;
+    if(!login?.accessToken||!applyPartnerSnapshot(login.snapshot))return {ok:false,...(login||{})};
     currentPartnerToken=login.accessToken;
     try{ sessionStorage.setItem(CLIENT_SESSION_KEY,JSON.stringify({code:currentClientCode,token:currentPartnerToken})); }catch(e){}
     renderPortfolio();
-    return true;
+    return {ok:true,status:'ok'};
+  }
+  let partnerLockTimer=null;
+  function setPartnerAccessDisabled(disabled){
+    ['client-code-input','client-pin-input','client-access-btn'].forEach(id=>{document.getElementById(id).disabled=disabled;});
+  }
+  function showPartnerLock(lockedUntil){
+    clearInterval(partnerLockTimer);
+    const until=new Date(lockedUntil).getTime(),msg=document.getElementById('client-gate-msg');
+    setPartnerAccessDisabled(true);
+    const tick=()=>{
+      const seconds=Math.max(0,Math.ceil((until-Date.now())/1000));
+      if(seconds<=0){clearInterval(partnerLockTimer);setPartnerAccessDisabled(false);document.getElementById('client-access-btn').textContent='Acessar minha conta';msg.innerHTML='<div class="msg ok">O bloqueio terminou. Você já pode tentar novamente.</div>';return;}
+      const minutes=Math.floor(seconds/60),remaining=String(seconds%60).padStart(2,'0');
+      msg.innerHTML=`<div class="msg err">Acesso temporariamente bloqueado após cinco tentativas incorretas. Tente novamente em <strong>${minutes}:${remaining}</strong>.</div>`;
+    };
+    tick();partnerLockTimer=setInterval(tick,1000);
   }
   function lockClient(){
     currentClientCode = null;
@@ -3596,8 +3612,8 @@
     msg.innerHTML='';
     if(!code||!/^\d{4,8}$/.test(pin)){msg.innerHTML='<div class="msg err">Informe seu código e o PIN de 4 a 8 números.</div>';return;}
     const btn=document.getElementById('client-access-btn');btn.disabled=true;btn.textContent='Verificando…';
-    let unlocked=false;
-    try{unlocked=await unlockClient(code,pin);}catch(e){
+    let result={ok:false};
+    try{result=await unlockClient(code,pin);}catch(e){
       console.error('Falha no acesso do parceiro',e);
       const detail=String(e?.message||'');
       const needsSql=/encode|partner_login|function|schema|permission|42501|PGRST/i.test(detail);
@@ -3606,13 +3622,18 @@
         : '<div class="msg err">Não foi possível verificar o acesso agora. Confira sua conexão e tente novamente.</div>';
     }
     btn.disabled=false;btn.textContent='Acessar minha conta';
-    if(!unlocked){ if(!msg.innerHTML)msg.innerHTML = '<div class="msg err">Código ou PIN inválido. Após cinco tentativas, o acesso fica temporariamente bloqueado.</div>'; return; }
+    if(!result.ok){
+      if(result.status==='locked'&&result.lockedUntil){showPartnerLock(result.lockedUntil);return;}
+      if(!msg.innerHTML){const remaining=Number.isFinite(Number(result.attemptsRemaining))?Number(result.attemptsRemaining):null;msg.innerHTML=`<div class="msg err">Código ou PIN inválido.${remaining!==null?` Restam <strong>${remaining}</strong> tentativa${remaining===1?'':'s'} antes do bloqueio.`:' Após cinco tentativas, o acesso fica temporariamente bloqueado.'}</div>`;}
+      return;
+    }
     msg.innerHTML = '';
     document.getElementById('client-pin-input').value='';
     openClientDashboard(currentClientCode);
   });
   ['client-code-input','client-pin-input'].forEach(id=>document.getElementById(id).addEventListener('keydown',event=>{if(event.key==='Enter')document.getElementById('client-access-btn').click();}));
   function doClientLogout(){
+    clearInterval(partnerLockTimer);setPartnerAccessDisabled(false);
     lockClient();
     document.getElementById('client-dashboard').style.display = 'none';
     document.getElementById('client-gate').style.display = 'block';
