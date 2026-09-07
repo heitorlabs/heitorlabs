@@ -1324,7 +1324,7 @@
         <h3 style="margin-bottom:12px;font-size:16px;">Saldo por produto</h3>
         <div class="panel" style="padding:0;overflow-x:auto;">
           <table>
-            <thead><tr><th>Produto</th><th>Entregue</th><th>Devolvido</th><th>Vendido</th><th>Em posse</th><th>Devido</th><th>Pago</th><th>Pendente</th></tr></thead>
+            <thead><tr><th>Produto</th><th>Cor</th><th>Entregue</th><th>Devolvido</th><th>Vendido</th><th>Em posse</th><th>Devido</th><th>Pago</th><th>Pendente</th></tr></thead>
             <tbody id="client-product-table"></tbody>
           </table>
         </div>
@@ -3041,20 +3041,27 @@
 
   // ---------- cálculo de saldo ----------
   function clientStats(code){
-    const products = PRODUCTS.map(p=>{
-      const entregue = ENTREGAS.filter(e=>e.clientCode===code && e.productCode===p.code).reduce((s,e)=>s+Number(e.qty),0);
-      const devolvido = DEVOLUCOES.filter(d=>d.clientCode===code && d.productCode===p.code).reduce((s,d)=>s+Number(d.qty),0);
-      const acertosDoProduto = ACERTOS.filter(a=>a.clientCode===code && a.productCode===p.code);
-      const vendido = acertosDoProduto.reduce((s,a)=>s+Number(a.qty),0);
-      const devido = acertosDoProduto.reduce((s,a)=>s+Number(a.qty)*Number(p.price),0);
-      const pago = acertosDoProduto.filter(a=>a.status==='Pago').reduce((s,a)=>s+Number(a.qty)*Number(p.price),0);
-      const saldo = Math.max(0, entregue-devolvido-vendido); // nunca deve aparecer negativo — se aparecer, há um lançamento pra revisar
-      // lucro estimado: diferença entre o preço sugerido ao público e o preço consignado, vezes as peças já vendidas.
-      // é uma ESTIMATIVA — o parceiro tem liberdade pra definir o preço final, então o lucro real pode variar.
-      const margemUnit = p.publicPrice != null ? Math.max(0, Number(p.publicPrice) - Number(p.price)) : 0;
-      const lucroEstimado = margemUnit * vendido;
-      return { code:p.code, name:p.name, price:p.price, entregue, devolvido, vendido, saldo, devido, pago, pendente: devido-pago, lucroEstimado };
-    }).filter(row => row.entregue>0 || row.devolvido>0 || row.vendido>0);
+    const products = [];
+    PRODUCTS.forEach(p=>{
+      const colorsUsed=new Set();
+      [...ENTREGAS,...DEVOLUCOES,...ACERTOS].forEach(item=>{
+        if(item.clientCode===code&&item.productCode===p.code)colorsUsed.add(item.color||'');
+      });
+      colorsUsed.forEach(color=>{
+        const sameItem=item=>item.clientCode===code&&item.productCode===p.code&&(item.color||'')===color;
+        const entregue=ENTREGAS.filter(sameItem).reduce((sum,item)=>sum+Number(item.qty),0);
+        const devolvido=DEVOLUCOES.filter(sameItem).reduce((sum,item)=>sum+Number(item.qty),0);
+        const acertosDoProduto=ACERTOS.filter(sameItem);
+        const vendido=acertosDoProduto.reduce((sum,item)=>sum+Number(item.qty),0);
+        const devido=acertosDoProduto.reduce((sum,item)=>sum+Number(item.qty)*Number(p.price),0);
+        const pago=acertosDoProduto.filter(item=>item.status==='Pago').reduce((sum,item)=>sum+Number(item.qty)*Number(p.price),0);
+        const saldo=Math.max(0,entregue-devolvido-vendido);
+        const margemUnit=p.publicPrice!=null?Math.max(0,Number(p.publicPrice)-Number(p.price)):0;
+        const lucroEstimado=margemUnit*vendido;
+        products.push({code:p.code,name:p.name,color,price:p.price,entregue,devolvido,vendido,saldo,devido,pago,pendente:devido-pago,lucroEstimado});
+      });
+    });
+    products.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR')||(a.color||'').localeCompare(b.color||'','pt-BR'));
     const totals = products.reduce((acc,r)=>({
       saldo: acc.saldo+r.saldo, devido: acc.devido+r.devido, pago: acc.pago+r.pago, pendente: acc.pendente+r.pendente,
       valorEmEstoque: acc.valorEmEstoque + r.saldo*Number(r.price),
@@ -3077,14 +3084,14 @@
       const totalValue = batch.items.reduce((s,i)=>s+Number(i.qty)*productPrice(i.productCode),0);
       const desc = batch.items.length > 1
         ? `Entrega — ${batch.items.length} itens (${totalQty} peças) — ${fmtMoney(totalValue)}`
-        : `Entrega de ${batch.items[0].qty}x ${productName(batch.items[0].productCode)}`;
+        : `Entrega de ${batch.items[0].qty}x ${productName(batch.items[0].productCode)}${batch.items[0].color ? ' ('+batch.items[0].color+')' : ''}`;
       return { type:'entrega', date: batch.date, id: key, desc, items: batch.items, totalValue };
     });
 
     const items = [
       ...entregaItems,
-      ...DEVOLUCOES.filter(d=>d.clientCode===code).map(d=>({type:'devolucao', date:d.date, id:d.id, desc:`Devolução de ${d.qty}x ${productName(d.productCode)}`})),
-      ...ACERTOS.filter(a=>a.clientCode===code).map(a=>({type:'acerto', date:a.date, id:a.id, desc:`Acerto: ${a.qty}x ${productName(a.productCode)} — ${fmtMoney(a.qty*productPrice(a.productCode))}`, status:a.status})),
+      ...DEVOLUCOES.filter(d=>d.clientCode===code).map(d=>({type:'devolucao', date:d.date, id:d.id, desc:`Devolução de ${d.qty}x ${productName(d.productCode)}${d.color ? ' ('+d.color+')' : ''}`})),
+      ...ACERTOS.filter(a=>a.clientCode===code).map(a=>({type:'acerto', date:a.date, id:a.id, desc:`Acerto: ${a.qty}x ${productName(a.productCode)}${a.color ? ' ('+a.color+')' : ''} — ${fmtMoney(a.qty*productPrice(a.productCode))}`, status:a.status})),
       ...VENDAS.filter(v=>v.clientCode===code).map(v=>({type:'venda', date:v.date, id:v.id, desc:`✅ Compra paga: ${v.qty}x ${productName(v.productCode)}${v.color ? ' ('+v.color+')' : ''} — ${fmtMoney(v.total)}${v.obs ? ' · '+escapeHtml(v.obs) : ''}`})),
     ];
     return items.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
@@ -3339,11 +3346,11 @@
 
     const tbody = document.getElementById('client-product-table');
     tbody.innerHTML = products.length ? products.map(r=>`
-      <tr><td class="mono prod-link" onclick="window.hlOpenProduct('${r.code}')">${r.name}</td><td>${r.entregue}</td><td>${r.devolvido}</td><td>${r.vendido}</td>
+      <tr><td class="mono prod-link" onclick="window.hlOpenProduct('${r.code}')">${r.name}</td><td><span class="badge ${r.color?'entrega':'pendente'}">${escapeHtml(r.color||'Sem cor')}</span></td><td>${r.entregue}</td><td>${r.devolvido}</td><td>${r.vendido}</td>
       <td style="color:${r.saldo>0?'var(--teal)':'inherit'};font-weight:${r.saldo>0?'600':'400'};">${r.saldo}</td>
       <td>${fmtMoney(r.devido)}</td><td>${fmtMoney(r.pago)}</td>
       <td style="color:${r.pendente>0?'var(--mustard)':'inherit'};font-weight:${r.pendente>0?'600':'400'};">${fmtMoney(r.pendente)}</td></tr>
-    `).join('') : `<tr><td colspan="8" style="text-align:center;color:var(--muted);">Nenhuma movimentação registrada ainda.</td></tr>`;
+    `).join('') : `<tr><td colspan="9" style="text-align:center;color:var(--muted);">Nenhuma movimentação registrada ainda.</td></tr>`;
 
     renderClientRequests(client.code);
 
