@@ -1296,6 +1296,7 @@
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:-8px 0 22px 0;">
           <p style="color:var(--muted);font-size:13px;margin:0;">Este é o seu extrato individual. Fale com a HL 3D Solutions se algum número parecer errado.</p>
+          <p style="color:var(--muted);font-size:11px;margin:4px 0 0;">Para segurança e melhoria do atendimento, o portal registra data de acesso, áreas consultadas e tempo ativo aproximado. PIN, textos digitados e localização não são registrados.</p>
           <a href="#consig-catalog-section" class="jump-link">Ir direto ao catálogo ↓</a>
         </div>
 
@@ -2671,6 +2672,7 @@
   function openProductModal(code){
     const p = PRODUCTS.find(p=>p.code===code);
     if(!p) return;
+    if(currentClientCode&&currentPartnerToken)logPartnerActivity('product_view','catalogo',0,{productCode:code});
     try{sessionStorage.setItem(CATALOG_SCROLL_KEY,String(window.scrollY));}catch(e){}
     rememberRecentProduct(code);
     renderRecentlyViewed();
@@ -3288,6 +3290,35 @@
 
   // ---------- ÁREA DO CLIENTE ----------
   const CLIENT_SESSION_KEY = 'hl_partner_session';
+  let partnerActivitySessionId=null,partnerActivityTimer=null,partnerActivitySection='resumo',partnerActivityScrollBound=false;
+  const partnerDeviceType=()=>/iPad|Tablet/i.test(navigator.userAgent)?'tablet':/Android|iPhone|Mobile/i.test(navigator.userAgent)?'celular':'computador';
+  function newPartnerActivitySessionId(){
+    if(crypto.randomUUID)return crypto.randomUUID();
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==='x'?r:(r&3|8);return v.toString(16);});
+  }
+  function logPartnerActivity(eventType,section=partnerActivitySection,duration=0,metadata={}){
+    if(!currentPartnerToken||!partnerActivitySessionId)return Promise.resolve(false);
+    return supabaseClient.rpc('partner_log_activity',{p_access_token:currentPartnerToken,p_session_id:partnerActivitySessionId,p_event_type:eventType,p_section:section,p_duration_seconds:duration,p_metadata:metadata,p_device_type:partnerDeviceType()}).then(({error,data})=>{if(error)console.debug('Registro de atividade indisponível',error.message);return !error&&data===true;}).catch(()=>false);
+  }
+  function detectPartnerActivitySection(){
+    if(!currentClientCode)return;
+    const anchors=[['client-dashboard','resumo'],['client-product-table','produtos-em-posse'],['client-requests','pedidos'],['client-history-toggle','historico'],['client-documents','documentos'],['consig-catalog-section','catalogo']];
+    let next='resumo';
+    anchors.forEach(([id,section])=>{const el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<=210)next=section;});
+    if(next!==partnerActivitySection){partnerActivitySection=next;logPartnerActivity('section_view',next);}
+  }
+  function startPartnerActivity(){
+    if(!currentPartnerToken||!currentClientCode)return;
+    if(partnerActivitySessionId)return;
+    partnerActivitySessionId=newPartnerActivitySessionId();partnerActivitySection='resumo';
+    logPartnerActivity('session_start','resumo');logPartnerActivity('section_view','resumo');
+    clearInterval(partnerActivityTimer);partnerActivityTimer=setInterval(()=>{if(document.visibilityState==='visible'&&currentClientCode)logPartnerActivity('heartbeat',partnerActivitySection,30);},30000);
+    if(!partnerActivityScrollBound){window.addEventListener('scroll',detectPartnerActivitySection,{passive:true});partnerActivityScrollBound=true;}
+  }
+  function stopPartnerActivity(){
+    if(partnerActivitySessionId)logPartnerActivity('session_end',partnerActivitySection);
+    clearInterval(partnerActivityTimer);partnerActivityTimer=null;partnerActivitySessionId=null;partnerActivitySection='resumo';
+  }
 
   async function unlockClient(code,pin){
     const normalized=String(code||'').trim().toUpperCase();
@@ -3335,6 +3366,7 @@
     document.getElementById('client-code-display').textContent = client.code;
     document.getElementById('client-name-display').textContent = client.name;
     document.getElementById('client-avatar-letter').textContent = (client.name||'?').trim().charAt(0).toUpperCase();
+    startPartnerActivity();
 
     const { products, totals } = clientStats(client.code);
     document.getElementById('stat-saldo').textContent = totals.saldo;
@@ -3625,7 +3657,7 @@
       ? `<div class="msg ok">Pedido enviado! Avise a HL 3D Solutions agora para agilizar:</div>
       <div style="margin:10px 0;"><a class="btn whatsapp" href="${link}" target="_blank" rel="noopener">Avisar no WhatsApp</a></div>`
       : `<div class="msg err">Não foi possível enviar o pedido agora. Tente novamente em instantes.</div>`;
-    if(createdOrder){reposicaoCart=[];document.getElementById('cart-note').value='';}
+    if(createdOrder){logPartnerActivity('order_sent','pedidos',0,{orderId:createdOrder.id||''});reposicaoCart=[];document.getElementById('cart-note').value='';}
     renderCart();
     renderConsignadoCatalog();
     await loadPartnerSnapshot(currentClientCode);
@@ -3662,6 +3694,7 @@
   ['client-code-input','client-pin-input'].forEach(id=>document.getElementById(id).addEventListener('keydown',event=>{if(event.key==='Enter')document.getElementById('client-access-btn').click();}));
   function doClientLogout(){
     clearInterval(partnerLockTimer);setPartnerAccessDisabled(false);
+    stopPartnerActivity();
     lockClient();
     document.getElementById('client-dashboard').style.display = 'none';
     document.getElementById('client-gate').style.display = 'block';
