@@ -100,6 +100,7 @@
   #portal-root.theme-dark #theme-toggle-btn .theme-icon-sun{display:block;}
   #portal-root.theme-dark #theme-toggle-btn .theme-icon-moon{display:none;}
   #portal-root #theme-toggle-btn:hover{border-color:var(--violet);}
+  #portal-root .mobile-bottom-nav{display:none;}
   #portal-root nav button:hover:not(.active){color:var(--ink);}
   #portal-root main{max-width:1080px;margin:0 auto;padding:32px 28px;}
   #portal-root .view{display:none;}
@@ -856,6 +857,7 @@
     #print-report h2, #print-report p{color:#000;}
   }
   body.internal-admin-mode #portal-root > .topbar,
+  body.internal-admin-mode #portal-root > .mobile-bottom-nav,
   body.internal-admin-mode #portal-root > footer,
   body.internal-admin-mode #admin-logout-btn{display:none !important;}
   body.internal-admin-mode #portal-root main{max-width:none;padding:0;}
@@ -920,20 +922,23 @@
   @media(max-width:640px){
     #portal-root{padding-bottom:calc(88px + env(safe-area-inset-bottom));}
     #portal-root .topbar{min-height:68px;flex-direction:row;flex-wrap:nowrap;align-items:center;padding:10px 14px;gap:8px;}
-    #portal-root .topbar-actions{position:fixed;left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:70;display:grid;width:auto;min-width:0;margin:0;padding:5px;grid-template-columns:1fr 1fr 1fr;gap:4px;border:1px solid var(--line);border-radius:16px;background:color-mix(in srgb,var(--panel) 94%,transparent);box-shadow:0 12px 36px rgba(0,0,0,.22);backdrop-filter:blur(18px);}
+    #portal-root .topbar-actions{display:none;}
     #portal-root .brand{gap:9px;min-width:0;flex:1 1 auto;overflow:hidden;}
     #portal-root .brand > div:last-child{min-width:0;overflow:hidden;}
     #portal-root .brand .mark{width:42px;height:42px;border-radius:12px;}
     #portal-root .brand-text{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     #portal-root .brand-sub{display:none;}
-    #portal-root nav{display:contents;}
-    #portal-root nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;padding:5px 10px;font-size:11px;}
+    #portal-root .mobile-bottom-nav{position:fixed;left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:70;display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:5px;border:1px solid var(--line);border-radius:16px;background:color-mix(in srgb,var(--panel) 94%,transparent);box-shadow:0 12px 36px rgba(0,0,0,.22);backdrop-filter:blur(18px);}
+    #portal-root .mobile-bottom-nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;min-height:52px;padding:5px 7px;border:0;border-radius:11px;background:transparent;color:var(--muted);font:700 11px 'Space Grotesk';cursor:pointer;}
+    #portal-root .mobile-bottom-nav button.active{background:var(--grad);color:#0A0A0D;}
+    #portal-root .mobile-bottom-nav .nav-icon{display:block;}
     #portal-root .nav-icon{display:block;}
-    #portal-root #theme-toggle-btn{display:flex!important;visibility:visible!important;opacity:1!important;position:static;width:100%;height:auto;min-width:0;min-height:52px;flex-direction:column;gap:2px;padding:5px 10px;border:0;border-radius:11px;background:transparent;color:var(--muted);box-shadow:none;isolation:auto;}
-    #portal-root #theme-toggle-btn .theme-icon{width:20px;height:20px;}
-    #portal-root #theme-toggle-btn .theme-label{display:block;}
-    #portal-root.theme-dark #theme-toggle-btn{background:var(--grad);color:#0A0A0D;}
-    #portal-root:not(.theme-dark) #theme-toggle-btn{background:color-mix(in srgb,var(--violet) 12%,var(--panel));color:var(--violet);}
+    #portal-root .mobile-theme-icon{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+    #portal-root .mobile-theme-icon-sun{display:none;}
+    #portal-root.theme-dark .mobile-theme-icon-sun{display:block;}
+    #portal-root.theme-dark .mobile-theme-icon-moon{display:none;}
+    #portal-root .mobile-bottom-nav #mobile-theme-toggle-btn{background:color-mix(in srgb,var(--violet) 12%,var(--panel));color:var(--violet);}
+    #portal-root.theme-dark .mobile-bottom-nav #mobile-theme-toggle-btn{background:var(--grad);color:#0A0A0D;}
     #portal-root main{padding:18px 14px 24px;}
     #portal-root .hero{margin-bottom:16px;}
     #portal-root .cover-banner{min-height:154px;margin-bottom:16px;padding:14px 16px;}
@@ -1196,6 +1201,22 @@
         <span class="theme-label">Tema</span>
       </button>
     </div>
+  </div>
+
+  <div class="mobile-bottom-nav" role="navigation" aria-label="Navegação móvel">
+    <button type="button" data-mobile-view="portfolio" class="active" aria-current="page">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></span>
+      <span>Produtos</span>
+    </button>
+    <button type="button" data-mobile-view="client">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c.7-4.2 3.3-6.5 8-6.5s7.3 2.3 8 6.5"/></svg></span>
+      <span>Área do Parceiro</span>
+    </button>
+    <button type="button" id="mobile-theme-toggle-btn" title="Ativar modo escuro" aria-label="Ativar modo escuro" aria-pressed="false">
+      <svg class="mobile-theme-icon mobile-theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.3A8.5 8.5 0 0 1 9.7 3.5 8.5 8.5 0 1 0 20.5 14.3Z"/></svg>
+      <svg class="mobile-theme-icon mobile-theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/></svg>
+      <span>Tema</span>
+    </button>
   </div>
 
   <main>
@@ -2237,6 +2258,11 @@
       if(active) btn.setAttribute('aria-current','page');
       else btn.removeAttribute('aria-current');
     });
+    root.querySelectorAll('[data-mobile-view]').forEach(btn=>{
+      const active=btn.dataset.mobileView===viewName;
+      btn.classList.toggle('active',active);
+      if(active)btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current');
+    });
     root.querySelectorAll('.view').forEach(view=>view.classList.remove('active'));
     const target = document.getElementById('view-'+viewName);
     if(!target) return;
@@ -2250,6 +2276,9 @@
   });
   root.querySelectorAll('[data-open-view]').forEach(btn=>{
     btn.addEventListener('click', ()=>switchPublicView(btn.dataset.openView));
+  });
+  root.querySelectorAll('[data-mobile-view]').forEach(btn=>{
+    btn.addEventListener('click',()=>switchPublicView(btn.dataset.mobileView));
   });
   root.querySelectorAll('[data-footer-view]').forEach(btn=>{
     btn.addEventListener('click', ()=>switchPublicView(btn.dataset.footerView));
@@ -6111,12 +6140,15 @@
   const THEME_KEY = 'hl_theme';
   function applyTheme(theme){
     const btn = document.getElementById('theme-toggle-btn');
+    const mobileBtn=document.getElementById('mobile-theme-toggle-btn');
     if(theme === 'dark'){
       root.classList.add('theme-dark');
       if(btn){btn.title='Ativar modo claro';btn.setAttribute('aria-label','Ativar modo claro');btn.setAttribute('aria-pressed','true');}
+      if(mobileBtn){mobileBtn.title='Ativar modo claro';mobileBtn.setAttribute('aria-label','Ativar modo claro');mobileBtn.setAttribute('aria-pressed','true');}
     } else {
       root.classList.remove('theme-dark');
       if(btn){btn.title='Ativar modo escuro';btn.setAttribute('aria-label','Ativar modo escuro');btn.setAttribute('aria-pressed','false');}
+      if(mobileBtn){mobileBtn.title='Ativar modo escuro';mobileBtn.setAttribute('aria-label','Ativar modo escuro');mobileBtn.setAttribute('aria-pressed','false');}
     }
   }
   document.getElementById('theme-toggle-btn').addEventListener('click', ()=>{
@@ -6124,6 +6156,11 @@
     const next = isDark ? 'light' : 'dark';
     applyTheme(next);
     try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+  });
+  document.getElementById('mobile-theme-toggle-btn').addEventListener('click',()=>{
+    const next=root.classList.contains('theme-dark')?'light':'dark';
+    applyTheme(next);
+    try{localStorage.setItem(THEME_KEY,next);}catch(e){}
   });
   try{
     const savedTheme = localStorage.getItem(THEME_KEY);
