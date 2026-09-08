@@ -859,6 +859,30 @@
   #portal-root .partner-access-panel .btn{width:100%;min-height:46px;}
   #portal-root .partner-access-note{display:flex;gap:9px;align-items:flex-start;margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.45;}
   #portal-root .partner-access-note span{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;background:rgba(105,71,199,.12);color:var(--violet);flex:0 0 auto;}
+  #portal-root .partner-help-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--ink);font:700 12px 'Space Grotesk';cursor:pointer;transition:.15s;white-space:nowrap;}
+  #portal-root .partner-help-btn:hover{border-color:var(--violet);color:var(--violet);transform:translateY(-1px);}
+  #portal-root .partner-tour-overlay{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(10,10,13,.72);backdrop-filter:blur(6px);}
+  #portal-root .partner-tour-overlay.open{display:flex;animation:fade .18s ease;}
+  #portal-root .partner-tour-dialog{width:min(560px,100%);max-height:min(720px,calc(100vh - 36px));overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:22px;box-shadow:0 24px 80px rgba(0,0,0,.3);}
+  #portal-root .partner-tour-head{position:relative;padding:24px 58px 18px 24px;background:linear-gradient(135deg,color-mix(in srgb,var(--violet) 16%,var(--panel)),color-mix(in srgb,var(--cyan) 10%,var(--panel)));border-bottom:1px solid var(--line);}
+  #portal-root .partner-tour-kicker{font:600 10px 'IBM Plex Mono';letter-spacing:.08em;text-transform:uppercase;color:var(--violet);margin-bottom:7px;}
+  #portal-root .partner-tour-head h2{font-size:24px;line-height:1.15;}
+  #portal-root .partner-tour-close{position:absolute;right:16px;top:16px;width:36px;height:36px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font-size:20px;cursor:pointer;}
+  #portal-root .partner-tour-body{padding:24px;}
+  #portal-root .partner-tour-icon{display:flex;align-items:center;justify-content:center;width:54px;height:54px;margin-bottom:16px;border-radius:16px;background:var(--grad);color:#0A0A0D;font-size:25px;box-shadow:0 8px 24px rgba(105,71,199,.22);}
+  #portal-root .partner-tour-body h3{font-size:21px;margin-bottom:8px;}
+  #portal-root .partner-tour-body p{margin:0;color:var(--muted);font-size:15px;line-height:1.6;}
+  #portal-root .partner-tour-tip{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--cyan) 35%,var(--line));border-radius:12px;background:color-mix(in srgb,var(--cyan) 7%,var(--panel));font-size:13px;line-height:1.45;color:var(--ink);}
+  #portal-root .partner-tour-progress{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:22px;}
+  #portal-root .partner-tour-dots{display:flex;gap:6px;flex-wrap:wrap;}
+  #portal-root .partner-tour-dot{width:7px;height:7px;border:none;border-radius:999px;background:var(--line);padding:0;transition:.2s;}
+  #portal-root .partner-tour-dot.active{width:24px;background:var(--violet);}
+  #portal-root .partner-tour-count{font:500 11px 'IBM Plex Mono';color:var(--muted);white-space:nowrap;}
+  #portal-root .partner-tour-pref{display:flex;align-items:flex-start;gap:9px;margin:18px 0 0;color:var(--muted);font-size:13px;line-height:1.4;cursor:pointer;}
+  #portal-root .partner-tour-pref input{width:17px;height:17px;margin:1px 0 0;accent-color:var(--violet);flex:0 0 auto;}
+  #portal-root .partner-tour-actions{display:flex;justify-content:space-between;gap:10px;padding:18px 24px 24px;}
+  #portal-root .partner-tour-actions .right{display:flex;gap:8px;margin-left:auto;}
+  #portal-root .partner-tour-actions .btn{min-height:42px;}
   @media(hover:hover){
     #portal-root .card:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--violet) 55%,var(--line));box-shadow:0 16px 35px rgba(31,25,43,.1);}
     #portal-root .cover-action:hover{transform:translateY(-1px);}
@@ -906,6 +930,11 @@
     #portal-root .color-pill{font-size:10px;min-width:0;min-height:34px;padding:5px 8px;}
     #portal-root .mobile-cart-fab.show{animation:none;bottom:calc(82px + env(safe-area-inset-bottom));}
     #portal-root .partner-access-panel{padding:20px;}
+    #portal-root .partner-tour-overlay{padding:10px;align-items:flex-end;}
+    #portal-root .partner-tour-dialog{max-height:calc(100vh - 20px);border-radius:20px 20px 14px 14px;}
+    #portal-root .partner-tour-head,#portal-root .partner-tour-body{padding-left:18px;padding-right:18px;}
+    #portal-root .partner-tour-actions{padding:14px 18px 18px;flex-wrap:wrap;}
+    #portal-root .partner-tour-actions .btn{flex:1;}
     #portal-root .ticket{align-items:flex-start;padding:13px;}
     #portal-root .ticket .left{width:100%;}
   }
@@ -1292,6 +1321,7 @@
             <div class="name" id="client-name-display">—</div>
             <div class="code" id="client-code-display">—</div>
           </div>
+          <button type="button" id="partner-help-btn" class="partner-help-btn" title="Abrir guia da área do parceiro" aria-haspopup="dialog">? Como usar</button>
           <button type="button" id="client-logout-top-btn" class="id-logout-btn" title="Sair da sua área">🚪 Sair</button>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:-8px 0 22px 0;">
@@ -1380,6 +1410,34 @@
         <div class="grid-products" id="consig-grid"></div>
 
         <button class="btn secondary" id="client-logout-btn" style="margin-top:20px;">Sair</button>
+      </div>
+
+      <div class="partner-tour-overlay" id="partner-tour-overlay" role="presentation">
+        <div class="partner-tour-dialog" id="partner-tour-dialog" role="dialog" aria-modal="true" aria-labelledby="partner-tour-title" aria-describedby="partner-tour-description">
+          <div class="partner-tour-head">
+            <div class="partner-tour-kicker">Guia da área do parceiro</div>
+            <h2 id="partner-tour-title">Bem-vindo à sua área</h2>
+            <button type="button" class="partner-tour-close" id="partner-tour-close" aria-label="Fechar tutorial">×</button>
+          </div>
+          <div class="partner-tour-body">
+            <div class="partner-tour-icon" id="partner-tour-icon" aria-hidden="true">👋</div>
+            <h3 id="partner-tour-step-title">Visão geral</h3>
+            <p id="partner-tour-description"></p>
+            <div class="partner-tour-tip" id="partner-tour-tip"><span aria-hidden="true">💡</span><span></span></div>
+            <div class="partner-tour-progress">
+              <div class="partner-tour-dots" id="partner-tour-dots" aria-hidden="true"></div>
+              <span class="partner-tour-count" id="partner-tour-count"></span>
+            </div>
+            <label class="partner-tour-pref"><input type="checkbox" id="partner-tour-hide"><span>Não mostrar este guia automaticamente novamente neste aparelho.</span></label>
+          </div>
+          <div class="partner-tour-actions">
+            <button type="button" class="btn secondary" id="partner-tour-location">Ver esta área</button>
+            <div class="right">
+              <button type="button" class="btn secondary" id="partner-tour-prev">Voltar</button>
+              <button type="button" class="btn" id="partner-tour-next">Próximo</button>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -3290,6 +3348,56 @@
 
   // ---------- ÁREA DO CLIENTE ----------
   const CLIENT_SESSION_KEY = 'hl_partner_session';
+  const PARTNER_TOUR_VERSION = 'v1';
+  const PARTNER_TOUR_STEPS = [
+    {icon:'👋',title:'Sua área em poucos passos',description:'Aqui você acompanha tudo o que está relacionado à sua parceria com a HL 3D Solutions. Este guia mostra onde consultar produtos, valores, pedidos, histórico e documentos.',tip:'Você pode fechar o guia a qualquer momento e reabri-lo pelo botão “Como usar”.',target:'client-dashboard'},
+    {icon:'📊',title:'Resumo da parceria',description:'Os cartões do início mostram quantas peças estão em sua posse, o valor do estoque, o que já foi pago, o que está pendente e uma estimativa da sua margem nas vendas.',tip:'Se algum número parecer diferente do seu controle, entre em contato com a HL antes de fazer um novo acerto.',target:'stat-saldo'},
+    {icon:'🎨',title:'Produtos em sua posse',description:'A tabela “Saldo por produto” discrimina cada produto por cor e apresenta entregas, devoluções, vendas, saldo, valores pagos e pendentes.',tip:'No celular, deslize a tabela para o lado para consultar todas as colunas.',target:'client-product-table'},
+    {icon:'📦',title:'Pedidos e reposição',description:'Em “Meus pedidos” você acompanha as solicitações enviadas. No catálogo de parceiro, escolha o produto, a cor e a quantidade; depois confira o carrinho antes de enviar.',tip:'Use o campo de observação para informar prazo, preferência ou qualquer detalhe importante.',target:'client-requests'},
+    {icon:'🕘',title:'Histórico de movimentações',description:'O histórico reúne entregas, devoluções, vendas e acertos em ordem de data. Toque em “ver” para abrir ou recolher a lista.',tip:'Este registro ajuda a conferir quando cada alteração aconteceu e quais itens participaram da movimentação.',target:'client-history-toggle'},
+    {icon:'📄',title:'Documentos',description:'Em “Meus documentos” ficam disponíveis contratos, comprovantes, termos de entrega, devolução e acerto enviados pela HL.',tip:'Use “Baixar / Abrir” para consultar o arquivo. Caso um documento esperado não apareça, solicite o envio à HL.',target:'client-documents'},
+    {icon:'🛒',title:'Catálogo exclusivo',description:'O catálogo do parceiro mostra o preço de repasse, o preço sugerido ao público e a margem possível. Escolha uma cor para adicionar itens ao carrinho de reposição.',tip:'O preço de repasse é exclusivo da sua área e não aparece no catálogo público.',target:'consig-catalog-section'}
+  ];
+  let partnerTourStep=0,partnerTourLastFocus=null,partnerTourAutoOffered=false;
+  function partnerTourStorageKey(){return `hl_partner_tour_${PARTNER_TOUR_VERSION}_${String(currentClientCode||'').toUpperCase()}`;}
+  function partnerTourWasHidden(){try{return localStorage.getItem(partnerTourStorageKey())==='hidden';}catch(e){return false;}}
+  function savePartnerTourPreference(){
+    if(!document.getElementById('partner-tour-hide').checked)return;
+    try{localStorage.setItem(partnerTourStorageKey(),'hidden');}catch(e){}
+  }
+  function renderPartnerTourStep(){
+    const step=PARTNER_TOUR_STEPS[partnerTourStep];
+    document.getElementById('partner-tour-icon').textContent=step.icon;
+    document.getElementById('partner-tour-step-title').textContent=step.title;
+    document.getElementById('partner-tour-description').textContent=step.description;
+    document.querySelector('#partner-tour-tip span:last-child').textContent=step.tip;
+    document.getElementById('partner-tour-count').textContent=`${partnerTourStep+1} de ${PARTNER_TOUR_STEPS.length}`;
+    document.getElementById('partner-tour-dots').innerHTML=PARTNER_TOUR_STEPS.map((_,i)=>`<span class="partner-tour-dot ${i===partnerTourStep?'active':''}"></span>`).join('');
+    document.getElementById('partner-tour-prev').style.visibility=partnerTourStep===0?'hidden':'visible';
+    document.getElementById('partner-tour-next').textContent=partnerTourStep===PARTNER_TOUR_STEPS.length-1?'Concluir':'Próximo';
+    document.getElementById('partner-tour-location').style.display=step.target==='client-dashboard'?'none':'inline-flex';
+  }
+  function openPartnerTour(force=false){
+    if(!currentClientCode||(!force&&partnerTourWasHidden()))return;
+    partnerTourStep=0;partnerTourLastFocus=document.activeElement;
+    document.getElementById('partner-tour-hide').checked=false;
+    renderPartnerTourStep();
+    const overlay=document.getElementById('partner-tour-overlay');overlay.classList.add('open');
+    document.body.style.overflow='hidden';
+    setTimeout(()=>document.getElementById('partner-tour-close').focus(),0);
+    logPartnerActivity('tutorial_open','resumo',0,{automatic:!force});
+  }
+  function closePartnerTour(){
+    const overlay=document.getElementById('partner-tour-overlay');
+    if(!overlay.classList.contains('open'))return;
+    savePartnerTourPreference();overlay.classList.remove('open');document.body.style.overflow='';
+    if(partnerTourLastFocus&&typeof partnerTourLastFocus.focus==='function')partnerTourLastFocus.focus();
+  }
+  function showPartnerTourLocation(){
+    const step=PARTNER_TOUR_STEPS[partnerTourStep],target=document.getElementById(step.target);
+    closePartnerTour();
+    if(target)setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'center'}),80);
+  }
   let partnerActivitySessionId=null,partnerActivityTimer=null,partnerActivitySection='resumo',partnerActivityScrollBound=false;
   const partnerDeviceType=()=>/iPad|Tablet/i.test(navigator.userAgent)?'tablet':/Android|iPhone|Mobile/i.test(navigator.userAgent)?'celular':'computador';
   function newPartnerActivitySessionId(){
@@ -3367,6 +3475,7 @@
     document.getElementById('client-name-display').textContent = client.name;
     document.getElementById('client-avatar-letter').textContent = (client.name||'?').trim().charAt(0).toUpperCase();
     startPartnerActivity();
+    if(!partnerTourAutoOffered){partnerTourAutoOffered=true;setTimeout(()=>openPartnerTour(false),450);}
 
     const { products, totals } = clientStats(client.code);
     document.getElementById('stat-saldo').textContent = totals.saldo;
@@ -3700,6 +3809,7 @@
     document.getElementById('client-gate').style.display = 'block';
     document.getElementById('client-code-input').value = '';
     document.getElementById('client-pin-input').value = '';
+    partnerTourAutoOffered=false;
   }
   document.getElementById('client-logout-btn').addEventListener('click', doClientLogout);
   document.getElementById('client-history-toggle').addEventListener('click', ()=>{
@@ -3710,6 +3820,27 @@
     arrow.textContent = isOpen ? '▸ ver' : '▾ esconder';
   });
   document.getElementById('client-logout-top-btn').addEventListener('click', doClientLogout);
+  document.getElementById('partner-help-btn').addEventListener('click',()=>openPartnerTour(true));
+  document.getElementById('partner-tour-close').addEventListener('click',closePartnerTour);
+  document.getElementById('partner-tour-prev').addEventListener('click',()=>{if(partnerTourStep>0){partnerTourStep--;renderPartnerTourStep();}});
+  document.getElementById('partner-tour-next').addEventListener('click',()=>{
+    if(partnerTourStep<PARTNER_TOUR_STEPS.length-1){partnerTourStep++;renderPartnerTourStep();return;}
+    savePartnerTourPreference();logPartnerActivity('tutorial_complete','resumo');closePartnerTour();
+  });
+  document.getElementById('partner-tour-location').addEventListener('click',showPartnerTourLocation);
+  document.getElementById('partner-tour-overlay').addEventListener('click',event=>{if(event.target===event.currentTarget)closePartnerTour();});
+  document.addEventListener('keydown',event=>{
+    const overlay=document.getElementById('partner-tour-overlay');if(!overlay.classList.contains('open'))return;
+    if(event.key==='Escape'){closePartnerTour();return;}
+    if(event.key==='ArrowRight'){document.getElementById('partner-tour-next').click();return;}
+    if(event.key==='ArrowLeft'&&partnerTourStep>0){document.getElementById('partner-tour-prev').click();return;}
+    if(event.key==='Tab'){
+      const focusable=[...document.querySelectorAll('#partner-tour-dialog button:not([disabled]),#partner-tour-dialog input:not([disabled])')].filter(el=>el.offsetParent!==null);
+      if(!focusable.length)return;const first=focusable[0],last=focusable[focusable.length-1];
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+    }
+  });
 
   function renderClientRequests(code){
     const mine = PEDIDOS.filter(r=>r.clientCode===code).slice().reverse();
