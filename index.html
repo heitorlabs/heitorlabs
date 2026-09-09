@@ -991,7 +991,7 @@
   #portal-root .product-form-head h3{font-size:18px;}
   #portal-root .product-form-head p{margin:4px 0 0;color:var(--muted);font-size:13px;}
   #portal-root .product-form-status{padding:6px 10px;border-radius:999px;background:var(--panel-2);color:var(--muted);font:600 12px 'IBM Plex Mono';white-space:nowrap;}
-  #portal-root .product-quick-tools{display:grid;grid-template-columns:minmax(190px,1fr) auto auto;gap:8px;padding:12px 22px;border-bottom:1px solid var(--line);background:var(--panel-2);align-items:center;}
+  #portal-root .product-quick-tools{display:grid;grid-template-columns:minmax(190px,1fr) auto auto auto;gap:8px;padding:12px 22px;border-bottom:1px solid var(--line);background:var(--panel-2);align-items:center;}
   #portal-root .product-draft-notice{display:none;margin:12px 22px 0;padding:10px 12px;border:1px solid rgba(105,71,199,.28);border-radius:10px;background:rgba(105,71,199,.08);font-size:12px;color:var(--muted);}
   #portal-root .product-draft-notice.show{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
   #portal-root .field-meta{display:flex;justify-content:space-between;gap:10px;margin-top:5px;color:var(--muted);font-size:10px;}
@@ -1037,6 +1037,9 @@
   #portal-root .video-upload-summary{display:none;align-items:center;gap:9px;margin-top:10px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--muted);font-size:11px;line-height:1.4;}
   #portal-root .video-upload-summary.visible{display:flex;}
   #portal-root .video-upload-summary strong{display:inline;color:var(--ink);font-size:11px;margin:0;}
+  #portal-root #p-video-upload-box{border-style:solid;border-color:rgba(105,71,199,.48);background:linear-gradient(135deg,rgba(105,71,199,.1),rgba(14,138,150,.07));padding:16px;}
+  #portal-root #p-video-upload-box>strong{font-size:15px;}
+  #portal-root #p-video-upload-btn{background:var(--grad);color:#fff;border-color:transparent;}
   #portal-root .pending-gallery{display:grid;grid-template-columns:repeat(5,minmax(80px,1fr));gap:9px;margin-top:10px;}
   #portal-root .pending-gallery-item{position:relative;aspect-ratio:1;border-radius:10px;background:var(--panel-2) center/cover no-repeat;border:1px solid var(--line);overflow:hidden;}
   #portal-root .pending-gallery-item[draggable=true]{cursor:grab;}
@@ -1586,7 +1589,7 @@
               <div><h3 id="p-form-title">Novo produto</h3><p>Preencha uma etapa por vez e confira a prévia antes de publicar.</p></div>
               <span class="product-form-status" id="p-form-status">Novo cadastro</span>
             </div>
-            <div class="product-quick-tools"><select id="p-template-product" class="search-input"><option value="">Usar outro produto como modelo...</option></select><button type="button" class="btn secondary" id="p-use-template-btn">Usar modelo</button><button type="button" class="btn secondary" id="p-quick-preview-btn">Ver prévia</button></div>
+            <div class="product-quick-tools"><select id="p-template-product" class="search-input"><option value="">Usar outro produto como modelo...</option></select><button type="button" class="btn secondary" id="p-use-template-btn">Usar modelo</button><button type="button" class="btn secondary" id="p-quick-video-btn">▶ Enviar vídeo</button><button type="button" class="btn secondary" id="p-quick-preview-btn">Ver prévia</button></div>
             <div class="product-draft-notice" id="p-draft-notice"><span id="p-draft-text">Existe um rascunho salvo neste aparelho.</span><span style="display:flex;gap:6px;"><button type="button" class="btn secondary" id="p-restore-draft-btn">Restaurar</button><button type="button" class="btn secondary" id="p-discard-draft-btn">Descartar</button></span></div>
             <div class="product-steps" role="tablist" aria-label="Etapas do cadastro de produto">
               <button type="button" class="product-step-btn active" data-product-step="0" role="tab" aria-selected="true"><span class="step-number">1</span><span>Identificação</span></button>
@@ -1647,10 +1650,10 @@
                   <div>
                     <div class="image-upload-box" data-image-drop-target="p-main-image-file"><strong>Imagem principal</strong><small>Escolha ou arraste uma foto para cá. JPG, PNG ou WEBP são otimizados; GIFs são preservados.</small><div class="image-upload-actions"><input id="p-main-image-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button type="button" class="btn secondary" id="p-main-image-upload-btn">Escolher e enviar foto</button><span class="upload-status" id="p-main-image-upload-status"></span></div></div>
                     <div class="field"><label for="p-img">URL da imagem principal</label><input id="p-img" type="url" placeholder="https://..." inputmode="url"></div>
-                    <div class="image-upload-box" id="p-video-upload-box"><strong>Vídeo do produto</strong><small>Envie MP4, MOV ou WEBM de até 60 segundos. O portal tentará reduzir resolução e tamanho antes de enviar, preservando o arquivo original quando ele já estiver leve.</small><div class="image-upload-actions"><input id="p-video-file" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.mov,.webm"><button type="button" class="btn secondary" id="p-video-upload-btn">Escolher e enviar vídeo</button><span class="upload-status" id="p-video-upload-status"></span></div><progress class="video-upload-progress" id="p-video-upload-progress" max="100" value="0"></progress><div class="video-upload-summary" id="p-video-upload-summary"></div></div>
-                    <div class="field"><label for="p-video">URL do vídeo ou GIF</label><input id="p-video" type="url" placeholder="Preenchida após o envio ou cole um link https://" inputmode="url"></div>
                   </div>
                 </div>
+                <div class="image-upload-box" id="p-video-upload-box"><strong>▶ Vídeo do produto</strong><small>Escolha um vídeo do celular ou computador. Formatos MP4, MOV ou WEBM, com até 60 segundos. O portal tentará reduzir a resolução e o tamanho antes do envio.</small><div class="image-upload-actions"><input id="p-video-file" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.mov,.webm"><button type="button" class="btn secondary" id="p-video-upload-btn">Selecionar e enviar vídeo</button><span class="upload-status" id="p-video-upload-status"></span></div><progress class="video-upload-progress" id="p-video-upload-progress" max="100" value="0"></progress><div class="video-upload-summary" id="p-video-upload-summary"></div></div>
+                <div class="field"><label for="p-video">Link do vídeo ou GIF — opcional</label><input id="p-video" type="url" placeholder="O link será preenchido após o envio, ou você pode colar um endereço https://" inputmode="url"></div>
                 <div class="image-upload-box" data-image-drop-target="p-gallery-files"><strong>Galeria do produto</strong><small>Selecione ou arraste várias fotos. Depois, ordene-as e escolha qualquer uma como capa.</small><div class="image-upload-actions"><input id="p-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple><button type="button" class="btn secondary" id="p-gallery-upload-btn">Adicionar fotos à galeria</button><span class="upload-status" id="p-gallery-upload-status"></span></div><div class="pending-gallery" id="p-pending-gallery"></div></div>
                 <div class="row" style="align-items:center;"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';"><input type="checkbox" id="p-ondemand" style="width:18px;height:18px;">Produto feito somente sob encomenda, sem controle de estoque</label></div>
                 <div class="row" style="align-items:center;"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';"><input type="checkbox" id="p-customizable" style="width:18px;height:18px;">Este produto também pode ser personalizado</label></div>
@@ -4903,6 +4906,7 @@
   document.getElementById('p-restore-draft-btn').addEventListener('click',restoreProductDraft);
   document.getElementById('p-discard-draft-btn').addEventListener('click',clearProductDraft);
   document.getElementById('p-quick-preview-btn').addEventListener('click',()=>showProductStep(3));
+  document.getElementById('p-quick-video-btn').addEventListener('click',()=>{showProductStep(2);setTimeout(()=>document.getElementById('p-video-upload-btn').focus(),0);});
   document.getElementById('p-use-template-btn').addEventListener('click',()=>{
     const source=PRODUCTS.find(p=>p.code===document.getElementById('p-template-product').value);
     if(!source){alert('Selecione um produto para usar como modelo.');return;}
