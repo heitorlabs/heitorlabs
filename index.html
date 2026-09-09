@@ -1625,6 +1625,7 @@
                   <div class="field"><label for="p-price">Repasse ao consignante (R$)</label><input id="p-price" type="number" min="0" step="0.01" placeholder="18,75" inputmode="decimal"></div>
                   <div class="field"><label for="p-promo-price">Preço promocional (R$)</label><input id="p-promo-price" type="number" min="0.01" step="0.01" placeholder="Opcional" inputmode="decimal"></div>
                 </div>
+                <label style="display:flex;align-items:flex-start;gap:9px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel-2);font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';margin-bottom:14px;"><input type="checkbox" id="p-no-consignment" style="width:18px;height:18px;margin-top:1px;"><span><strong style="display:block;font-family:'Space Grotesk';">Indisponível para consignação</strong><small style="display:block;margin-top:3px;color:var(--muted);line-height:1.4;">O produto continuará à venda pelo preço público, mas não aparecerá para reposição nem poderá ser incluído em novas remessas aos parceiros.</small></span></label>
                 <div class="product-cost-link">
                   <div class="field"><label for="p-cost-calculation">Cálculo de custo vinculado</label><select id="p-cost-calculation"><option value="">— Não vincular cálculo —</option></select></div>
                   <div class="product-cost-actions"><button type="button" class="btn secondary" id="p-refresh-calculations-btn">Atualizar cálculos</button><button type="button" class="btn secondary" id="p-use-calculated-price-btn" style="display:none;">Usar preço sugerido</button></div>
@@ -2200,6 +2201,7 @@
     return [];
   }
   function isPubliclySellable(p){return !!p&&p.active!==false&&Number(p.publicPrice)>0;}
+  function isConsignmentAvailable(p){return !!p&&p.consignmentAvailable!==false;}
 
   async function loadAll(){
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -2426,7 +2428,7 @@
   function renderPromoCarousel(wrapId, listId, mode){
     const wrap = document.getElementById(wrapId);
     if(!wrap) return;
-    const promoProducts = PRODUCTS.filter(p => (mode==='consignado' ? p.active!==false : isPubliclySellable(p)) && hasAnyPromo(p));
+    const promoProducts = PRODUCTS.filter(p => (mode==='consignado' ? p.active!==false&&isConsignmentAvailable(p) : isPubliclySellable(p)) && hasAnyPromo(p));
     if(promoProducts.length === 0){ wrap.style.display = 'none'; return; }
     wrap.style.display = 'block';
     const clickBase = mode === 'consignado' ? null : null;
@@ -2510,7 +2512,7 @@
     const sold = {};
     ACERTOS.forEach(a=>{ sold[a.productCode] = (sold[a.productCode]||0) + Number(a.qty); });
     const rankedAll = Object.entries(sold).sort((a,b)=>b[1]-a[1])
-      .map(([code, qty])=>({ p: PRODUCTS.find(p=>p.code===code), qty })).filter(r=>r.p&&(mode==='consignado'||isPubliclySellable(r.p)));
+      .map(([code, qty])=>({ p: PRODUCTS.find(p=>p.code===code), qty })).filter(r=>r.p&&(mode==='consignado'?isConsignmentAvailable(r.p)&&r.p.active!==false:isPubliclySellable(r.p)));
     const top10 = rankedAll.slice(0,10);
 
     const wrap = document.getElementById(wrapId);
@@ -3685,7 +3687,7 @@
     if(!grid) return;
     renderPromoCarousel('consig-promo-wrap','consig-promo-carousel','consignado');
     renderTopSellers('consig-top-sellers-wrap','consig-top-sellers','consignado');
-    const active = sortProducts(PRODUCTS.filter(p => p.active !== false).filter(p=>matchesSearch(p, consigSearchQuery)), consigSortOrder);
+    const active = sortProducts(PRODUCTS.filter(p => p.active !== false&&isConsignmentAvailable(p)).filter(p=>matchesSearch(p, consigSearchQuery)), consigSortOrder);
     if(active.length === 0){
       grid.innerHTML = `<div class="empty"><div class="glyph">◇</div>Nenhum produto encontrado${consigSearchQuery ? ' para "'+consigSearchQuery+'"' : ''}.</div>`;
       return;
@@ -3759,6 +3761,8 @@
   };
 
   window.hlAddToCart = function(code, color){
+    const product=PRODUCTS.find(p=>p.code===code);
+    if(!isConsignmentAvailable(product)){alert('Este produto está disponível somente para venda direta e não pode ser solicitado em consignação.');return;}
     const qtyToAdd = pickerQty[code] || 1;
     const existing = reposicaoCart.find(i=>i.productCode===code && i.color===color);
     if(existing){ existing.qty += qtyToAdd; }
@@ -3767,6 +3771,7 @@
   };
 
   function renderCart(){
+    reposicaoCart=reposicaoCart.filter(item=>isConsignmentAvailable(PRODUCTS.find(p=>p.code===item.productCode)));
     saveCartStorage('hl_reposicao_cart', reposicaoCart);
     const wrap = document.getElementById('cart-items');
     const noteField = document.getElementById('cart-note-field');
@@ -4092,10 +4097,12 @@
   function refreshAdminSelects(){
     const clientOpts = CLIENTS.map(c=>`<option value="${c.code}">${c.code} — ${c.name}</option>`).join('');
     const productOpts = PRODUCTS.map(p=>`<option value="${escapeHtml(p.code)}">${escapeHtml(p.code)} — ${escapeHtml(p.name)}</option>`).join('');
+    const consignmentProductOpts = PRODUCTS.filter(isConsignmentAvailable).map(p=>`<option value="${escapeHtml(p.code)}">${escapeHtml(p.code)} — ${escapeHtml(p.name)}</option>`).join('');
     ['e-client','d-client','a-client','v-client'].forEach(id=>document.getElementById(id).innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>');
     document.getElementById('rep-client').innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>';
     document.getElementById('doc-client').innerHTML = clientOpts || '<option value="">Cadastre um cliente primeiro</option>';
-    ['e-product','d-product','a-product','v-product'].forEach(id=>document.getElementById(id).innerHTML = productOpts || '<option value="">Cadastre um produto primeiro</option>');
+    document.getElementById('e-product').innerHTML = consignmentProductOpts || '<option value="">Nenhum produto disponível para consignação</option>';
+    ['d-product','a-product','v-product'].forEach(id=>document.getElementById(id).innerHTML = productOpts || '<option value="">Cadastre um produto primeiro</option>');
     document.getElementById('e-date').value = todayISO();
     document.getElementById('d-date').value = todayISO();
     document.getElementById('a-date').value = todayISO();
@@ -4159,7 +4166,7 @@
   function captureProductDraft(){
     const ids=['p-code','p-prefix','p-name','p-public-price','p-price','p-promo-price','p-img','p-video','p-desc','p-first-color-name','p-first-color-stock','p-first-color-img','p-customizable-minqty','p-cost-calculation'];
     const values={};ids.forEach(id=>{values[id]=document.getElementById(id)?.value||'';});
-    return {values,categories:[...pendingCategories],gallery:[...pendingGallery],onDemand:document.getElementById('p-ondemand').checked,customizable:document.getElementById('p-customizable').checked,active:document.getElementById('p-active').checked,editingProductCode,step:currentProductStep,savedAt:Date.now()};
+    return {values,categories:[...pendingCategories],gallery:[...pendingGallery],onDemand:document.getElementById('p-ondemand').checked,customizable:document.getElementById('p-customizable').checked,noConsignment:document.getElementById('p-no-consignment').checked,active:document.getElementById('p-active').checked,editingProductCode,step:currentProductStep,savedAt:Date.now()};
   }
   function updateDraftNotice(){
     const notice=document.getElementById('p-draft-notice');if(!notice)return;
@@ -4182,7 +4189,8 @@
     if(!draft)return;
     Object.entries(draft.values||{}).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.value=value;});
     pendingCategories=Array.isArray(draft.categories)?draft.categories:[];pendingGallery=Array.isArray(draft.gallery)?draft.gallery:[];
-    document.getElementById('p-ondemand').checked=!!draft.onDemand;document.getElementById('p-customizable').checked=!!draft.customizable;document.getElementById('p-active').checked=draft.active!==false;
+    document.getElementById('p-ondemand').checked=!!draft.onDemand;document.getElementById('p-customizable').checked=!!draft.customizable;document.getElementById('p-no-consignment').checked=!!draft.noConsignment;document.getElementById('p-active').checked=draft.active!==false;
+    updateConsignmentFieldState();
     document.getElementById('p-customizable-minqty-wrap').style.display=draft.customizable?'flex':'none';
     editingProductCode=draft.editingProductCode&&PRODUCTS.some(p=>p.code===draft.editingProductCode)?draft.editingProductCode:null;
     document.getElementById('p-first-color-wrap').style.display='block';
@@ -4240,7 +4248,7 @@
     const colors=product.colors||[],allOut=colors.length>0&&colors.every(color=>(Number(color.stock)||0)<=0);
     add(!!String(product.code||'').trim()&&!!String(product.name||'').trim(),10,'Código ou nome incompleto',true);
     add(Number.isFinite(publicPrice)&&publicPrice>0,15,'Preço público ausente',true);
-    add(Number.isFinite(consigPrice)&&consigPrice>=0&&(!Number.isFinite(publicPrice)||consigPrice<=publicPrice),10,'Repasse inválido',true);
+    add(!isConsignmentAvailable(product)||(Number.isFinite(consigPrice)&&consigPrice>=0&&(!Number.isFinite(publicPrice)||consigPrice<=publicPrice)),10,'Repasse inválido',true);
     add(!!product.image,20,'Sem imagem principal',true);
     add(description.length>=30,15,'Descrição muito curta',true);
     add(getCategories(product).length>0,10,'Sem categoria',true);
@@ -4346,21 +4354,31 @@
   function updateProductPricePreview(){
     const publicPrice=parseFloat(document.getElementById('p-public-price').value);
     const consigPrice=parseFloat(document.getElementById('p-price').value);
+    const consignmentAvailable=!document.getElementById('p-no-consignment').checked;
     const promoPrice=parseFloat(document.getElementById('p-promo-price').value);
     const marginEl=document.getElementById('p-margin-preview');
     const hlMarginEl=document.getElementById('p-hl-margin-preview');
     const discountEl=document.getElementById('p-discount-preview');
     const statusEl=document.getElementById('p-price-status-preview');
-    marginEl.textContent=!isNaN(publicPrice)&&!isNaN(consigPrice)&&publicPrice>0 ? `${Math.max(0,((publicPrice-consigPrice)/publicPrice)*100).toFixed(1).replace('.',',')}%` : '—';
+    marginEl.textContent=consignmentAvailable&&!isNaN(publicPrice)&&!isNaN(consigPrice)&&publicPrice>0 ? `${Math.max(0,((publicPrice-consigPrice)/publicPrice)*100).toFixed(1).replace('.',',')}%` : 'Não se aplica';
     const calc=selectedCostCalculation(),unitCost=calc?calcUnitCost(calc):NaN;
-    hlMarginEl.textContent=!isNaN(consigPrice)&&consigPrice>0&&Number.isFinite(unitCost) ? `${(((consigPrice-unitCost)/consigPrice)*100).toFixed(1).replace('.',',')}%` : '—';
+    hlMarginEl.textContent=consignmentAvailable&&!isNaN(consigPrice)&&consigPrice>0&&Number.isFinite(unitCost) ? `${(((consigPrice-unitCost)/consigPrice)*100).toFixed(1).replace('.',',')}%` : (consignmentAvailable?'—':'Não se aplica');
     discountEl.textContent=!isNaN(publicPrice)&&!isNaN(promoPrice)&&promoPrice>0&&promoPrice<publicPrice ? `${((1-promoPrice/publicPrice)*100).toFixed(1).replace('.',',')}%` : '—';
     if(isNaN(publicPrice)||publicPrice<=0)statusEl.textContent='Informe o preço público';
+    else if(!consignmentAvailable)statusEl.textContent='Somente venda direta';
     else if(isNaN(consigPrice)||consigPrice<0)statusEl.textContent='Informe o repasse';
     else if(consigPrice>publicPrice)statusEl.textContent='Repasse acima do público';
     else if(Number.isFinite(unitCost)&&consigPrice<unitCost)statusEl.textContent='Repasse abaixo do custo';
     else if(!isNaN(promoPrice)&&(promoPrice<=0||promoPrice>=publicPrice))statusEl.textContent='Promoção inválida';
     else statusEl.textContent='Valores válidos';
+  }
+
+  function updateConsignmentFieldState(){
+    const unavailable=document.getElementById('p-no-consignment').checked,field=document.getElementById('p-price');
+    field.disabled=unavailable;
+    field.closest('.field').style.opacity=unavailable?'.5':'1';
+    field.placeholder=unavailable?'Não se aplica':'18,75';
+    updateProductPricePreview();
   }
 
   function updateProductImagePreview(){
@@ -4869,14 +4887,15 @@
     const msg=document.getElementById('p-msg');msg.innerHTML='';
     if(currentProductStep===0&&(!document.getElementById('p-code').value.trim()||!document.getElementById('p-name').value.trim())){msg.innerHTML='<div class="msg err">Informe o código e o nome para continuar.</div>';return;}
     if(currentProductStep===1){
-      const publicPrice=parseFloat(document.getElementById('p-public-price').value),consigPrice=parseFloat(document.getElementById('p-price').value),promoRaw=document.getElementById('p-promo-price').value.trim(),promoPrice=parseFloat(promoRaw);
-      if(isNaN(publicPrice)||publicPrice<=0||isNaN(consigPrice)||consigPrice<0){msg.innerHTML='<div class="msg err">Informe preços público e de repasse válidos.</div>';return;}
-      if(consigPrice>publicPrice){msg.innerHTML='<div class="msg err">O repasse não pode ser maior que o preço ao público.</div>';return;}
+      const publicPrice=parseFloat(document.getElementById('p-public-price').value),consigPrice=parseFloat(document.getElementById('p-price').value),consignmentAvailable=!document.getElementById('p-no-consignment').checked,promoRaw=document.getElementById('p-promo-price').value.trim(),promoPrice=parseFloat(promoRaw);
+      if(isNaN(publicPrice)||publicPrice<=0||(consignmentAvailable&&(isNaN(consigPrice)||consigPrice<0))){msg.innerHTML=`<div class="msg err">Informe ${consignmentAvailable?'os preços público e de repasse':'um preço público'} válido.</div>`;return;}
+      if(consignmentAvailable&&consigPrice>publicPrice){msg.innerHTML='<div class="msg err">O repasse não pode ser maior que o preço ao público.</div>';return;}
       if(promoRaw&&(!Number.isFinite(promoPrice)||promoPrice<=0||promoPrice>=publicPrice)){msg.innerHTML='<div class="msg err">O preço promocional deve ser maior que zero e menor que o preço ao público.</div>';return;}
     }
     showProductStep(currentProductStep+1);
   });
   ['p-public-price','p-price','p-promo-price'].forEach(id=>document.getElementById(id).addEventListener('input',updateProductPricePreview));
+  document.getElementById('p-no-consignment').addEventListener('change',updateConsignmentFieldState);
   document.getElementById('p-cost-calculation').addEventListener('change',renderSelectedCostCalculation);
   document.querySelector('.product-form-shell').addEventListener('input',e=>{if(e.target.id!=='p-template-product'){markProductDirty();updateDescriptionCounter();}});
   document.querySelector('.product-form-shell').addEventListener('change',e=>{if(e.target.id!=='p-template-product')markProductDirty();});
@@ -4893,7 +4912,7 @@
     document.getElementById('p-public-price').value=source.publicPrice!=null?source.publicPrice:'';
     document.getElementById('p-price').value=source.price!=null?source.price:'';
     document.getElementById('p-promo-price').value=source.promoPrice!=null?source.promoPrice:'';
-    document.getElementById('p-ondemand').checked=!!source.onDemand;document.getElementById('p-customizable').checked=!!source.customizable;document.getElementById('p-active').checked=source.active!==false;
+    document.getElementById('p-ondemand').checked=!!source.onDemand;document.getElementById('p-customizable').checked=!!source.customizable;document.getElementById('p-no-consignment').checked=source.consignmentAvailable===false;document.getElementById('p-active').checked=source.active!==false;updateConsignmentFieldState();
     document.getElementById('p-customizable-minqty').value=source.customizableMinQty||'';document.getElementById('p-customizable-minqty-wrap').style.display=source.customizable?'flex':'none';
     pendingCategories=getCategories(source).filter(c=>c!==CUSTOMIZABLE_CATEGORY);renderCategoryPicker();updateProductPricePreview();updateDescriptionCounter();markProductDirty();
     document.getElementById('p-msg').innerHTML='<div class="msg ok">Modelo aplicado. Nome, código e imagens ficaram em branco para evitar duplicações acidentais.</div>';
@@ -5038,9 +5057,10 @@
           <div class="admin-gallery-actions"><button data-set-gallery-cover="${p.code}|${gi}" title="Trocar a capa sem excluir a atual">★ Tornar capa</button><button data-move-gallery="${p.code}|${gi}|-1" title="Mover para a esquerda" ${gi===0?'disabled':''}>←</button><button data-del-gallery="${p.code}|${gi}" title="Remover da galeria">✕</button><button data-move-gallery="${p.code}|${gi}|1" title="Mover para a direita" ${gi===gallery.length-1?'disabled':''}>→</button></div>
         </div>`).join('');
       const bulkPromoInfo = getPromoInfo(p);
+      const consignmentLabel=isConsignmentAvailable(p)?`Consignado: ${fmtMoney(p.price)}`:'Somente venda direta';
       const priceLine = bulkPromoInfo
-        ? `Público: <s>${fmtMoney(bulkPromoInfo.base)}</s> 🔥 ${fmtMoney(bulkPromoInfo.promo)} (-${bulkPromoInfo.pct}%) · Consignado: ${fmtMoney(p.price)}`
-        : `Público: ${p.publicPrice!=null ? fmtMoney(p.publicPrice) : '—'} · Consignado: ${fmtMoney(p.price)}`;
+        ? `Público: <s>${fmtMoney(bulkPromoInfo.base)}</s> 🔥 ${fmtMoney(bulkPromoInfo.promo)} (-${bulkPromoInfo.pct}%) · ${consignmentLabel}`
+        : `Público: ${p.publicPrice!=null ? fmtMoney(p.publicPrice) : '—'} · ${consignmentLabel}`;
       const costLink=productCostLink(p.code),linkedCalc=costLink&&calculationById(costLink.calculationId);
       const unitCost=linkedCalc?calcUnitCost(linkedCalc):null;
       const hlMargin=unitCost!==null&&Number(p.price)>0?((Number(p.price)-unitCost)/Number(p.price))*100:null;
@@ -5154,6 +5174,8 @@
       document.getElementById('p-desc').value = p.description || '';
       document.getElementById('p-ondemand').checked = !!p.onDemand;
       document.getElementById('p-customizable').checked = !!p.customizable;
+      document.getElementById('p-no-consignment').checked = p.consignmentAvailable === false;
+      updateConsignmentFieldState();
       document.getElementById('p-active').checked = p.active !== false;
       document.getElementById('p-customizable-minqty').value = p.customizableMinQty != null ? p.customizableMinQty : '';
       document.getElementById('p-customizable-minqty-wrap').style.display = p.customizable ? 'flex' : 'none';
@@ -5603,6 +5625,8 @@
     document.getElementById('p-prefix').value = '';
     document.getElementById('p-ondemand').checked = false;
     document.getElementById('p-customizable').checked = false;
+    document.getElementById('p-no-consignment').checked = false;
+    updateConsignmentFieldState();
     document.getElementById('p-active').checked = true;
     document.getElementById('p-customizable-minqty').value = '';
     document.getElementById('p-customizable-minqty-wrap').style.display = 'none';
@@ -5692,14 +5716,15 @@
     const descriptionRaw = document.getElementById('p-desc').value.trim();
     const onDemand = document.getElementById('p-ondemand').checked;
     const customizable = document.getElementById('p-customizable').checked;
+    const consignmentAvailable = !document.getElementById('p-no-consignment').checked;
     const active = document.getElementById('p-active').checked;
     const minQtyRaw = document.getElementById('p-customizable-minqty').value;
     const customizableMinQty = minQtyRaw.trim() === '' ? null : Math.max(1, parseInt(minQtyRaw) || 1);
     const msg = document.getElementById('p-msg');
     if(!/^[A-Z0-9-]{2,20}$/.test(code)){ msg.innerHTML = '<div class="msg err">Informe um código com 2 a 20 caracteres, usando apenas letras, números ou hífen.</div>'; showProductStep(0); return; }
     if(!name){ msg.innerHTML = '<div class="msg err">Informe o nome do produto.</div>'; showProductStep(0); return; }
-    if(isNaN(publicPrice)||publicPrice<=0||isNaN(price)||price<0){ msg.innerHTML = '<div class="msg err">Informe preços público e de repasse válidos.</div>'; showProductStep(1); return; }
-    if(price>publicPrice){ msg.innerHTML='<div class="msg err">O repasse não pode ser maior que o preço ao público.</div>'; showProductStep(1); return; }
+    if(isNaN(publicPrice)||publicPrice<=0||(consignmentAvailable&&(isNaN(price)||price<0))){ msg.innerHTML = `<div class="msg err">Informe ${consignmentAvailable?'os preços público e de repasse':'um preço público'} válido.</div>`; showProductStep(1); return; }
+    if(consignmentAvailable&&price>publicPrice){ msg.innerHTML='<div class="msg err">O repasse não pode ser maior que o preço ao público.</div>'; showProductStep(1); return; }
     if(promoPrice!==null&&(!Number.isFinite(promoPrice)||promoPrice<=0||promoPrice>=publicPrice)){ msg.innerHTML='<div class="msg err">O preço promocional deve ser maior que zero e menor que o preço ao público.</div>'; showProductStep(1); return; }
     if(image&&!/^https:\/\//i.test(image)){ msg.innerHTML='<div class="msg err">A imagem principal precisa começar com https://.</div>'; showProductStep(2); return; }
     if(video&&!/^https:\/\//i.test(video)){ msg.innerHTML='<div class="msg err">O vídeo precisa começar com https://.</div>'; showProductStep(2); return; }
@@ -5743,7 +5768,8 @@
       p.categories = synced.categories;
       delete p.category;
       p.publicPrice = publicPrice;
-      p.price = price;
+      p.price = Number.isFinite(price)?price:0;
+      p.consignmentAvailable = consignmentAvailable;
       p.promoPrice = promoPrice;
       p.image = image;
       p.video = video;
@@ -5778,7 +5804,7 @@
     }
     PRODUCTS.push((()=>{
       const synced = applyCustomizableSync(descriptionRaw, [...pendingCategories], customizable, customizableMinQty);
-      return {code, name, categories: synced.categories, price, publicPrice, promoPrice, image, video, description: synced.description, onDemand, customizable, customizableMinQty: customizable ? customizableMinQty : null, colors, gallery:[...pendingGallery], active, createdAt: Date.now(), updatedAt:Date.now()};
+      return {code, name, categories: synced.categories, price:Number.isFinite(price)?price:0, publicPrice, promoPrice, image, video, description: synced.description, onDemand, customizable, customizableMinQty: customizable ? customizableMinQty : null, consignmentAvailable, colors, gallery:[...pendingGallery], active, createdAt: Date.now(), updatedAt:Date.now()};
     })());
     await setJSON('products', PRODUCTS);
     await saveProductCostLink(code);
