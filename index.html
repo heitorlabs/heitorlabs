@@ -1076,6 +1076,19 @@
   #portal-root .product-admin-title strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   #portal-root .product-admin-title small{display:block;margin-top:3px;color:var(--muted);font:500 11px 'IBM Plex Mono';}
   #portal-root .danger-action{color:var(--red)!important;}
+  #portal-root .delivery-product-filters{display:grid;grid-template-columns:220px minmax(220px,1fr);gap:10px;margin:14px 0 10px;}
+  #portal-root .delivery-product-browser{display:grid;grid-template-columns:minmax(260px,1.35fr) minmax(210px,.65fr);gap:12px;margin-bottom:14px;}
+  #portal-root .delivery-product-results{max-height:310px;overflow:auto;border:1px solid var(--line);border-radius:13px;background:var(--panel-2);padding:7px;}
+  #portal-root .delivery-product-option{display:grid;grid-template-columns:54px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;min-height:64px;padding:6px;text-align:left;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--ink);cursor:pointer;}
+  #portal-root .delivery-product-option:hover,#portal-root .delivery-product-option.selected{border-color:rgba(105,71,199,.42);background:rgba(105,71,199,.09);}
+  #portal-root .delivery-product-thumb{width:54px;height:54px;border-radius:9px;background:var(--panel) center/cover no-repeat;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);font-size:9px;}
+  #portal-root .delivery-product-option strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #portal-root .delivery-product-option small{display:block;margin-top:3px;color:var(--muted);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #portal-root .delivery-product-option .mono{font-size:11px;color:var(--teal);white-space:nowrap;}
+  #portal-root .delivery-product-preview{min-height:210px;padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--panel-2);}
+  #portal-root .delivery-product-preview-image{height:145px;border-radius:10px;background:var(--panel) center/contain no-repeat;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);font-size:11px;}
+  #portal-root .delivery-product-preview h4{margin:10px 0 3px;font:700 14px 'Space Grotesk';}
+  #portal-root .delivery-product-preview p{margin:0;color:var(--muted);font-size:11px;line-height:1.45;}
   #portal-root .quality-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0 16px;}
   #portal-root .quality-summary-card{padding:15px;border:1px solid var(--line);border-radius:13px;background:var(--panel-2);}
   #portal-root .quality-summary-card small{display:block;color:var(--muted);font:600 10px 'IBM Plex Mono';text-transform:uppercase;letter-spacing:.05em;}
@@ -1144,6 +1157,9 @@
     #portal-root .admin-gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
     #portal-root .product-image-preview-box,#portal-root .product-publish-preview .preview-image{max-width:220px;width:100%;}
     #portal-root .admin-catalog-toolbar{grid-template-columns:1fr;}
+    #portal-root .delivery-product-filters,#portal-root .delivery-product-browser{grid-template-columns:1fr;}
+    #portal-root .delivery-product-results{max-height:270px;}
+    #portal-root .delivery-product-preview{min-height:0;}
     #portal-root .quality-summary{grid-template-columns:1fr 1fr;}
     #portal-root .quality-toolbar{grid-template-columns:1fr;}
     #portal-root .quality-card{grid-template-columns:48px minmax(0,1fr);}
@@ -1788,8 +1804,16 @@
               <div class="field"><label>Cliente</label><select id="e-client"></select></div>
               <div class="field"><label>Data</label><input id="e-date" type="date"></div>
             </div>
+            <div class="delivery-product-filters">
+              <div class="field"><label for="e-product-category">Categoria</label><select id="e-product-category"><option value="">Todas as categorias</option></select></div>
+              <div class="field"><label for="e-product-search">Localizar produto</label><input id="e-product-search" type="search" placeholder="Digite o nome, código ou categoria..." autocomplete="off"></div>
+            </div>
+            <div class="delivery-product-browser">
+              <div class="delivery-product-results" id="e-product-results"><div class="empty">Carregando produtos…</div></div>
+              <div class="delivery-product-preview" id="e-product-preview"><div class="delivery-product-preview-image">Passe o mouse ou toque em um produto</div></div>
+            </div>
             <div class="row">
-              <div class="field"><label>Produto</label><select id="e-product"></select></div>
+              <div class="field"><label>Produto selecionado</label><select id="e-product"></select></div>
               <div class="field"><label>Cor</label><select id="e-color"></select></div>
               <div class="field"><label>Quantidade</label><input id="e-qty" type="number" min="1" placeholder="10"></div>
             </div>
@@ -4109,6 +4133,42 @@
     btn.disabled = false; btn.textContent = '↻ Atualizar';
   });
 
+  let entregaProductCategory='';
+  let entregaProductSearch='';
+
+  function renderEntregaProductPreview(product){
+    const preview=document.getElementById('e-product-preview');if(!preview)return;
+    if(!product){preview.innerHTML='<div class="delivery-product-preview-image">Nenhum produto selecionado</div>';return;}
+    const categories=getCategories(product).join(' · ')||'Sem categoria';
+    const colors=(product.colors||[]).map(color=>color.name).join(', ');
+    const image=String(product.image||'').replace(/'/g,'%27');
+    preview.innerHTML=`<div class="delivery-product-preview-image" style="${image?`background-image:url('${image}')`:''}">${image?'':'Sem foto'}</div><h4>${escapeHtml(product.name)}</h4><p>${escapeHtml(product.code)} · ${escapeHtml(categories)}</p><p style="margin-top:5px;color:var(--teal);font-weight:700;">Repasse: ${fmtMoney(product.price)}</p>${colors?`<p style="margin-top:5px;">Cores: ${escapeHtml(colors)}</p>`:''}`;
+  }
+
+  function renderEntregaProductBrowser(){
+    const categorySelect=document.getElementById('e-product-category'),results=document.getElementById('e-product-results'),productSelect=document.getElementById('e-product');
+    if(!categorySelect||!results||!productSelect)return;
+    const available=PRODUCTS.filter(product=>product.active!==false&&isConsignmentAvailable(product));
+    const categories=[...new Set(available.flatMap(getCategories))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+    const previousCategory=entregaProductCategory;
+    categorySelect.innerHTML='<option value="">Todas as categorias</option>'+categories.map(category=>`<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('');
+    if(categories.includes(previousCategory))categorySelect.value=previousCategory;else entregaProductCategory='';
+    const query=normalizeSearch(entregaProductSearch);
+    const filtered=available.filter(product=>(!entregaProductCategory||getCategories(product).includes(entregaProductCategory))&&(!query||matchesSearch(product,query)));
+    if(!filtered.length){results.innerHTML='<div class="empty" style="padding:20px;">Nenhum produto encontrado com estes filtros.</div>';renderEntregaProductPreview(null);return;}
+    results.innerHTML=filtered.map(product=>{
+      const image=String(product.image||'').replace(/'/g,'%27');
+      return `<button type="button" class="delivery-product-option ${product.code===productSelect.value?'selected':''}" data-entrega-product="${escapeHtml(product.code)}"><span class="delivery-product-thumb" style="${image?`background-image:url('${image}')`:''}">${image?'':'Sem foto'}</span><span><strong>${escapeHtml(product.name)}</strong><small>${escapeHtml(product.code)} · ${escapeHtml(getCategories(product).join(', ')||'Sem categoria')}</small></span><span class="mono">${fmtMoney(product.price)}</span></button>`;
+    }).join('');
+    results.querySelectorAll('[data-entrega-product]').forEach(button=>{
+      const product=PRODUCTS.find(item=>item.code===button.dataset.entregaProduct);
+      button.addEventListener('mouseenter',()=>renderEntregaProductPreview(product));
+      button.addEventListener('focus',()=>renderEntregaProductPreview(product));
+      button.addEventListener('click',()=>{productSelect.value=product.code;updateColorSelect('e-product','e-color');renderEntregaProductPreview(product);results.querySelectorAll('.delivery-product-option').forEach(item=>item.classList.toggle('selected',item===button));});
+    });
+    renderEntregaProductPreview(PRODUCTS.find(product=>product.code===productSelect.value)||filtered[0]);
+  }
+
   function refreshAdminSelects(){
     const clientOpts = CLIENTS.map(c=>`<option value="${c.code}">${c.code} — ${c.name}</option>`).join('');
     const productOpts = PRODUCTS.map(p=>`<option value="${escapeHtml(p.code)}">${escapeHtml(p.code)} — ${escapeHtml(p.name)}</option>`).join('');
@@ -4126,6 +4186,7 @@
     updateColorSelect('d-product','d-color');
     updateColorSelect('a-product','a-color');
     updateColorSelect('v-product','v-color');
+    renderEntregaProductBrowser();
     renderCategoryPicker();
     const bulkCategorySelect = document.getElementById('bulk-category');
     if(bulkCategorySelect){
@@ -4161,8 +4222,11 @@
   ['e-product','d-product','a-product','v-product'].forEach(id=>{
     document.getElementById(id).addEventListener('change', ()=>{
       updateColorSelect(id, id.replace('-product','-color'));
+      if(id==='e-product'){renderEntregaProductPreview(PRODUCTS.find(product=>product.code===document.getElementById('e-product').value));renderEntregaProductBrowser();}
     });
   });
+  document.getElementById('e-product-category').addEventListener('change',event=>{entregaProductCategory=event.target.value;renderEntregaProductBrowser();});
+  document.getElementById('e-product-search').addEventListener('input',event=>{entregaProductSearch=event.target.value.trim();renderEntregaProductBrowser();});
 
   let expandedProductCode = null;
   let editingColorKey = null; // formato "CODIGO_PRODUTO|NOME_DA_COR"
