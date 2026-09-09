@@ -1607,7 +1607,7 @@
                     </select>
                   </div>
                   <div class="field"><label for="p-code">Código</label><input id="p-code" placeholder="CHA0001" autocomplete="off"></div>
-                  <div class="field" style="flex:2;"><label for="p-name">Nome do produto</label><input id="p-name" placeholder="Chaveiro 3D Foguete" autocomplete="off"></div>
+                  <div class="field" style="flex:2;"><label for="p-name">Nome do produto</label><input id="p-name" placeholder="Chaveiro 3D foguete" autocomplete="off" autocapitalize="sentences"><div class="field-meta"><span>Será salvo com apenas a primeira letra maiúscula.</span></div></div>
                 </div>
                 <div class="field">
                   <label for="p-desc">Descrição e medidas</label>
@@ -1659,13 +1659,14 @@
                 <div class="row" style="align-items:center;"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';"><input type="checkbox" id="p-customizable" style="width:18px;height:18px;">Este produto também pode ser personalizado</label></div>
                 <div class="row" id="p-customizable-minqty-wrap" style="display:none;align-items:center;"><div class="field" style="max-width:260px;"><label for="p-customizable-minqty">Quantidade mínima para personalizar</label><input id="p-customizable-minqty" type="number" min="1" placeholder="Ex.: 5"></div></div>
                 <div id="p-edit-colors-wrap" style="display:none;margin-top:18px;">
-                  <div class="product-step-title"><h4>Cores e estoque cadastrados</h4><p>Altere o nome, a quantidade disponível ou a foto de cada cor. As mudanças são salvas diretamente no produto.</p></div>
+                  <div class="product-step-title"><h4>Cores e variações adicionadas</h4><p>Revise nome, estoque, foto, preço próprio e promoção. Se o preço próprio ficar vazio, será usado o preço geral do anúncio.</p></div>
                   <div id="p-edit-colors-list"></div>
                 </div>
                 <div id="p-first-color-wrap">
-                  <div class="product-step-title" style="margin-top:18px;"><h4 id="p-color-form-title">Primeira variação</h4><p id="p-color-form-help">Depois de salvar, você poderá acrescentar outras cores e fotografias no catálogo administrativo.</p></div>
-                  <div class="row"><div class="field"><label for="p-first-color-name">Nome da cor</label><input id="p-first-color-name" placeholder="Azul"></div><div class="field"><label for="p-first-color-stock">Estoque inicial</label><input id="p-first-color-stock" type="number" min="0" placeholder="10"></div><div class="field" style="flex:2;"><label for="p-first-color-img">Foto desta cor</label><input id="p-first-color-img" type="url" placeholder="Link preenchido após o envio"><div class="image-upload-actions" style="margin-top:7px;"><input id="p-first-color-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button type="button" class="btn secondary" id="p-first-color-upload-btn">Enviar foto da cor</button><span class="upload-status" id="p-first-color-upload-status"></span></div></div></div>
-                  <button type="button" class="btn secondary" id="p-form-add-color-btn" style="display:none;">+ Adicionar cor ao produto</button>
+                  <div class="product-step-title" style="margin-top:18px;"><h4 id="p-color-form-title">Adicionar cor ou variação</h4><p id="p-color-form-help">Você pode adicionar todas as variações antes de salvar o produto.</p></div>
+                  <div class="row"><div class="field"><label for="p-first-color-name">Nome da cor</label><input id="p-first-color-name" placeholder="Azul"></div><div class="field"><label for="p-first-color-stock">Estoque inicial</label><input id="p-first-color-stock" type="number" min="0" placeholder="10"></div><div class="field"><label for="p-first-color-price">Preço próprio — opcional</label><input id="p-first-color-price" type="number" min="0.01" step="0.01" placeholder="Segue o anúncio"></div><div class="field"><label for="p-first-color-promo">Preço promocional — opcional</label><input id="p-first-color-promo" type="number" min="0.01" step="0.01" placeholder="Sem promoção"></div></div>
+                  <div class="field"><label for="p-first-color-img">Foto desta cor</label><input id="p-first-color-img" type="url" placeholder="Link preenchido após o envio"><div class="image-upload-actions" style="margin-top:7px;"><input id="p-first-color-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button type="button" class="btn secondary" id="p-first-color-upload-btn">Enviar foto da cor</button><span class="upload-status" id="p-first-color-upload-status"></span></div></div>
+                  <button type="button" class="btn secondary" id="p-form-add-color-btn">+ Adicionar esta variação</button>
                 </div>
               </div>
 
@@ -2137,6 +2138,7 @@
   let KNOWN_CATEGORIES = [];
   let pendingCategories = [];
   let pendingGallery = [];
+  let pendingColors = [];
   let MEDIA_FILES = [];
   let mediaLoaded = false;
   let mediaSearch = '';
@@ -2352,8 +2354,14 @@
     return cats.map(c=>`<span class="tag ${tagColorFor(c)}">${c}</span>`).join(' ');
   }
 
+  function getPublicPrice(p,colorName){
+    const color=colorName?(p.colors||[]).find(item=>item.name===colorName):null;
+    const colorPrice=Number(color?.publicPrice);
+    if(color?.publicPrice!=null&&colorPrice>0)return colorPrice;
+    return p.publicPrice!=null?Number(p.publicPrice):Number(p.price);
+  }
   function getPromoInfo(p, colorName){
-    const base = p.publicPrice != null ? Number(p.publicPrice) : Number(p.price);
+    const base = getPublicPrice(p,colorName);
     let promo = null;
     if(colorName){
       const c = (p.colors || []).find(c => c.name === colorName);
@@ -2529,6 +2537,10 @@
   function normalizeSearch(s){
     return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   }
+  function normalizeProductName(value){
+    const clean=String(value||'').replace(/\s+/g,' ').trim().toLocaleLowerCase('pt-BR');
+    return clean?clean.charAt(0).toLocaleUpperCase('pt-BR')+clean.slice(1):'';
+  }
   function matchesSearch(p, query){
     if(!query) return true;
     const q = normalizeSearch(query);
@@ -2538,7 +2550,7 @@
 
   function buildCardPriceHtml(p, selectedColorName){
     const colors = p.colors || [];
-    const displayPrice = p.publicPrice!=null ? p.publicPrice : p.price;
+    const displayPrice = getPublicPrice(p,selectedColorName);
     const info = selectedColorName ? getPromoInfo(p, selectedColorName) : getPromoInfo(p);
     const soldOut=getTotalStock(p)===0;
     const buyBtn = `<button type="button" class="btn buy-btn" ${soldOut?'disabled aria-disabled="true"':''} onclick="event.stopPropagation();${soldOut?'':'window.hlOpenProduct(\''+p.code+'\')'}">${soldOut?'Esgotado':'Comprar'}</button>`;
@@ -2618,7 +2630,7 @@
     grid.innerHTML = gridItems.map(p=>{
       const colors = p.colors || [];
       const colorsHtml = colors.length ? `<div class="delivery-hint" style="margin-top:8px;">Escolha uma cor:</div><div class="portfolio-colors">${colors.map(c=>`
-        <button type="button" class="color-pill ${Number(c.stock)<=0?'out':''}" onclick="event.stopPropagation();window.hlSwapImage('${p.code}','${c.name.replace(/'/g,"")}', this)">${c.name}${Number(c.stock)<=0?' • esgotado':''}</button>`).join('')}</div>` : '';
+        <button type="button" class="color-pill ${Number(c.stock)<=0?'out':''}" onclick="event.stopPropagation();window.hlSwapImage('${p.code}','${c.name.replace(/'/g,"")}', this)">${c.name}${c.publicPrice!=null&&Number(c.publicPrice)>0?' · '+fmtMoney(c.publicPrice):''}${Number(c.stock)<=0?' • esgotado':''}</button>`).join('')}</div>` : '';
       const promoInfo = getPromoInfo(p);
       const promoColor = !promoInfo ? colors.find(c=>getPromoInfo(p, c.name)) : null;
       const colorOnlyPromo = !!promoColor;
@@ -2897,7 +2909,7 @@
     const colorSelect = document.getElementById('modal-buyer-color');
     if(colors.length){
       colorField.style.display = 'block';
-      colorSelect.innerHTML = colors.map(c=>`<option value="${escapeHtml(c.name)}" ${c.name===modalSelectedColor?'selected':''} ${!p.onDemand&&Number(c.stock)<=0?'disabled':''}>${escapeHtml(c.name)}${getPromoInfo(p, c.name) ? ' 🔥' : ''}${!p.onDemand&&Number(c.stock)<=0?' — esgotado':''}</option>`).join('');
+      colorSelect.innerHTML = colors.map(c=>`<option value="${escapeHtml(c.name)}" ${c.name===modalSelectedColor?'selected':''} ${!p.onDemand&&Number(c.stock)<=0?'disabled':''}>${escapeHtml(c.name)} · ${fmtMoney(getPublicPrice(p,c.name))}${getPromoInfo(p, c.name) ? ' 🔥' : ''}${!p.onDemand&&Number(c.stock)<=0?' — esgotado':''}</option>`).join('');
     } else {
       colorField.style.display = 'none';
       colorSelect.innerHTML = '';
@@ -2971,7 +2983,7 @@
     else availabilityParts.push('Produto disponível para pronta entrega, conforme o estoque da cor escolhida.');
     if(p.customizable)availabilityParts.push(`Personalização disponível${p.customizableMinQty?' a partir de '+p.customizableMinQty+' unidades':''}.`);
     availability.textContent=availabilityParts.join(' ');
-    document.getElementById('modal-public-price').textContent = p.publicPrice!=null ? fmtMoney(p.publicPrice) : fmtMoney(p.price);
+    document.getElementById('modal-public-price').textContent = fmtMoney(getPublicPrice(p,activeColor));
     const promoInfoModal = getPromoInfo(p, activeColor);
     if(promoInfoModal){
       document.getElementById('modal-price-normal-wrap').style.display = 'none';
@@ -3132,7 +3144,7 @@
       const p = PRODUCTS.find(p=>p.code===item.productCode);
       const name = p ? p.name : item.productCode;
       const promoInfoItem = p ? getPromoInfo(p, item.color) : null;
-      const price = promoInfoItem ? promoInfoItem.promo : (p ? (p.publicPrice!=null ? Number(p.publicPrice) : Number(p.price)) : 0);
+      const price = promoInfoItem ? promoInfoItem.promo : (p ? getPublicPrice(p,item.color) : 0);
       const priceLabel = promoInfoItem ? `🔥 ${fmtMoney(price)} cada (era ${fmtMoney(promoInfoItem.base)})` : `${fmtMoney(price)} cada`;
       return `
       <div class="ticket" style="margin-bottom:8px;">
@@ -3175,7 +3187,7 @@
       const p = PRODUCTS.find(p=>p.code===item.productCode);
       if(!p) return;
       const promoInfoItem = getPromoInfo(p, item.color);
-      const price = promoInfoItem ? promoInfoItem.promo : (p.publicPrice!=null ? Number(p.publicPrice) : Number(p.price));
+      const price = promoInfoItem ? promoInfoItem.promo : getPublicPrice(p,item.color);
       subtotal += price * item.qty;
     });
     const city = document.getElementById('public-cart-city').value;
@@ -3205,7 +3217,7 @@
       const p = PRODUCTS.find(p=>p.code===item.productCode);
       const name = p ? p.name : item.productCode;
       const promoInfoMsg = p ? getPromoInfo(p, item.color) : null;
-      const price = promoInfoMsg ? promoInfoMsg.promo : (p ? (p.publicPrice!=null ? Number(p.publicPrice) : Number(p.price)) : 0);
+      const price = promoInfoMsg ? promoInfoMsg.promo : (p ? getPublicPrice(p,item.color) : 0);
       const promoTag = promoInfoMsg ? ' [PROMOÇÃO]' : '';
       text += `• ${item.qty}x ${name}${item.color ? ' ('+item.color+')' : ''} — ${fmtMoney(price)} cada${promoTag}\n`;
     });
@@ -3699,7 +3711,7 @@
       const colors = p.colors || [];
       const colorsHtml = colors.length
         ? `<div class="portfolio-colors">${colors.map(c=>`
-            <button type="button" class="color-pill ${(!p.onDemand && Number(c.stock)<=0)?'out':''}" onclick="window.hlAddToCart('${p.code}','${c.name.replace(/'/g,"")}')">+ ${c.name}${getPromoInfo(p, c.name) ? ' 🔥' : ''}${(!p.onDemand && Number(c.stock)<=0)?' • sem estoque':''}</button>`).join('')}</div>`
+            <button type="button" class="color-pill ${(!p.onDemand && Number(c.stock)<=0)?'out':''}" onclick="window.hlAddToCart('${p.code}','${c.name.replace(/'/g,"")}')">+ ${c.name} · ${fmtMoney(getPublicPrice(p,c.name))}${getPromoInfo(p, c.name) ? ' 🔥' : ''}${(!p.onDemand && Number(c.stock)<=0)?' • sem estoque':''}</button>`).join('')}</div>`
         : `<button type="button" class="btn secondary" style="margin-top:8px;padding:6px 12px;font-size:11px;" onclick="window.hlAddToCart('${p.code}','')">+ ${p.onDemand ? 'Encomendar' : 'Adicionar ao carrinho'}</button>`;
       const publicPrice = p.publicPrice != null ? Number(p.publicPrice) : null;
       const margin = publicPrice != null ? publicPrice - Number(p.price) : null;
@@ -4167,9 +4179,9 @@
     if(field&&counter)counter.textContent=`${field.value.length}/1200`;
   }
   function captureProductDraft(){
-    const ids=['p-code','p-prefix','p-name','p-public-price','p-price','p-promo-price','p-img','p-video','p-desc','p-first-color-name','p-first-color-stock','p-first-color-img','p-customizable-minqty','p-cost-calculation'];
+    const ids=['p-code','p-prefix','p-name','p-public-price','p-price','p-promo-price','p-img','p-video','p-desc','p-first-color-name','p-first-color-stock','p-first-color-price','p-first-color-promo','p-first-color-img','p-customizable-minqty','p-cost-calculation'];
     const values={};ids.forEach(id=>{values[id]=document.getElementById(id)?.value||'';});
-    return {values,categories:[...pendingCategories],gallery:[...pendingGallery],onDemand:document.getElementById('p-ondemand').checked,customizable:document.getElementById('p-customizable').checked,noConsignment:document.getElementById('p-no-consignment').checked,active:document.getElementById('p-active').checked,editingProductCode,step:currentProductStep,savedAt:Date.now()};
+    return {values,categories:[...pendingCategories],gallery:[...pendingGallery],colors:pendingColors.map(color=>({...color})),onDemand:document.getElementById('p-ondemand').checked,customizable:document.getElementById('p-customizable').checked,noConsignment:document.getElementById('p-no-consignment').checked,active:document.getElementById('p-active').checked,editingProductCode,step:currentProductStep,savedAt:Date.now()};
   }
   function updateDraftNotice(){
     const notice=document.getElementById('p-draft-notice');if(!notice)return;
@@ -4191,7 +4203,7 @@
     let draft=null;try{draft=JSON.parse(localStorage.getItem(PRODUCT_DRAFT_KEY)||'null');}catch(e){}
     if(!draft)return;
     Object.entries(draft.values||{}).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.value=value;});
-    pendingCategories=Array.isArray(draft.categories)?draft.categories:[];pendingGallery=Array.isArray(draft.gallery)?draft.gallery:[];
+    pendingCategories=Array.isArray(draft.categories)?draft.categories:[];pendingGallery=Array.isArray(draft.gallery)?draft.gallery:[];pendingColors=Array.isArray(draft.colors)?draft.colors:[];
     document.getElementById('p-ondemand').checked=!!draft.onDemand;document.getElementById('p-customizable').checked=!!draft.customizable;document.getElementById('p-no-consignment').checked=!!draft.noConsignment;document.getElementById('p-active').checked=draft.active!==false;
     updateConsignmentFieldState();
     document.getElementById('p-customizable-minqty-wrap').style.display=draft.customizable?'flex':'none';
@@ -4734,6 +4746,7 @@
     add(document.getElementById('p-img')?.value,'Cadastro em edição (principal)',draftCode);
     add(document.getElementById('p-video')?.value,'Cadastro em edição (vídeo)',draftCode);
     add(document.getElementById('p-first-color-img')?.value,'Cadastro em edição (variação)',draftCode);
+    pendingColors.forEach((color,index)=>add(color.image,`Cadastro em edição (${color.name||'variação '+(index+1)})`,draftCode));
     pendingGallery.forEach((url,index)=>add(url,`Cadastro em edição (galeria ${index+1})`,draftCode));
     return references;
   }
@@ -4898,6 +4911,7 @@
     showProductStep(currentProductStep+1);
   });
   ['p-public-price','p-price','p-promo-price'].forEach(id=>document.getElementById(id).addEventListener('input',updateProductPricePreview));
+  document.getElementById('p-name').addEventListener('blur',event=>{event.target.value=normalizeProductName(event.target.value);updateProductFinalPreview();});
   document.getElementById('p-no-consignment').addEventListener('change',updateConsignmentFieldState);
   document.getElementById('p-cost-calculation').addEventListener('change',renderSelectedCostCalculation);
   document.querySelector('.product-form-shell').addEventListener('input',e=>{if(e.target.id!=='p-template-product'){markProductDirty();updateDescriptionCounter();}});
@@ -4959,13 +4973,14 @@
   function renderProductFormColors(){
     const wrap=document.getElementById('p-edit-colors-wrap'),list=document.getElementById('p-edit-colors-list');
     const product=editingProductCode?PRODUCTS.find(item=>item.code===editingProductCode):null;
-    if(!product){wrap.style.display='none';list.innerHTML='';return;}
-    wrap.style.display='block';
-    const colors=product.colors||[];
+    const colors=product?(product.colors||[]):pendingColors;
+    wrap.style.display=colors.length?'block':'none';
     list.innerHTML=colors.length?colors.map((color,index)=>`
       <div class="list-row" data-product-form-color-row="${index}" style="align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
         <div class="field" style="min-width:130px;"><label>Nome da cor</label><input type="text" data-form-color-name value="${escapeHtml(color.name)}"></div>
         <div class="field" style="max-width:130px;"><label>Estoque</label><input type="number" min="0" data-form-color-stock value="${Math.max(0,Number(color.stock)||0)}"></div>
+        <div class="field" style="max-width:150px;"><label>Preço próprio</label><input type="number" min="0.01" step="0.01" data-form-color-price value="${color.publicPrice!=null?Number(color.publicPrice):''}" placeholder="Preço geral"></div>
+        <div class="field" style="max-width:150px;"><label>Promoção</label><input type="number" min="0.01" step="0.01" data-form-color-promo value="${color.promoPrice!=null?Number(color.promoPrice):''}" placeholder="Sem promoção"></div>
         <div class="field" style="min-width:210px;flex:2;"><label>Foto da cor</label><input type="url" data-form-color-image value="${escapeHtml(color.image||'')}" placeholder="https://..."></div>
         <span class="actions" style="padding-bottom:2px;"><button type="button" data-form-save-color="${index}">Salvar</button><button type="button" data-form-delete-color="${index}">Remover</button></span>
       </div>`).join(''):`<div class="empty">Nenhuma cor cadastrada. Use “Adicionar nova cor” logo abaixo.</div>`;
@@ -4976,23 +4991,30 @@
     const deleteButton=event.target.closest('[data-form-delete-color]');
     if(!saveButton&&!deleteButton)return;
     const index=Number((saveButton||deleteButton).dataset[saveButton?'formSaveColor':'formDeleteColor']);
-    PRODUCTS=await getJSON('products',PRODUCTS);
-    const product=PRODUCTS.find(item=>item.code===editingProductCode),color=product?.colors?.[index];
-    if(!product||!color)return;
+    if(editingProductCode)PRODUCTS=await getJSON('products',PRODUCTS);
+    const product=editingProductCode?PRODUCTS.find(item=>item.code===editingProductCode):null;
+    const colors=product?(product.colors||[]):pendingColors,color=colors[index];
+    if(!color)return;
     if(deleteButton){
       if(!confirm(`Remover a cor “${color.name}” e seu estoque deste produto?`))return;
-      product.colors.splice(index,1);product.updatedAt=Date.now();
-      await setJSON('products',PRODUCTS);renderProductFormColors();refreshAdminSelects();renderAdminLists();renderPortfolio();return;
+      colors.splice(index,1);
+      if(product){product.updatedAt=Date.now();await setJSON('products',PRODUCTS);refreshAdminSelects();renderAdminLists();renderPortfolio();}else markProductDirty();
+      renderProductFormColors();return;
     }
     const row=saveButton.closest('[data-product-form-color-row]');
     const newName=row.querySelector('[data-form-color-name]').value.trim();
     const newStock=Math.max(0,parseInt(row.querySelector('[data-form-color-stock]').value)||0);
     const newImage=row.querySelector('[data-form-color-image]').value.trim();
+    const priceRaw=row.querySelector('[data-form-color-price]').value.trim(),promoRaw=row.querySelector('[data-form-color-promo]').value.trim();
+    const newPrice=priceRaw===''?null:parseFloat(priceRaw),newPromo=promoRaw===''?null:parseFloat(promoRaw);
     const oldName=color.name;
     if(!newName){alert('Informe o nome da cor.');return;}
     if(newImage&&!/^https:\/\//i.test(newImage)){alert('A foto da cor precisa começar com https://.');return;}
-    if(product.colors.some((item,itemIndex)=>itemIndex!==index&&item.name.toLowerCase()===newName.toLowerCase())){alert('Já existe outra cor com esse nome neste produto.');return;}
-    if(newName!==oldName){
+    if(newPrice!==null&&(!Number.isFinite(newPrice)||newPrice<=0)){alert('O preço próprio da cor deve ser maior que zero.');return;}
+    const base=newPrice??parseFloat(document.getElementById('p-public-price').value);
+    if(newPromo!==null&&(!Number.isFinite(newPromo)||newPromo<=0||!Number.isFinite(base)||newPromo>=base)){alert('A promoção deve ser maior que zero e menor que o preço da cor ou do anúncio.');return;}
+    if(colors.some((item,itemIndex)=>itemIndex!==index&&item.name.toLowerCase()===newName.toLowerCase())){alert('Já existe outra cor com esse nome neste produto.');return;}
+    if(product&&newName!==oldName){
       ENTREGAS=await getJSON('entregas',ENTREGAS);DEVOLUCOES=await getJSON('devolucoes',DEVOLUCOES);ACERTOS=await getJSON('acertos',ACERTOS);PEDIDOS=await getJSON('pedidos',PEDIDOS);VENDAS=await getJSON('vendas',VENDAS);
       ENTREGAS.forEach(item=>{if(item.productCode===product.code&&item.color===oldName)item.color=newName;});
       DEVOLUCOES.forEach(item=>{if(item.productCode===product.code&&item.color===oldName)item.color=newName;});
@@ -5001,24 +5023,30 @@
       VENDAS.forEach(item=>{if(item.productCode===product.code&&item.color===oldName)item.color=newName;});
       await setJSON('entregas',ENTREGAS);await setJSON('devolucoes',DEVOLUCOES);await setJSON('acertos',ACERTOS);await setJSON('pedidos',PEDIDOS);await setJSON('vendas',VENDAS);
     }
-    color.name=newName;color.stock=newStock;color.image=newImage;product.updatedAt=Date.now();
-    await setJSON('products',PRODUCTS);renderProductFormColors();refreshAdminSelects();renderAdminLists();renderPortfolio();
+    color.name=newName;color.stock=newStock;color.image=newImage;color.publicPrice=newPrice;color.promoPrice=newPromo;
+    if(product){product.updatedAt=Date.now();await setJSON('products',PRODUCTS);refreshAdminSelects();renderAdminLists();renderPortfolio();}else markProductDirty();
+    renderProductFormColors();
   });
 
   document.getElementById('p-form-add-color-btn').addEventListener('click',async()=>{
     const name=document.getElementById('p-first-color-name').value.trim();
     const stock=Math.max(0,parseInt(document.getElementById('p-first-color-stock').value)||0);
     const image=document.getElementById('p-first-color-img').value.trim();
+    const priceRaw=document.getElementById('p-first-color-price').value.trim(),promoRaw=document.getElementById('p-first-color-promo').value.trim();
+    const publicPrice=priceRaw===''?null:parseFloat(priceRaw),promoPrice=promoRaw===''?null:parseFloat(promoRaw);
     if(!name){alert('Informe o nome da nova cor.');return;}
     if(image&&!/^https:\/\//i.test(image)){alert('A foto da cor precisa começar com https://.');return;}
-    PRODUCTS=await getJSON('products',PRODUCTS);
-    const product=PRODUCTS.find(item=>item.code===editingProductCode);if(!product)return;
-    product.colors=product.colors||[];
-    if(product.colors.some(item=>item.name.toLowerCase()===name.toLowerCase())){alert('Essa cor já existe para este produto.');return;}
-    product.colors.push({name,stock,image,promoPrice:null});product.updatedAt=Date.now();
-    await setJSON('products',PRODUCTS);
-    document.getElementById('p-first-color-name').value='';document.getElementById('p-first-color-stock').value='';document.getElementById('p-first-color-img').value='';
-    renderProductFormColors();refreshAdminSelects();renderAdminLists();renderPortfolio();
+    if(publicPrice!==null&&(!Number.isFinite(publicPrice)||publicPrice<=0)){alert('O preço próprio da cor deve ser maior que zero.');return;}
+    const promoBase=publicPrice??parseFloat(document.getElementById('p-public-price').value);
+    if(promoPrice!==null&&(!Number.isFinite(promoPrice)||promoPrice<=0||!Number.isFinite(promoBase)||promoPrice>=promoBase)){alert('A promoção deve ser maior que zero e menor que o preço da cor ou do anúncio.');return;}
+    if(editingProductCode)PRODUCTS=await getJSON('products',PRODUCTS);
+    const product=editingProductCode?PRODUCTS.find(item=>item.code===editingProductCode):null;
+    const colors=product?(product.colors=product.colors||[]):pendingColors;
+    if(colors.some(item=>item.name.toLowerCase()===name.toLowerCase())){alert('Essa cor já existe para este produto.');return;}
+    colors.push({name,stock,image,publicPrice,promoPrice});
+    if(product){product.updatedAt=Date.now();await setJSON('products',PRODUCTS);refreshAdminSelects();renderAdminLists();renderPortfolio();}else markProductDirty();
+    ['p-first-color-name','p-first-color-stock','p-first-color-price','p-first-color-promo','p-first-color-img'].forEach(id=>document.getElementById(id).value='');
+    renderProductFormColors();
   });
 
   function renderAdminLists(){
@@ -5038,6 +5066,7 @@
           <span class="color-chip color-chip-editing">
             <input type="text" data-edit-color-name="${key}" value="${c.name.replace(/"/g,'&quot;')}" placeholder="Nome da cor" style="width:110px;">
             <input type="text" data-edit-color-image="${key}" value="${(c.image||'').replace(/"/g,'&quot;')}" placeholder="URL da foto (opcional)" style="width:180px;">
+            <input type="number" min="0.01" step="0.01" data-edit-color-price="${key}" value="${c.publicPrice!=null?Number(c.publicPrice):''}" placeholder="Preço próprio" style="width:120px;">
             <input class="upload-file-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-edit-color-file="${key}">
             <button data-upload-edit-color="${key}" title="Enviar uma foto para esta cor">📷 Enviar foto</button>
             <button data-save-color="${key}" title="Salvar alterações">✓ Salvar</button>
@@ -5048,6 +5077,7 @@
         return `
         <span class="color-chip ${Number(c.stock)<=0?'out':''}">
           ${c.image ? '📷 ' : ''}${c.name} · <strong>${c.stock}</strong>
+          ${c.publicPrice!=null&&Number(c.publicPrice)>0 ? ` · ${fmtMoney(c.publicPrice)}` : ' · preço geral'}
           ${colorPromoInfo ? ` · 🔥 <s>${fmtMoney(colorPromoInfo.base)}</s> ${fmtMoney(colorPromoInfo.promo)}` : ''}
           <button data-adj-color="${p.code}|${c.name}|-1" title="Diminuir 1 do estoque">−</button>
           <button data-adj-color="${p.code}|${c.name}|1" title="Aumentar 1 no estoque">+</button>
@@ -5092,6 +5122,7 @@
             <input type="text" placeholder="URL da foto desta cor (opcional)" data-color-image-input="${p.code}" style="flex:1;min-width:160px;">
             <input class="upload-file-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/gif" data-color-image-file="${p.code}">
             <button data-upload-color-image="${p.code}">📷 Enviar foto</button>
+            <input type="number" step="0.01" min="0.01" placeholder="Preço próprio (opcional)" data-color-price-input="${p.code}" style="max-width:160px;">
             <input type="number" step="0.01" min="0" placeholder="🔥 Preço promo (opcional)" data-color-promo-input="${p.code}" style="max-width:150px;">
             <button data-add-color="${p.code}">+ Adicionar cor</button>
           </div>
@@ -5164,6 +5195,7 @@
       editingProductCode = p.code;
       pendingCategories = [...getCategories(p)];
       pendingGallery = [...(p.gallery||[])];
+      pendingColors = [];
       document.getElementById('p-code').value = p.code;
       document.getElementById('p-code').disabled = false;
       const detectedPrefix = (p.code || '').match(/^[A-Z]+/);
@@ -5185,8 +5217,8 @@
       document.getElementById('p-customizable-minqty-wrap').style.display = p.customizable ? 'flex' : 'none';
       document.getElementById('p-first-color-wrap').style.display = 'block';
       document.getElementById('p-form-add-color-btn').style.display = 'inline-flex';
-      document.getElementById('p-color-form-title').textContent = 'Adicionar nova cor';
-      document.getElementById('p-color-form-help').textContent = 'Cadastre uma nova cor e o estoque inicial deste produto.';
+      document.getElementById('p-color-form-title').textContent = 'Adicionar cor ou variação';
+      document.getElementById('p-color-form-help').textContent = 'Cadastre nome, estoque, foto e um preço próprio opcional.';
       renderProductFormColors();
       document.getElementById('p-form-title').textContent = `Editando: ${p.code} — ${p.name}`;
       document.getElementById('p-form-status').textContent = p.active===false ? 'Produto arquivado' : 'Produto publicado';
@@ -5277,24 +5309,28 @@
       const nameInput = root.querySelector(`[data-color-name-input="${code}"]`);
       const stockInput = root.querySelector(`[data-color-stock-input="${code}"]`);
       const imageInput = root.querySelector(`[data-color-image-input="${code}"]`);
+      const priceInput = root.querySelector(`[data-color-price-input="${code}"]`);
       const promoInput = root.querySelector(`[data-color-promo-input="${code}"]`);
       const name = nameInput.value.trim();
       const stock = Math.max(0, parseInt(stockInput.value) || 0);
       const image = imageInput.value.trim();
+      const priceRaw=priceInput.value.trim();
+      const publicPrice=priceRaw===''?null:parseFloat(priceRaw);
       const promoRaw = promoInput.value.trim();
       const promoPrice = promoRaw === '' ? null : parseFloat(promoRaw);
       if(!name) return;
       PRODUCTS = await getJSON('products', PRODUCTS);
       const p = PRODUCTS.find(p=>p.code===code);
       if(!p) return;
-      const base=Number(p.publicPrice);
+      if(publicPrice!==null&&(!Number.isFinite(publicPrice)||publicPrice<=0)){alert('O preço próprio da cor deve ser maior que zero.');return;}
+      const base=publicPrice??Number(p.publicPrice);
       if(promoPrice!==null&&(!Number.isFinite(promoPrice)||promoPrice<=0||promoPrice>=base)){alert('A promoção da cor deve ser maior que zero e menor que o preço ao público.');return;}
       if(image&&!/^https:\/\//i.test(image)){alert('A foto da cor precisa começar com https://.');return;}
       p.colors = p.colors || [];
       if(p.colors.some(c=>c.name.toLowerCase()===name.toLowerCase())){
         alert('Essa cor já existe para este produto.'); return;
       }
-      p.colors.push({name, stock, image, promoPrice});
+      p.colors.push({name, stock, image, publicPrice, promoPrice});
       await setJSON('products', PRODUCTS);
       refreshAdminSelects(); renderAdminLists(); renderPortfolio();
     }));
@@ -5311,10 +5347,13 @@
       const [code, oldName] = key.split('|');
       const nameInput = root.querySelector(`[data-edit-color-name="${key}"]`);
       const imageInput = root.querySelector(`[data-edit-color-image="${key}"]`);
+      const priceInput = root.querySelector(`[data-edit-color-price="${key}"]`);
       const newName = nameInput.value.trim();
       const newImage = imageInput.value.trim();
+      const priceRaw=priceInput.value.trim(),newPrice=priceRaw===''?null:parseFloat(priceRaw);
       if(!newName){ alert('O nome da cor não pode ficar em branco.'); return; }
       if(newImage&&!/^https:\/\//i.test(newImage)){alert('A foto da cor precisa começar com https://.');return;}
+      if(newPrice!==null&&(!Number.isFinite(newPrice)||newPrice<=0)){alert('O preço próprio da cor deve ser maior que zero.');return;}
 
       PRODUCTS = await getJSON('products', PRODUCTS);
       const p = PRODUCTS.find(p=>p.code===code);
@@ -5346,7 +5385,8 @@
         await setJSON('vendas', VENDAS);
         c.name = newName;
       }
-      c.image = newImage;
+      c.image = newImage;c.publicPrice=newPrice;
+      if(c.promoPrice!=null&&Number(c.promoPrice)>=getPublicPrice(p,newName))c.promoPrice=null;
 
       await setJSON('products', PRODUCTS);
       editingColorKey = null;
@@ -5358,7 +5398,7 @@
       const p = PRODUCTS.find(p=>p.code===code);
       const c = p && (p.colors||[]).find(c=>c.name===colorName);
       if(!c) return;
-      const base = p.publicPrice != null ? p.publicPrice : p.price;
+      const base = getPublicPrice(p,colorName);
       const current = c.promoPrice != null ? c.promoPrice : '';
       const answer = window.prompt(`Preço promocional para a cor "${colorName}" (preço ao público atual: ${fmtMoney(base)}).\nDeixe em branco pra remover a promoção desta cor.`, current);
       if(answer === null) return; // cancelou
@@ -5625,7 +5665,8 @@
     editingProductCode = null;
     pendingCategories = [];
     pendingGallery = [];
-    ['p-code','p-name','p-public-price','p-price','p-promo-price','p-img','p-video','p-desc','p-first-color-name','p-first-color-stock','p-first-color-img'].forEach(id=>document.getElementById(id).value='');
+    pendingColors = [];
+    ['p-code','p-name','p-public-price','p-price','p-promo-price','p-img','p-video','p-desc','p-first-color-name','p-first-color-stock','p-first-color-price','p-first-color-promo','p-first-color-img'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('p-prefix').value = '';
     document.getElementById('p-ondemand').checked = false;
     document.getElementById('p-customizable').checked = false;
@@ -5642,9 +5683,9 @@
     document.getElementById('p-first-color-wrap').style.display = 'block';
     document.getElementById('p-edit-colors-wrap').style.display = 'none';
     document.getElementById('p-edit-colors-list').innerHTML = '';
-    document.getElementById('p-form-add-color-btn').style.display = 'none';
-    document.getElementById('p-color-form-title').textContent = 'Primeira variação';
-    document.getElementById('p-color-form-help').textContent = 'Depois de salvar, você poderá acrescentar outras cores e fotografias no catálogo administrativo.';
+    document.getElementById('p-form-add-color-btn').style.display = 'inline-flex';
+    document.getElementById('p-color-form-title').textContent = 'Adicionar cor ou variação';
+    document.getElementById('p-color-form-help').textContent = 'Você pode adicionar todas as variações antes de salvar o produto.';
     document.getElementById('p-image-preview-box').style.backgroundImage = '';
     document.getElementById('p-image-preview-box').textContent = 'Prévia da imagem principal';
     ['p-main-image-upload-status','p-gallery-upload-status','p-first-color-upload-status','p-video-upload-status'].forEach(id=>document.getElementById(id).textContent='');
@@ -5710,7 +5751,8 @@
 
   document.getElementById('p-add-btn').addEventListener('click', async ()=>{
     const code = document.getElementById('p-code').value.trim().toUpperCase();
-    const name = document.getElementById('p-name').value.trim();
+    const name = normalizeProductName(document.getElementById('p-name').value);
+    document.getElementById('p-name').value=name;
     const publicPrice = parseFloat(document.getElementById('p-public-price').value);
     const price = parseFloat(document.getElementById('p-price').value);
     const promoPriceRaw = document.getElementById('p-promo-price').value;
@@ -5795,15 +5837,23 @@
     }
 
     if(PRODUCTS.some(p=>p.code===code)){ msg.innerHTML = '<div class="msg err">Já existe um produto com esse código.</div>'; return; }
-    const colors = [];
+    const colors = pendingColors.map(color=>({...color}));
     const firstColorName = document.getElementById('p-first-color-name').value.trim();
     if(firstColorName){
       const firstColorImage=document.getElementById('p-first-color-img').value.trim();
+      const firstColorPriceRaw=document.getElementById('p-first-color-price').value.trim(),firstColorPromoRaw=document.getElementById('p-first-color-promo').value.trim();
+      const firstColorPrice=firstColorPriceRaw===''?null:parseFloat(firstColorPriceRaw),firstColorPromo=firstColorPromoRaw===''?null:parseFloat(firstColorPromoRaw);
       if(firstColorImage&&!/^https:\/\//i.test(firstColorImage)){msg.innerHTML='<div class="msg err">A foto da primeira cor precisa começar com https://.</div>';showProductStep(2);return;}
+      if(colors.some(color=>color.name.toLowerCase()===firstColorName.toLowerCase())){msg.innerHTML='<div class="msg err">Já existe uma variação com esse nome.</div>';showProductStep(2);return;}
+      if(firstColorPrice!==null&&(!Number.isFinite(firstColorPrice)||firstColorPrice<=0)){msg.innerHTML='<div class="msg err">O preço próprio da variação deve ser maior que zero.</div>';showProductStep(2);return;}
+      const firstPromoBase=firstColorPrice??publicPrice;
+      if(firstColorPromo!==null&&(!Number.isFinite(firstColorPromo)||firstColorPromo<=0||firstColorPromo>=firstPromoBase)){msg.innerHTML='<div class="msg err">A promoção da variação deve ser menor que seu preço normal.</div>';showProductStep(2);return;}
       colors.push({
         name: firstColorName,
         stock: Math.max(0, parseInt(document.getElementById('p-first-color-stock').value) || 0),
         image: firstColorImage,
+        publicPrice:firstColorPrice,
+        promoPrice:firstColorPromo,
       });
     }
     PRODUCTS.push((()=>{
