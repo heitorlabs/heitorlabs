@@ -1032,6 +1032,11 @@
   #portal-root .image-upload-actions input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
   #portal-root .upload-file-hidden{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;}
   #portal-root .upload-status{color:var(--muted);font-size:12px;}
+  #portal-root .video-upload-progress{display:none;width:100%;height:7px;margin-top:10px;border:0;border-radius:999px;overflow:hidden;background:var(--line);accent-color:var(--violet);}
+  #portal-root .video-upload-progress.active{display:block;}
+  #portal-root .video-upload-summary{display:none;align-items:center;gap:9px;margin-top:10px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--muted);font-size:11px;line-height:1.4;}
+  #portal-root .video-upload-summary.visible{display:flex;}
+  #portal-root .video-upload-summary strong{display:inline;color:var(--ink);font-size:11px;margin:0;}
   #portal-root .pending-gallery{display:grid;grid-template-columns:repeat(5,minmax(80px,1fr));gap:9px;margin-top:10px;}
   #portal-root .pending-gallery-item{position:relative;aspect-ratio:1;border-radius:10px;background:var(--panel-2) center/cover no-repeat;border:1px solid var(--line);overflow:hidden;}
   #portal-root .pending-gallery-item[draggable=true]{cursor:grab;}
@@ -1096,6 +1101,7 @@
   #portal-root .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;}
   #portal-root .media-card{overflow:hidden;border:1px solid var(--line);border-radius:13px;background:var(--panel);}
   #portal-root .media-card-image{position:relative;aspect-ratio:4/3;background:var(--panel-2) center/cover no-repeat;}
+  #portal-root .media-card-image video{display:block;width:100%;height:100%;object-fit:cover;background:#000;}
   #portal-root .media-card-image .badge{position:absolute;top:8px;left:8px;box-shadow:0 3px 12px rgba(0,0,0,.18);}
   #portal-root .media-card-body{padding:11px;}
   #portal-root .media-card-name{font:600 12px 'Space Grotesk';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -1628,7 +1634,8 @@
                   <div>
                     <div class="image-upload-box" data-image-drop-target="p-main-image-file"><strong>Imagem principal</strong><small>Escolha ou arraste uma foto para cá. JPG, PNG ou WEBP são otimizados; GIFs são preservados.</small><div class="image-upload-actions"><input id="p-main-image-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><button type="button" class="btn secondary" id="p-main-image-upload-btn">Escolher e enviar foto</button><span class="upload-status" id="p-main-image-upload-status"></span></div></div>
                     <div class="field"><label for="p-img">URL da imagem principal</label><input id="p-img" type="url" placeholder="https://..." inputmode="url"></div>
-                    <div class="field"><label for="p-video">URL do vídeo ou GIF</label><input id="p-video" type="url" placeholder="https://... (.mp4 ou .gif)" inputmode="url"></div>
+                    <div class="image-upload-box" id="p-video-upload-box"><strong>Vídeo do produto</strong><small>Envie MP4, MOV ou WEBM de até 60 segundos. O portal tentará reduzir resolução e tamanho antes de enviar, preservando o arquivo original quando ele já estiver leve.</small><div class="image-upload-actions"><input id="p-video-file" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.mov,.webm"><button type="button" class="btn secondary" id="p-video-upload-btn">Escolher e enviar vídeo</button><span class="upload-status" id="p-video-upload-status"></span></div><progress class="video-upload-progress" id="p-video-upload-progress" max="100" value="0"></progress><div class="video-upload-summary" id="p-video-upload-summary"></div></div>
+                    <div class="field"><label for="p-video">URL do vídeo ou GIF</label><input id="p-video" type="url" placeholder="Preenchida após o envio ou cole um link https://" inputmode="url"></div>
                   </div>
                 </div>
                 <div class="image-upload-box" data-image-drop-target="p-gallery-files"><strong>Galeria do produto</strong><small>Selecione ou arraste várias fotos. Depois, ordene-as e escolha qualquer uma como capa.</small><div class="image-upload-actions"><input id="p-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple><button type="button" class="btn secondary" id="p-gallery-upload-btn">Adicionar fotos à galeria</button><span class="upload-status" id="p-gallery-upload-status"></span></div><div class="pending-gallery" id="p-pending-gallery"></div></div>
@@ -4479,6 +4486,92 @@
     return data.publicUrl;
   }
 
+  function readVideoInfo(file){
+    return new Promise((resolve,reject)=>{
+      const url=typeof URL.createObjectURL==='function'?URL.createObjectURL(file):'';
+      if(!url){reject(new Error('O navegador não conseguiu abrir o vídeo.'));return;}
+      const video=document.createElement('video');video.preload='metadata';video.playsInline=true;video.muted=true;
+      const cleanup=()=>URL.revokeObjectURL(url);
+      video.onloadedmetadata=()=>{
+        const info={duration:Number(video.duration)||0,width:Number(video.videoWidth)||0,height:Number(video.videoHeight)||0,url,video,cleanup};
+        if(!info.duration||!info.width||!info.height){cleanup();reject(new Error('Não foi possível identificar a duração ou resolução do vídeo.'));return;}
+        resolve(info);
+      };
+      video.onerror=()=>{cleanup();reject(new Error('Formato de vídeo não reconhecido neste aparelho.'));};
+      video.src=url;
+    });
+  }
+
+  function preferredVideoRecordingType(){
+    if(typeof MediaRecorder==='undefined')return '';
+    const options=['video/webm;codecs=vp8,opus','video/webm;codecs=vp8','video/webm','video/mp4;codecs=avc1.42E01E','video/mp4'];
+    return options.find(type=>!MediaRecorder.isTypeSupported||MediaRecorder.isTypeSupported(type))||'';
+  }
+
+  async function optimizeProductVideo(file,onProgress=()=>{}){
+    const allowed=['video/mp4','video/webm','video/quicktime'];
+    const inferred=/\.mov$/i.test(file?.name||'')?'video/quicktime':/\.webm$/i.test(file?.name||'')?'video/webm':/\.mp4$/i.test(file?.name||'')?'video/mp4':'';
+    const inputType=file?.type||inferred;
+    if(!file||!allowed.includes(inputType))throw new Error('Use um vídeo MP4, MOV ou WEBM.');
+    if(file.size>120*1024*1024)throw new Error('O vídeo original deve ter no máximo 120 MB.');
+    const info=await readVideoInfo(file);
+    if(info.duration>60.5){info.cleanup();throw new Error('O vídeo deve ter no máximo 60 segundos. Corte o arquivo e tente novamente.');}
+    const duration=Math.max(1,info.duration),originalSize=file.size;
+    if(originalSize<=8*1024*1024&&inputType!=='video/quicktime'){
+      info.cleanup();onProgress(100);return {file,duration,originalSize,optimized:false};
+    }
+    const canvas=document.createElement('canvas'),recordingType=preferredVideoRecordingType();
+    if(!canvas.captureStream||!recordingType){
+      info.cleanup();
+      if(originalSize<=18*1024*1024){onProgress(100);return {file,duration,originalSize,optimized:false};}
+      throw new Error('Este navegador não consegue reduzir vídeos. Envie um MP4 ou WEBM com até 18 MB.');
+    }
+    const maxSide=720,scale=Math.min(1,maxSide/Math.max(info.width,info.height));
+    canvas.width=Math.max(2,Math.round(info.width*scale/2)*2);canvas.height=Math.max(2,Math.round(info.height*scale/2)*2);
+    const context=canvas.getContext('2d',{alpha:false});
+    if(!context){info.cleanup();throw new Error('O navegador não conseguiu preparar a redução do vídeo.');}
+    const outputStream=canvas.captureStream(24),sourceCapture=typeof info.video.captureStream==='function'?info.video.captureStream():typeof info.video.mozCaptureStream==='function'?info.video.mozCaptureStream():null;
+    if(sourceCapture)sourceCapture.getAudioTracks().forEach(track=>{try{outputStream.addTrack(track);}catch(e){}});
+    const chunks=[];let recorder;
+    try{recorder=new MediaRecorder(outputStream,{mimeType:recordingType,videoBitsPerSecond:850000,audioBitsPerSecond:64000});}
+    catch(error){info.cleanup();if(originalSize<=18*1024*1024)return {file,duration,originalSize,optimized:false};throw new Error('Não foi possível iniciar a redução do vídeo neste aparelho.');}
+    const stopped=new Promise((resolve,reject)=>{recorder.ondataavailable=event=>{if(event.data?.size)chunks.push(event.data);};recorder.onerror=()=>reject(new Error('A redução do vídeo foi interrompida.'));recorder.onstop=resolve;});
+    let frameId=0,timeoutId=0;
+    const draw=()=>{
+      if(info.video.ended||info.video.paused)return;
+      context.drawImage(info.video,0,0,canvas.width,canvas.height);onProgress(Math.min(99,Math.round((info.video.currentTime/duration)*100)));frameId=requestAnimationFrame(draw);
+    };
+    try{
+      info.video.currentTime=0;recorder.start(1000);await info.video.play();draw();
+      await new Promise((resolve,reject)=>{info.video.onended=resolve;info.video.onerror=()=>reject(new Error('Não foi possível processar o vídeo.'));timeoutId=setTimeout(()=>reject(new Error('A redução do vídeo demorou mais que o esperado.')),Math.ceil((duration+15)*1000));});
+      clearTimeout(timeoutId);cancelAnimationFrame(frameId);if(recorder.state!=='inactive')recorder.stop();await stopped;
+    }catch(error){clearTimeout(timeoutId);cancelAnimationFrame(frameId);if(recorder.state!=='inactive')recorder.stop();info.cleanup();if(originalSize<=18*1024*1024)return {file,duration,originalSize,optimized:false};throw error;}
+    info.cleanup();onProgress(100);
+    const outputType=String(recorder.mimeType||recordingType).split(';')[0],blob=new Blob(chunks,{type:outputType});
+    if(!blob.size||blob.size>=originalSize){if(originalSize<=18*1024*1024)return {file,duration,originalSize,optimized:false};throw new Error('O vídeo continuou muito grande após a redução. Tente cortar a duração.');}
+    const extension=outputType==='video/mp4'?'mp4':'webm';
+    return {file:new File([blob],`${file.name.replace(/\.[^.]+$/,'')||'video'}-otimizado.${extension}`,{type:outputType,lastModified:Date.now()}),duration,originalSize,optimized:true};
+  }
+
+  async function uploadProductVideo(file,onProgress){
+    const result=await optimizeProductVideo(file,onProgress),finalFile=result.file;
+    if(finalFile.size>18*1024*1024)throw new Error('O vídeo final ultrapassou 18 MB. Reduza a duração e tente novamente.');
+    const extensions={'video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov'},extension=extensions[finalFile.type]||'mp4';
+    const productCode=(String(document.getElementById('p-code').value).trim().toLowerCase().replace(/[^a-z0-9-]/g,'')||'rascunho');
+    const randomPart=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const path=`${productCode}/videos/${Date.now()}-${randomPart}.${extension}`;
+    const {error}=await supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).upload(path,finalFile,{cacheControl:'31536000',upsert:false,contentType:finalFile.type});
+    if(error){
+      const detail=String(error.message||'');
+      if(/mime|bucket|not found|maximum|size/i.test(detail))throw new Error('O armazenamento ainda não aceita vídeos. Execute o SQL de ativação fornecido e tente novamente.');
+      if(/row.level|policy|unauthorized|permission/i.test(detail))throw new Error('Permissão de envio indisponível. Entre novamente na administração.');
+      throw new Error(`Não foi possível enviar o vídeo: ${detail||'tente novamente.'}`);
+    }
+    const {data}=supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(path);
+    if(!data?.publicUrl)throw new Error('O vídeo foi enviado, mas o link público não pôde ser gerado.');
+    mediaLoaded=false;return {...result,url:data.publicUrl,finalSize:finalFile.size};
+  }
+
   function renderPendingGallery(){
     const wrap=document.getElementById('p-pending-gallery');
     if(!wrap)return;
@@ -4520,6 +4613,28 @@
 
   bindSingleImageUpload('p-main-image-file','p-main-image-upload-btn','p-main-image-upload-status','p-img','principal');
   bindSingleImageUpload('p-first-color-file','p-first-color-upload-btn','p-first-color-upload-status','p-first-color-img','variacoes');
+  const productVideoInput=document.getElementById('p-video-file'),productVideoButton=document.getElementById('p-video-upload-btn'),productVideoStatus=document.getElementById('p-video-upload-status'),productVideoProgress=document.getElementById('p-video-upload-progress'),productVideoSummary=document.getElementById('p-video-upload-summary');
+  async function handleProductVideoFile(file){
+    if(!file)return;
+    productVideoButton.disabled=true;productVideoStatus.textContent='Analisando vídeo…';productVideoProgress.value=0;productVideoProgress.classList.add('active');productVideoSummary.classList.remove('visible');productVideoSummary.innerHTML='';
+    try{
+      const result=await uploadProductVideo(file,percent=>{productVideoProgress.value=percent;productVideoStatus.textContent=percent<100?`Otimizando vídeo… ${percent}%`:'Enviando vídeo…';});
+      document.getElementById('p-video').value=result.url;markProductDirty();
+      const saved=Math.max(0,result.originalSize-result.finalSize),durationText=`${Math.round(result.duration)} s`;
+      productVideoStatus.textContent='Vídeo enviado com sucesso.';
+      productVideoSummary.innerHTML=result.optimized
+        ? `<span aria-hidden="true">✓</span><span><strong>Vídeo otimizado:</strong> ${formatFileSize(result.originalSize)} → ${formatFileSize(result.finalSize)} · ${durationText}${saved?` · redução de ${Math.round(saved/result.originalSize*100)}%`:''}</span>`
+        : `<span aria-hidden="true">✓</span><span><strong>Arquivo já adequado:</strong> ${formatFileSize(result.finalSize)} · ${durationText}</span>`;
+      productVideoSummary.classList.add('visible');updateProductFinalPreview();
+    }catch(error){productVideoStatus.textContent=error.message||'Falha no envio do vídeo.';productVideoProgress.value=0;}
+    finally{productVideoButton.disabled=false;productVideoProgress.classList.remove('active');productVideoInput.value='';}
+  }
+  productVideoButton.addEventListener('click',()=>productVideoInput.click());
+  productVideoInput.addEventListener('change',()=>handleProductVideoFile(productVideoInput.files?.[0]));
+  const productVideoBox=document.getElementById('p-video-upload-box');
+  ['dragenter','dragover'].forEach(type=>productVideoBox.addEventListener(type,event=>{event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='copy';productVideoBox.classList.add('drag-over');}));
+  ['dragleave','drop'].forEach(type=>productVideoBox.addEventListener(type,event=>{event.preventDefault();productVideoBox.classList.remove('drag-over');}));
+  productVideoBox.addEventListener('drop',event=>{const file=[...(event.dataTransfer?.files||[])].find(item=>item.type.startsWith('video/')||/\.(mp4|mov|webm)$/i.test(item.name));if(file)handleProductVideoFile(file);else productVideoStatus.textContent='Arraste um vídeo MP4, MOV ou WEBM.';});
   root.querySelectorAll('[data-image-drop-target]').forEach(box=>{
     ['dragenter','dragover'].forEach(type=>box.addEventListener(type,event=>{event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='copy';box.classList.add('drag-over');}));
     ['dragleave','drop'].forEach(type=>box.addEventListener(type,event=>{event.preventDefault();box.classList.remove('drag-over');}));
@@ -4568,11 +4683,13 @@
     PRODUCTS.forEach(product=>{
       const label=`${product.code} · ${product.name}`;
       add(product.image,`${label} (principal)`,product.code);
+      add(product.video,`${label} (vídeo)`,product.code);
       (product.gallery||[]).forEach((url,index)=>add(url,`${label} (galeria ${index+1})`,product.code));
       (product.colors||[]).forEach(color=>add(color.image,`${label} (${color.name})`,product.code));
     });
     const draftCode=(document.getElementById('p-code')?.value||'').trim().toUpperCase()||null;
     add(document.getElementById('p-img')?.value,'Cadastro em edição (principal)',draftCode);
+    add(document.getElementById('p-video')?.value,'Cadastro em edição (vídeo)',draftCode);
     add(document.getElementById('p-first-color-img')?.value,'Cadastro em edição (variação)',draftCode);
     pendingGallery.forEach((url,index)=>add(url,`Cadastro em edição (galeria ${index+1})`,draftCode));
     return references;
@@ -4598,7 +4715,7 @@
           const isFile=!!entry.metadata||!!entry.id;
           if(isFile){
             const {data:publicData}=supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).getPublicUrl(path);
-            files.push({path,name:entry.name,size:Number(entry.metadata?.size)||0,createdAt:entry.created_at||entry.updated_at||entry.last_accessed_at||'',url:publicData?.publicUrl||''});
+            files.push({path,name:entry.name,size:Number(entry.metadata?.size)||0,mimeType:entry.metadata?.mimetype||entry.metadata?.contentType||'',createdAt:entry.created_at||entry.updated_at||entry.last_accessed_at||'',url:publicData?.publicUrl||''});
           }else if(path.split('/').length<6)queue.push(path);
         }
         if(entries.length<1000)break;
@@ -4625,14 +4742,15 @@
       if(mediaSort==='name')return a.path.localeCompare(b.path,'pt-BR');
       return String(b.createdAt).localeCompare(String(a.createdAt));
     });
-    if(!filtered.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1;"><div class="glyph">▧</div>Nenhuma imagem encontrada com estes filtros.</div>';return;}
+    if(!filtered.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1;"><div class="glyph">▧</div>Nenhum arquivo encontrado com estes filtros.</div>';return;}
     grid.innerHTML=filtered.map(file=>{
       const reference=file.reference,labels=reference?[...reference.labels]:[];
       const date=file.createdAt?new Date(file.createdAt).toLocaleDateString('pt-BR'):'data indisponível';
       const productCode=reference?.productCodes?.size?[...reference.productCodes][0]:'';
-      const linkedProduct=productCode?PRODUCTS.find(item=>item.code===productCode):null,canBecomeCover=!!(linkedProduct&&linkedProduct.image!==file.url);
+      const isVideo=String(file.mimeType).startsWith('video/')||/\.(mp4|mov|webm)$/i.test(file.name);
+      const linkedProduct=productCode?PRODUCTS.find(item=>item.code===productCode):null,canBecomeCover=!!(!isVideo&&linkedProduct&&linkedProduct.image!==file.url);
       return `<article class="media-card">
-        <div class="media-card-image" style="background-image:url('${String(file.url).replace(/'/g,'%27')}')"><span class="badge ${reference?'aprovado':'pendente'}">${reference?'Em uso':'Não vinculada'}</span></div>
+        <div class="media-card-image" ${isVideo?'':`style="background-image:url('${String(file.url).replace(/'/g,'%27')}')"`}>${isVideo?`<video src="${escapeHtml(file.url)}" muted playsinline preload="metadata"></video>`:''}<span class="badge ${reference?'aprovado':'pendente'}">${isVideo?'Vídeo · ':''}${reference?'Em uso':'Não vinculado'}</span></div>
         <div class="media-card-body"><div class="media-card-name" title="${escapeHtml(file.path)}">${escapeHtml(file.name)}</div><div class="media-card-meta">${escapeHtml(labels[0]||file.path)}<br>${formatFileSize(file.size)} · ${date}${labels.length>1?` · +${labels.length-1} vínculo${labels.length===2?'':'s'}`:''}</div>
         <div class="media-card-actions"><button type="button" data-copy-media="${encodeURIComponent(file.url)}">Copiar link</button>${productCode?`<button type="button" data-open-media-product="${escapeHtml(productCode)}">Ver produto</button>`:''}${canBecomeCover?`<button type="button" data-media-cover="${encodeURIComponent(productCode+'|'+file.url)}">★ Usar como capa</button>`:''}<button type="button" data-delete-media="${encodeURIComponent(file.path)}" class="danger-action" ${reference?'disabled title="Remova primeiro a imagem do produto"':'title="Excluir arquivo não vinculado"'}>Excluir</button></div></div>
       </article>`;
@@ -4651,21 +4769,21 @@
     }));
     grid.querySelectorAll('[data-delete-media]').forEach(button=>button.addEventListener('click',async()=>{
       const path=decodeURIComponent(button.dataset.deleteMedia),currentReference=mediaReferenceMap().get(path);
-      if(currentReference){document.getElementById('media-msg').innerHTML='<div class="msg err">Esta imagem voltou a ser usada e não pode ser excluída. Atualize a biblioteca.</div>';return;}
+      if(currentReference){document.getElementById('media-msg').innerHTML='<div class="msg err">Este arquivo voltou a ser usado e não pode ser excluído. Atualize a biblioteca.</div>';return;}
       if(!confirm(`Excluir definitivamente o arquivo “${path}”? Esta ação não pode ser desfeita.`))return;
       button.disabled=true;button.textContent='Excluindo…';
       const {error}=await supabaseClient.storage.from(PRODUCT_IMAGE_BUCKET).remove([path]);
-      if(error){button.disabled=false;button.textContent='Excluir';document.getElementById('media-msg').innerHTML=`<div class="msg err">${escapeHtml(error.message||'Não foi possível excluir a imagem.')}</div>`;return;}
-      MEDIA_FILES=MEDIA_FILES.filter(file=>file.path!==path);document.getElementById('media-msg').innerHTML='<div class="msg ok">Imagem não vinculada excluída.</div>';renderMediaLibrary();
+      if(error){button.disabled=false;button.textContent='Excluir';document.getElementById('media-msg').innerHTML=`<div class="msg err">${escapeHtml(error.message||'Não foi possível excluir o arquivo.')}</div>`;return;}
+      MEDIA_FILES=MEDIA_FILES.filter(file=>file.path!==path);document.getElementById('media-msg').innerHTML='<div class="msg ok">Arquivo não vinculado excluído.</div>';renderMediaLibrary();
     }));
   }
 
   async function loadMediaLibrary(force=false){
     const grid=document.getElementById('media-grid'),message=document.getElementById('media-msg');if(!grid)return;
     if(mediaLoaded&&!force){renderMediaLibrary();return;}
-    grid.innerHTML='<div class="media-loading" style="grid-column:1/-1;">Carregando imagens do catálogo…</div>';message.innerHTML='';
+    grid.innerHTML='<div class="media-loading" style="grid-column:1/-1;">Carregando arquivos do catálogo…</div>';message.innerHTML='';
     try{MEDIA_FILES=await listProductImageFiles();mediaLoaded=true;renderMediaLibrary();}
-    catch(error){grid.innerHTML='<div class="empty" style="grid-column:1/-1;"><div class="glyph">!</div>Não foi possível carregar as imagens.</div>';message.innerHTML=`<div class="msg err">${escapeHtml(error.message||'Confira a configuração do armazenamento.')}</div>`;}
+    catch(error){grid.innerHTML='<div class="empty" style="grid-column:1/-1;"><div class="glyph">!</div>Não foi possível carregar os arquivos.</div>';message.innerHTML=`<div class="msg err">${escapeHtml(error.message||'Confira a configuração do armazenamento.')}</div>`;}
   }
 
   document.getElementById('media-refresh-btn').addEventListener('click',async event=>{const button=event.currentTarget;button.disabled=true;button.textContent='Atualizando…';await loadMediaLibrary(true);button.disabled=false;button.textContent='↻ Atualizar arquivos';});
@@ -5467,8 +5585,10 @@
     document.getElementById('p-color-form-help').textContent = 'Depois de salvar, você poderá acrescentar outras cores e fotografias no catálogo administrativo.';
     document.getElementById('p-image-preview-box').style.backgroundImage = '';
     document.getElementById('p-image-preview-box').textContent = 'Prévia da imagem principal';
-    ['p-main-image-upload-status','p-gallery-upload-status','p-first-color-upload-status'].forEach(id=>document.getElementById(id).textContent='');
-    ['p-main-image-file','p-gallery-files','p-first-color-file'].forEach(id=>document.getElementById(id).value='');
+    ['p-main-image-upload-status','p-gallery-upload-status','p-first-color-upload-status','p-video-upload-status'].forEach(id=>document.getElementById(id).textContent='');
+    ['p-main-image-file','p-gallery-files','p-first-color-file','p-video-file'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('p-video-upload-progress').classList.remove('active');document.getElementById('p-video-upload-progress').value=0;
+    document.getElementById('p-video-upload-summary').classList.remove('visible');document.getElementById('p-video-upload-summary').innerHTML='';
     renderPendingGallery();
     document.getElementById('p-cost-calculation').value = '';
     renderSelectedCostCalculation();
