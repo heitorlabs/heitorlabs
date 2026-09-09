@@ -1094,10 +1094,20 @@
   #portal-root .quality-ok{color:var(--green);font-size:11px;margin-top:7px;}
   #portal-root .quality-card .btn{white-space:nowrap;}
   #portal-root .media-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 190px 190px auto;gap:10px;margin:14px 0;}
-  #portal-root .media-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0;}
+  #portal-root .media-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:14px 0;}
   #portal-root .media-summary-card{padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--panel-2);}
   #portal-root .media-summary-card small{display:block;color:var(--muted);font:600 10px 'IBM Plex Mono';text-transform:uppercase;letter-spacing:.05em;}
   #portal-root .media-summary-card strong{display:block;margin-top:5px;font:700 20px 'Space Grotesk';}
+  #portal-root .media-capacity-panel{display:grid;grid-template-columns:minmax(210px,1fr) 190px;gap:12px 18px;align-items:end;padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--panel-2);}
+  #portal-root .media-capacity-panel strong{display:block;font:700 13px 'Space Grotesk';}
+  #portal-root .media-capacity-panel small{display:block;margin-top:3px;color:var(--muted);font-size:11px;line-height:1.45;}
+  #portal-root .media-capacity-label{color:var(--muted);font-size:11px;}
+  #portal-root .media-capacity-label select{width:100%;margin-top:5px;}
+  #portal-root .media-storage-progress{grid-column:1/-1;height:10px;overflow:hidden;border-radius:999px;background:var(--line);}
+  #portal-root .media-storage-progress span{display:block;width:0;height:100%;border-radius:inherit;background:var(--grad);transition:width .25s ease;}
+  #portal-root .media-storage-progress span.warning{background:linear-gradient(90deg,#f0a33a,#ee7246);}
+  #portal-root .media-storage-progress span.danger{background:linear-gradient(90deg,#ee7246,#c23349);}
+  #portal-root .media-storage-detail{grid-column:1/-1;color:var(--muted);font-size:11px;margin-top:-5px;}
   #portal-root .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;}
   #portal-root .media-card{overflow:hidden;border:1px solid var(--line);border-radius:13px;background:var(--panel);}
   #portal-root .media-card-image{position:relative;aspect-ratio:4/3;background:var(--panel-2) center/cover no-repeat;}
@@ -1138,6 +1148,8 @@
     #portal-root .quality-card .btn{grid-column:1/-1;justify-content:center;}
     #portal-root .media-toolbar{grid-template-columns:1fr;}
     #portal-root .media-summary{grid-template-columns:1fr 1fr;}
+    #portal-root .media-capacity-panel{grid-template-columns:1fr;}
+    #portal-root .media-storage-progress,#portal-root .media-storage-detail{grid-column:1;}
     #portal-root .media-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
     #portal-root .media-card-actions{grid-template-columns:1fr;}
   }
@@ -1707,11 +1719,19 @@
         <div class="admin-tab" data-tab="midia" style="display:none;">
           <div class="panel">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
-              <div><h3 style="font-size:17px;margin-bottom:4px;">Biblioteca de imagens</h3><p style="color:var(--muted);font-size:13px;margin:0;line-height:1.45;">Consulte as fotos enviadas e remova somente arquivos que não estejam vinculados ao catálogo.</p></div>
+              <div><h3 style="font-size:17px;margin-bottom:4px;">Biblioteca de mídia</h3><p style="color:var(--muted);font-size:13px;margin:0;line-height:1.45;">Consulte fotos e vídeos enviados e remova somente arquivos que não estejam vinculados ao catálogo.</p></div>
               <button type="button" class="btn secondary" id="media-refresh-btn">↻ Atualizar arquivos</button>
             </div>
             <div class="media-summary" id="media-summary">
-              <div class="media-summary-card"><small>Arquivos</small><strong>—</strong></div><div class="media-summary-card"><small>Em uso</small><strong>—</strong></div><div class="media-summary-card"><small>Não vinculados</small><strong>—</strong></div><div class="media-summary-card"><small>Espaço usado</small><strong>—</strong></div>
+              <div class="media-summary-card"><small>Arquivos</small><strong>—</strong></div><div class="media-summary-card"><small>Em uso</small><strong>—</strong></div><div class="media-summary-card"><small>Não vinculados</small><strong>—</strong></div><div class="media-summary-card"><small>Espaço usado</small><strong>—</strong></div><div class="media-summary-card"><small>Disponível estimado</small><strong>—</strong></div>
+            </div>
+            <div class="media-capacity-panel">
+              <div><strong>Capacidade considerada</strong><small>O Supabase não informa ao portal a cota total do plano. Escolha o limite da sua biblioteca para acompanhar uma estimativa.</small></div>
+              <label class="media-capacity-label">Limite da biblioteca
+                <select id="media-capacity-select" class="search-input"><option value="500">500 MB</option><option value="1024">1 GB</option><option value="2048">2 GB</option><option value="5120">5 GB</option><option value="10240">10 GB</option></select>
+              </label>
+              <div class="media-storage-progress" role="progressbar" aria-label="Espaço utilizado" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="media-storage-bar"></span></div>
+              <div class="media-storage-detail" id="media-storage-detail">Carregue os arquivos para calcular o uso.</div>
             </div>
             <div class="media-toolbar">
               <input type="search" id="media-search" class="search-input" placeholder="Buscar por produto, pasta ou arquivo...">
@@ -2118,6 +2138,8 @@
   let mediaSearch = '';
   let mediaStatus = 'all';
   let mediaSort = 'recent';
+  const MEDIA_CAPACITY_KEY = 'hl_media_capacity_mb';
+  let mediaCapacityMb = Number(localStorage.getItem(MEDIA_CAPACITY_KEY)) || 1024;
   let qualitySearch = '';
   let qualityStatus = 'attention';
   let qualitySort = 'score';
@@ -4698,6 +4720,7 @@
   function formatFileSize(bytes){
     const value=Number(bytes)||0;if(value<1024)return `${value} B`;
     if(value<1024*1024)return `${(value/1024).toFixed(1).replace('.',',')} KB`;
+    if(value>=1024*1024*1024)return `${(value/(1024*1024*1024)).toFixed(2).replace('.',',')} GB`;
     return `${(value/(1024*1024)).toFixed(2).replace('.',',')} MB`;
   }
 
@@ -4730,7 +4753,12 @@
     const references=mediaReferenceMap();
     const enriched=MEDIA_FILES.map(file=>({...file,reference:references.get(file.path)||null}));
     const used=enriched.filter(file=>file.reference).length,totalSize=enriched.reduce((sum,file)=>sum+file.size,0);
-    summary.innerHTML=`<div class="media-summary-card"><small>Arquivos</small><strong>${enriched.length}</strong></div><div class="media-summary-card"><small>Em uso</small><strong>${used}</strong></div><div class="media-summary-card"><small>Não vinculados</small><strong>${enriched.length-used}</strong></div><div class="media-summary-card"><small>Espaço usado</small><strong>${formatFileSize(totalSize)}</strong></div>`;
+    const capacityBytes=mediaCapacityMb*1024*1024,availableBytes=Math.max(0,capacityBytes-totalSize),usagePercent=capacityBytes?Math.min(100,(totalSize/capacityBytes)*100):0;
+    summary.innerHTML=`<div class="media-summary-card"><small>Arquivos</small><strong>${enriched.length}</strong></div><div class="media-summary-card"><small>Em uso</small><strong>${used}</strong></div><div class="media-summary-card"><small>Não vinculados</small><strong>${enriched.length-used}</strong></div><div class="media-summary-card"><small>Espaço usado</small><strong>${formatFileSize(totalSize)}</strong></div><div class="media-summary-card"><small>Disponível estimado</small><strong>${formatFileSize(availableBytes)}</strong></div>`;
+    const storageBar=document.getElementById('media-storage-bar'),storageDetail=document.getElementById('media-storage-detail'),storageProgress=storageBar?.parentElement;
+    if(storageBar){storageBar.style.width=`${usagePercent}%`;storageBar.className=usagePercent>=95?'danger':usagePercent>=80?'warning':'';}
+    if(storageProgress)storageProgress.setAttribute('aria-valuenow',usagePercent.toFixed(1));
+    if(storageDetail)storageDetail.textContent=`${formatFileSize(totalSize)} usados de ${formatFileSize(capacityBytes)} (${usagePercent.toFixed(1).replace('.',',')}%). Restam aproximadamente ${formatFileSize(availableBytes)}.`;
     const query=mediaSearch.toLowerCase();
     const filtered=enriched.filter(file=>{
       const statusMatch=mediaStatus==='all'||(mediaStatus==='used'&&file.reference)||(mediaStatus==='unused'&&!file.reference);
@@ -4790,6 +4818,12 @@
   document.getElementById('media-search').addEventListener('input',event=>{mediaSearch=event.target.value.trim();renderMediaLibrary();});
   document.getElementById('media-status').addEventListener('change',event=>{mediaStatus=event.target.value;renderMediaLibrary();});
   document.getElementById('media-sort').addEventListener('change',event=>{mediaSort=event.target.value;renderMediaLibrary();});
+  const mediaCapacitySelect=document.getElementById('media-capacity-select');
+  if(mediaCapacitySelect){
+    if(![...mediaCapacitySelect.options].some(option=>Number(option.value)===mediaCapacityMb))mediaCapacityMb=1024;
+    mediaCapacitySelect.value=String(mediaCapacityMb);
+    mediaCapacitySelect.addEventListener('change',event=>{mediaCapacityMb=Number(event.target.value)||1024;localStorage.setItem(MEDIA_CAPACITY_KEY,String(mediaCapacityMb));renderMediaLibrary();});
+  }
   document.getElementById('media-copy-unused-btn').addEventListener('click',async()=>{
     const references=mediaReferenceMap(),paths=MEDIA_FILES.filter(file=>!references.has(file.path)).map(file=>file.path);
     if(!paths.length){document.getElementById('media-msg').innerHTML='<div class="msg ok">Não há imagens não vinculadas.</div>';return;}
