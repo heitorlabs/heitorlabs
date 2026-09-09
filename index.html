@@ -891,6 +891,12 @@
   #portal-root .partner-access-panel .btn{width:100%;min-height:46px;}
   #portal-root .partner-access-note{display:flex;gap:9px;align-items:flex-start;margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.45;}
   #portal-root .partner-access-note span{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:8px;background:rgba(105,71,199,.12);color:var(--violet);flex:0 0 auto;}
+  #portal-root .first-access-box{display:none;margin-top:14px;padding:14px;border:1px solid rgba(105,71,199,.35);border-radius:13px;background:rgba(105,71,199,.07);}
+  #portal-root .first-access-box.open{display:block;}
+  #portal-root .first-access-box h3{margin:0 0 5px;font:700 15px 'Space Grotesk';}
+  #portal-root .first-access-box p{margin:0 0 12px;color:var(--muted);font-size:12px;line-height:1.45;}
+  #portal-root .partner-help-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+  #portal-root .partner-help-actions .btn{min-height:40px;font-size:12px;}
   #portal-root .partner-help-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--ink);font:700 12px 'Space Grotesk';cursor:pointer;transition:.15s;white-space:nowrap;}
   #portal-root .partner-help-btn:hover{border-color:var(--violet);color:var(--violet);transform:translateY(-1px);}
   #portal-root .partner-tour-overlay{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(10,10,13,.72);backdrop-filter:blur(6px);}
@@ -1385,7 +1391,7 @@
           </div>
         </div>
         <div class="panel partner-access-panel">
-          <p class="partner-access-note"><span>→</span>Use o código e o PIN individuais informados pela HL. Esses dados dão acesso somente à sua consignação.</p>
+          <p class="partner-access-note"><span>→</span>Se este for seu primeiro acesso, utilize o código de ativação enviado pela HL para criar seu PIN pessoal.</p>
           <div class="field">
             <label for="client-code-input">Código de parceiro</label>
             <input type="text" id="client-code-input" placeholder="Ex.: C001" class="mono" style="text-transform:uppercase;" autocomplete="off" autocapitalize="characters">
@@ -1396,6 +1402,13 @@
           </div>
           <div id="client-gate-msg"></div>
           <button class="btn" id="client-access-btn">Acessar minha conta</button>
+          <div class="partner-help-actions"><button type="button" class="btn secondary" id="client-first-access-toggle">Primeiro acesso</button><a class="btn secondary" id="client-forgot-pin-link" target="_blank" rel="noopener">Esqueci meu PIN</a></div>
+          <div class="first-access-box" id="client-first-access-box">
+            <h3>Criar meu PIN</h3><p>Digite o código descartável recebido da HL e escolha um PIN numérico de 4 a 8 dígitos.</p>
+            <div class="field"><label for="client-activation-input">Código de ativação</label><input id="client-activation-input" class="mono" maxlength="8" autocomplete="one-time-code" placeholder="Ex.: 7A3F91BC" style="text-transform:uppercase;"></div>
+            <div class="row"><div class="field"><label for="client-new-pin-input">Novo PIN</label><input type="password" id="client-new-pin-input" inputmode="numeric" maxlength="8" autocomplete="new-password" placeholder="4 a 8 números"></div><div class="field"><label for="client-confirm-pin-input">Confirmar PIN</label><input type="password" id="client-confirm-pin-input" inputmode="numeric" maxlength="8" autocomplete="new-password" placeholder="Repita o PIN"></div></div>
+            <div id="client-activation-msg"></div><button type="button" class="btn" id="client-activate-btn">Criar PIN e acessar</button>
+          </div>
         </div>
       </div>
 
@@ -1779,8 +1792,8 @@
               <div class="field"><label>CPF/CNPJ</label><input id="c-document" placeholder="000.000.000-00"></div>
             </div>
             <div class="row" style="align-items:flex-end;">
-              <div class="field" style="flex:2;"><label>PIN individual de acesso</label><input id="c-pin" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password" placeholder="4 a 8 números — vazio mantém o atual"><small style="display:block;margin-top:5px;color:var(--muted);font-size:11px;">O PIN não será exibido novamente. Em clientes novos, ele é obrigatório.</small></div>
-              <div class="field" style="flex:0 0 auto;"><button type="button" class="btn secondary" id="c-generate-pin-btn">Gerar PIN seguro</button></div>
+              <div class="field" style="flex:2;"><label>Redefinição manual do PIN — opcional</label><input id="c-pin" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password" placeholder="Use somente se precisar redefinir o acesso"><small style="display:block;margin-top:5px;color:var(--muted);font-size:11px;">Ao cadastrar um novo parceiro, o portal gera automaticamente um código descartável para ele criar o próprio PIN.</small></div>
+              <div class="field" style="flex:0 0 auto;"><button type="button" class="btn secondary" id="c-generate-pin-btn">Gerar PIN manual</button></div>
             </div>
             <div class="field">
               <label>Observações</label>
@@ -3601,6 +3614,11 @@
     renderPortfolio();
     return {ok:true,status:'ok'};
   }
+  async function activatePartnerAccess(code,activationCode,newPin){
+    const {data,error}=await supabaseClient.rpc('partner_activate',{p_client_code:String(code||'').trim().toUpperCase(),p_activation_code:String(activationCode||'').trim().toUpperCase(),p_new_pin:String(newPin||'')});
+    if(error)throw error;
+    return typeof data==='string'?JSON.parse(data):data;
+  }
   let partnerLockTimer=null;
   function setPartnerAccessDisabled(disabled){
     ['client-code-input','client-pin-input','client-access-btn'].forEach(id=>{document.getElementById(id).disabled=disabled;});
@@ -3957,6 +3975,12 @@
     }
     btn.disabled=false;btn.textContent='Acessar minha conta';
     if(!result.ok){
+      if(result.status==='activation_required'){
+        document.getElementById('client-first-access-box').classList.add('open');
+        document.getElementById('client-activation-input').focus();
+        msg.innerHTML='<div class="msg err">Este cadastro ainda não foi ativado. Use o código descartável para criar seu PIN.</div>';
+        return;
+      }
       if(result.status==='locked'&&result.lockedUntil){showPartnerLock(result.lockedUntil);return;}
       if(!msg.innerHTML){const remaining=Number.isFinite(Number(result.attemptsRemaining))?Number(result.attemptsRemaining):null;msg.innerHTML=`<div class="msg err">Código ou PIN inválido.${remaining!==null?` Restam <strong>${remaining}</strong> tentativa${remaining===1?'':'s'} antes do bloqueio.`:' Após cinco tentativas, o acesso fica temporariamente bloqueado.'}</div>`;}
       return;
@@ -3966,6 +3990,35 @@
     openClientDashboard(currentClientCode);
   });
   ['client-code-input','client-pin-input'].forEach(id=>document.getElementById(id).addEventListener('keydown',event=>{if(event.key==='Enter')document.getElementById('client-access-btn').click();}));
+  document.getElementById('client-first-access-toggle').addEventListener('click',()=>{
+    const box=document.getElementById('client-first-access-box'),open=!box.classList.contains('open');box.classList.toggle('open',open);
+    document.getElementById('client-first-access-toggle').textContent=open?'Fechar primeiro acesso':'Primeiro acesso';
+    if(open)document.getElementById('client-activation-input').focus();
+  });
+  document.getElementById('client-forgot-pin-link').href=`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Esqueci meu PIN de acesso à Área do Parceiro da Heitor Labs e preciso de um novo código de ativação.')}`;
+  document.getElementById('client-activate-btn').addEventListener('click',async()=>{
+    const code=document.getElementById('client-code-input').value.trim().toUpperCase(),activation=document.getElementById('client-activation-input').value.trim().toUpperCase();
+    const pin=document.getElementById('client-new-pin-input').value.trim(),confirmation=document.getElementById('client-confirm-pin-input').value.trim(),msg=document.getElementById('client-activation-msg'),button=document.getElementById('client-activate-btn');
+    msg.innerHTML='';
+    if(!code){msg.innerHTML='<div class="msg err">Informe seu código de parceiro no campo acima.</div>';return;}
+    if(!/^[A-F0-9]{8}$/.test(activation)){msg.innerHTML='<div class="msg err">Informe o código de ativação de 8 caracteres enviado pela HL.</div>';return;}
+    if(!/^\d{4,8}$/.test(pin)){msg.innerHTML='<div class="msg err">O novo PIN deve conter de 4 a 8 números.</div>';return;}
+    if(pin!==confirmation){msg.innerHTML='<div class="msg err">A confirmação do PIN não corresponde.</div>';return;}
+    button.disabled=true;button.textContent='Criando PIN…';
+    try{
+      const result=await activatePartnerAccess(code,activation,pin);
+      if(result?.status==='activated'){
+        msg.innerHTML='<div class="msg ok">PIN criado com sucesso. Acessando sua área…</div>';
+        const login=await unlockClient(code,pin);
+        if(login.ok){document.getElementById('client-pin-input').value='';openClientDashboard(currentClientCode);return;}
+      }else if(result?.status==='locked'&&result.lockedUntil){showPartnerLock(result.lockedUntil);msg.innerHTML='<div class="msg err">Muitas tentativas incorretas. Aguarde o desbloqueio para tentar novamente.</div>';}
+      else if(result?.status==='expired')msg.innerHTML='<div class="msg err">Este código expirou. Solicite um novo código pelo WhatsApp.</div>';
+      else if(result?.status==='unavailable')msg.innerHTML='<div class="msg err">Este código já foi utilizado ou não está mais disponível.</div>';
+      else if(result?.status==='invalid_pin')msg.innerHTML='<div class="msg err">Escolha um PIN contendo de 4 a 8 números.</div>';
+      else {const remaining=Number(result?.attemptsRemaining);msg.innerHTML=`<div class="msg err">Código de ativação inválido.${Number.isFinite(remaining)?` Restam <strong>${remaining}</strong> tentativa${remaining===1?'':'s'}.`:''}</div>`;}
+    }catch(error){msg.innerHTML=`<div class="msg err">${isMissingSecurityFunction(error)?'Execute a atualização de primeiro acesso no Supabase.':'Não foi possível ativar o acesso agora. Tente novamente.'}</div>`;}
+    finally{button.disabled=false;button.textContent='Criar PIN e acessar';}
+  });
   function doClientLogout(){
     clearInterval(partnerLockTimer);setPartnerAccessDisabled(false);
     stopPartnerActivity();
@@ -5496,8 +5549,8 @@
     document.getElementById('c-list').innerHTML = CLIENTS.length ? CLIENTS.map(c=>`
       <div class="list-row" id="client-row-${c.code}" style="flex-direction:column;align-items:stretch;gap:4px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-          <span class="mono">${c.code} — ${escapeHtml(c.name)} — ${escapeHtml(c.contact)||'sem contato'}${c.responsavel ? ' · resp.: '+escapeHtml(c.responsavel) : ''}${c.document ? ' · '+escapeHtml(c.document) : ''} · <span class="badge ${c.pinConfigured?'aprovado':'pendente'}">${c.pinConfigured?'PIN configurado':'PIN pendente'}</span></span>
-          <span class="actions"><button data-edit-client="${c.code}">Editar</button><button data-del-client="${c.code}">Remover</button></span>
+          <span class="mono">${c.code} — ${escapeHtml(c.name)} — ${escapeHtml(c.contact)||'sem contato'}${c.responsavel ? ' · resp.: '+escapeHtml(c.responsavel) : ''}${c.document ? ' · '+escapeHtml(c.document) : ''} · <span class="badge ${c.pinConfigured?'aprovado':'pendente'}">${c.pinConfigured?'Acesso configurado':c.activationPending?'Aguardando ativação':'Acesso pendente'}</span></span>
+          <span class="actions"><button data-new-activation="${c.code}">Novo código de acesso</button><button data-edit-client="${c.code}">Editar</button><button data-del-client="${c.code}">Remover</button></span>
         </div>
         ${c.notes ? `<div style="color:var(--muted);font-size:11px;white-space:pre-wrap;">${escapeHtml(c.notes)}</div>` : ''}
       </div>
@@ -5641,6 +5694,16 @@
       await setJSON('clients', CLIENTS);
       try{await adminRemovePartnerPin(code);}catch(error){console.error('Falha ao remover credencial do parceiro',error);}
       refreshAdminSelects(); renderAdminLists();
+    }));
+    root.querySelectorAll('[data-new-activation]').forEach(button=>button.addEventListener('click',async()=>{
+      const code=button.dataset.newActivation,client=CLIENTS.find(item=>item.code===code);if(!client)return;
+      if(!confirm(`Gerar um novo código descartável para ${client.name}? O PIN atual e as sessões abertas deixarão de funcionar.`))return;
+      button.disabled=true;button.textContent='Gerando…';
+      try{
+        const activationCode=await adminCreatePartnerActivation(code);
+        CLIENTS=await getJSON('clients',CLIENTS);const fresh=CLIENTS.find(item=>item.code===code);if(fresh){fresh.pinConfigured=false;fresh.activationPending=true;await setJSON('clients',CLIENTS);}
+        showPartnerActivationCode(code,client.name,activationCode);renderAdminLists();
+      }catch(error){document.getElementById('c-msg').innerHTML=`<div class="msg err">${escapeHtml(error.message||'Não foi possível gerar o novo código.')}</div>`;button.disabled=false;button.textContent='Novo código de acesso';}
     }));
     root.querySelectorAll('[data-edit-client]').forEach(b=>b.addEventListener('click', ()=>{
       const c = CLIENTS.find(c=>c.code===b.dataset.editClient);
@@ -6068,6 +6131,17 @@
       throw error;
     }
   }
+  async function adminCreatePartnerActivation(code){
+    const {data,error}=await supabaseClient.rpc('admin_create_partner_activation',{p_client_code:code});
+    if(error){if(isMissingSecurityFunction(error))throw new Error('Execute a atualização de primeiro acesso no Supabase.');throw error;}
+    return String(data||'').trim().toUpperCase();
+  }
+  function showPartnerActivationCode(code,name,activationCode){
+    const msg=document.getElementById('c-msg');
+    const invite=`Olá, ${name}! Seu acesso à Área do Parceiro da Heitor Labs foi criado. Código do parceiro: ${code}. Código de ativação: ${activationCode}. No primeiro acesso, escolha a opção “Primeiro acesso” e crie seu PIN pessoal. O código de ativação é descartável e válido por 30 dias.`;
+    msg.innerHTML=`<div class="msg ok"><strong>Cliente salvo. Código de ativação:</strong> <span class="mono" style="font-size:16px;">${escapeHtml(activationCode)}</span><br><span style="font-size:11px;">Válido por 30 dias e utilizado uma única vez.</span><div style="margin-top:9px;display:flex;gap:7px;flex-wrap:wrap;"><button type="button" class="btn secondary" id="c-copy-activation-btn">Copiar mensagem de acesso</button></div></div>`;
+    document.getElementById('c-copy-activation-btn').addEventListener('click',async event=>{try{await navigator.clipboard.writeText(invite);event.currentTarget.textContent='Mensagem copiada';}catch(e){window.prompt('Copie a mensagem abaixo:',invite);}});
+  }
   async function adminRemovePartnerPin(code){
     const {error}=await supabaseClient.rpc('admin_remove_partner_pin',{p_client_code:code});
     if(error&&!isMissingSecurityFunction(error))throw error;
@@ -6084,7 +6158,6 @@
     const msg = document.getElementById('c-msg');
     if(!code || !name){ msg.innerHTML = '<div class="msg err">Preencha código e nome.</div>'; return; }
     if(pin&&!/^\d{4,8}$/.test(pin)){msg.innerHTML='<div class="msg err">O PIN deve conter somente 4 a 8 números.</div>';return;}
-    if(!editingClientCode&&!pin){msg.innerHTML='<div class="msg err">Gere ou informe um PIN para o novo parceiro.</div>';return;}
 
     if(editingClientCode){
       CLIENTS = await getJSON('clients', CLIENTS);
@@ -6096,8 +6169,8 @@
         msg.innerHTML = '<div class="msg err">Já existe outro cliente com esse código.</div>';
         return;
       }
-      if(codeChanged&&!pin){msg.innerHTML='<div class="msg err">Ao alterar o código do parceiro, informe também um novo PIN.</div>';return;}
-      try{if(pin)await adminSetPartnerPin(code,pin);}catch(error){msg.innerHTML=`<div class="msg err">${escapeHtml(error.message||'Não foi possível configurar o PIN.')}</div>`;return;}
+      let activationCode='';
+      try{if(codeChanged)activationCode=await adminCreatePartnerActivation(code);else if(pin)await adminSetPartnerPin(code,pin);}catch(error){msg.innerHTML=`<div class="msg err">${escapeHtml(error.message||'Não foi possível configurar o acesso.')}</div>`;return;}
       if(codeChanged){
         // atualiza em cascata todos os registros que referenciam o código antigo, pra não perder o histórico
         const oldCode = editingClientCode;
@@ -6128,22 +6201,23 @@
       c.document = document_;
       c.notes = notes;
       if(pin)c.pinConfigured=true;
+      if(codeChanged){c.pinConfigured=false;c.activationPending=true;}
       await setJSON('clients', CLIENTS);
       if(codeChanged)await adminRemovePartnerPin(editingClientCode);
-      msg.innerHTML = codeChanged
-        ? '<div class="msg ok">Alterações salvas — código atualizado em todos os registros vinculados.</div>'
-        : '<div class="msg ok">Alterações salvas.</div>';
+      msg.innerHTML = '<div class="msg ok">Alterações salvas.</div>';
       resetClientForm();
+      if(codeChanged)showPartnerActivationCode(code,name,activationCode);
       refreshAdminSelects(); renderAdminLists();
       return;
     }
 
     if(CLIENTS.some(c=>c.code===code)){ msg.innerHTML = '<div class="msg err">Já existe um cliente com esse código.</div>'; return; }
-    try{await adminSetPartnerPin(code,pin);}catch(error){msg.innerHTML=`<div class="msg err">${escapeHtml(error.message||'Não foi possível configurar o PIN.')}</div>`;return;}
-    CLIENTS.push({code, name, contact, responsavel, document: document_, notes, status:'Ativo',pinConfigured:true});
+    let activationCode='';
+    try{activationCode=await adminCreatePartnerActivation(code);}catch(error){msg.innerHTML=`<div class="msg err">${escapeHtml(error.message||'Não foi possível gerar o código de ativação.')}</div>`;return;}
+    CLIENTS.push({code, name, contact, responsavel, document: document_, notes, status:'Ativo',pinConfigured:false,activationPending:true});
     await setJSON('clients', CLIENTS);
-    msg.innerHTML = '<div class="msg ok">Cliente adicionado.</div>';
     resetClientForm();
+    showPartnerActivationCode(code,name,activationCode);
     refreshAdminSelects(); renderAdminLists();
   });
 
