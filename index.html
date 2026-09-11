@@ -641,6 +641,9 @@
   #portal-root .crop-guide{position:absolute;inset:8.33%;border:1px dashed rgba(255,255,255,.82);box-shadow:0 0 0 1px rgba(0,0,0,.18);pointer-events:none;}
   #portal-root .crop-controls{display:grid;grid-template-columns:auto auto minmax(160px,1fr) auto;gap:8px;align-items:center;margin-top:13px;}
   #portal-root .crop-controls button{min-height:40px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);color:var(--ink);font-weight:700;cursor:pointer;}
+  #portal-root .crop-fit{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;padding:5px;border:1px solid var(--line);border-radius:11px;background:var(--panel-2);}
+  #portal-root .crop-fit button{min-height:42px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font:700 12px 'Inter';cursor:pointer;}
+  #portal-root .crop-fit button.active{background:var(--panel);border-color:var(--violet);color:var(--violet);box-shadow:0 3px 10px rgba(0,0,0,.08);}
   #portal-root .crop-zoom{display:flex;align-items:center;gap:8px;padding:0 6px;color:var(--muted);font-size:11px;}
   #portal-root .crop-zoom input{padding:0;min-height:auto;accent-color:var(--violet);}
   #portal-root .crop-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:15px;padding-top:14px;border-top:1px solid var(--line);}
@@ -1394,7 +1397,7 @@
           <p class="partner-access-note"><span>→</span>Se este for seu primeiro acesso, utilize o código de ativação enviado pela HL para criar seu PIN pessoal.</p>
           <div class="field">
             <label for="client-code-input">Código de parceiro</label>
-            <input type="text" id="client-code-input" placeholder="Ex.: C001" class="mono" style="text-transform:uppercase;" autocomplete="off" autocapitalize="characters">
+            <input type="text" id="client-code-input" placeholder="Ex.: HL0001" class="mono" style="text-transform:uppercase;" autocomplete="off" autocapitalize="characters">
           </div>
           <div class="field">
             <label for="client-pin-input">PIN de acesso</label>
@@ -1683,6 +1686,7 @@
                 </div>
                 <div class="image-upload-box" id="p-video-upload-box"><strong>▶ Vídeo do produto</strong><small>Escolha um vídeo do celular ou computador. Formatos MP4, MOV ou WEBM, com até 60 segundos. O portal tentará reduzir a resolução e o tamanho antes do envio.</small><div class="image-upload-actions"><input id="p-video-file" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.mov,.webm"><button type="button" class="btn secondary" id="p-video-upload-btn">Selecionar e enviar vídeo</button><span class="upload-status" id="p-video-upload-status"></span></div><progress class="video-upload-progress" id="p-video-upload-progress" max="100" value="0"></progress><div class="video-upload-summary" id="p-video-upload-summary"></div></div>
                 <div class="field"><label for="p-video">Link do vídeo ou GIF — opcional</label><input id="p-video" type="url" placeholder="O link será preenchido após o envio, ou você pode colar um endereço https://" inputmode="url"></div>
+                <label style="display:flex;align-items:flex-start;gap:9px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel-2);font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';margin-bottom:14px;"><input type="checkbox" id="p-video-sound" style="width:18px;height:18px;margin-top:1px;"><span><strong style="display:block;font-family:'Space Grotesk';">Reproduzir este vídeo com som</strong><small style="display:block;margin-top:3px;color:var(--muted);line-height:1.4;">Desmarcado, o vídeo será exibido silenciosamente e poderá iniciar automaticamente. Marcado, mostrará controles e aguardará o visitante tocar para reproduzir com áudio.</small></span></label>
                 <div class="image-upload-box" data-image-drop-target="p-gallery-files"><strong>Galeria do produto</strong><small>Selecione ou arraste várias fotos. Depois, ordene-as e escolha qualquer uma como capa.</small><div class="image-upload-actions"><input id="p-gallery-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple><button type="button" class="btn secondary" id="p-gallery-upload-btn">Adicionar fotos à galeria</button><span class="upload-status" id="p-gallery-upload-status"></span></div><div class="pending-gallery" id="p-pending-gallery"></div></div>
                 <div class="row" style="align-items:center;"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';"><input type="checkbox" id="p-ondemand" style="width:18px;height:18px;">Produto feito somente sob encomenda, sem controle de estoque</label></div>
                 <div class="row" style="align-items:center;"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink);cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Inter';"><input type="checkbox" id="p-customizable" style="width:18px;height:18px;">Este produto também pode ser personalizado</label></div>
@@ -1783,7 +1787,7 @@
           <div class="panel" style="margin-bottom:20px;">
             <h3 style="font-size:14px;margin-bottom:14px;" id="c-form-title">Novo cliente</h3>
             <div class="row">
-              <div class="field"><label>Código</label><input id="c-code" placeholder="C002"></div>
+              <div class="field"><label>Código do parceiro</label><input id="c-code" placeholder="Gerado automaticamente" class="mono" readonly aria-readonly="true"><small style="display:block;margin-top:5px;color:var(--muted);font-size:11px;">Sequencial automático no padrão HL0001.</small></div>
               <div class="field" style="flex:2;"><label>Nome / Razão social</label><input id="c-name" placeholder="Nome da loja"></div>
               <div class="field"><label>Contato</label><input id="c-contact" placeholder="(34) 90000-0000"></div>
             </div>
@@ -2048,6 +2052,7 @@
     <div class="crop-box" tabindex="-1">
       <div class="crop-head"><div><h3 id="image-crop-title">Ajustar fotografia</h3><p>Arraste a imagem para posicioná-la. A área quadrada será usada no catálogo.</p></div></div>
       <div class="crop-stage" id="image-crop-stage"><canvas id="image-crop-canvas" width="800" height="800"></canvas><div class="crop-guide" aria-hidden="true"></div></div>
+      <div class="crop-fit" role="group" aria-label="Forma de enquadramento"><button type="button" id="image-crop-cover" class="active">Preencher o quadro</button><button type="button" id="image-crop-contain">Mostrar foto inteira</button></div>
       <div class="crop-controls">
         <button type="button" id="image-crop-left" title="Girar para a esquerda">↶ Girar</button>
         <button type="button" id="image-crop-right" title="Girar para a direita">Girar ↷</button>
@@ -2759,8 +2764,8 @@
     track.innerHTML = carouselItems.map(item=>{
       if(item.type === 'video'){
         return `<div class="carousel-slide" data-type="video">
-          <video src="${item.url}" muted loop autoplay playsinline></video>
-          <div class="play-overlay" onclick="window.hlOpenLightbox()"><div class="play-circle">▶</div></div>
+          <video src="${item.url}" ${item.muted!==false?'muted loop autoplay':'controls preload="metadata"'} playsinline></video>
+          ${item.muted!==false?'<div class="play-overlay" onclick="window.hlOpenLightbox()"><div class="play-circle">▶</div></div>':''}
         </div>`;
       }
       if(item.type === 'gif'){
@@ -2800,7 +2805,7 @@
     });
     // pausa vídeos que não estão visíveis, garante que o visível esteja tocando
     document.querySelectorAll('#modal-carousel-track video').forEach((v,i)=>{
-      if(i === carouselIndex){ v.play().catch(()=>{}); } else { v.pause(); }
+      if(i === carouselIndex&&v.muted){ v.play().catch(()=>{}); } else { v.pause(); }
     });
     // se a foto atual for de uma cor específica, seleciona essa cor automaticamente no formulário de pedido
     const currentItem = carouselItems[carouselIndex];
@@ -2862,6 +2867,7 @@
     lbImage.style.display = 'none'; lbImage.removeAttribute('src');
     if(item.type === 'video'){
       lbVideo.src = item.url;
+      lbVideo.muted = item.muted !== false;
       lbVideo.style.display = 'block';
       lbVideo.play().catch(()=>{});
     } else if(item.type === 'gif'){
@@ -2916,7 +2922,7 @@
     carouselItems = [];
     if(p.video){
       const isGif = /\.gif($|\?)/i.test(p.video);
-      carouselItems.push({ type: isGif ? 'gif' : 'video', url: p.video });
+      carouselItems.push({ type: isGif ? 'gif' : 'video', url: p.video, muted: p.videoMuted !== false });
     }
     const seenUrls = new Set();
     const defaultColorName = (p.colors && p.colors.length) ? p.colors[0].name : null;
@@ -4255,6 +4261,7 @@
     }
     const selectedCalculation=document.getElementById('p-cost-calculation')?.value||'';
     renderCostCalculationOptions(selectedCalculation);
+    updateNewClientCode();
   }
 
   function updateColorSelect(productSelectId, colorSelectId, opts){
@@ -4298,7 +4305,7 @@
   function captureProductDraft(){
     const ids=['p-code','p-prefix','p-name','p-public-price','p-price','p-promo-price','p-img','p-video','p-desc','p-first-color-name','p-first-color-stock','p-first-color-price','p-first-color-promo','p-first-color-img','p-customizable-minqty','p-cost-calculation'];
     const values={};ids.forEach(id=>{values[id]=document.getElementById(id)?.value||'';});
-    return {values,categories:[...pendingCategories],gallery:[...pendingGallery],colors:pendingColors.map(color=>({...color})),onDemand:document.getElementById('p-ondemand').checked,customizable:document.getElementById('p-customizable').checked,noConsignment:document.getElementById('p-no-consignment').checked,active:document.getElementById('p-active').checked,editingProductCode,step:currentProductStep,savedAt:Date.now()};
+    return {values,categories:[...pendingCategories],gallery:[...pendingGallery],colors:pendingColors.map(color=>({...color})),onDemand:document.getElementById('p-ondemand').checked,customizable:document.getElementById('p-customizable').checked,noConsignment:document.getElementById('p-no-consignment').checked,videoSound:document.getElementById('p-video-sound').checked,active:document.getElementById('p-active').checked,editingProductCode,step:currentProductStep,savedAt:Date.now()};
   }
   function updateDraftNotice(){
     const notice=document.getElementById('p-draft-notice');if(!notice)return;
@@ -4321,7 +4328,7 @@
     if(!draft)return;
     Object.entries(draft.values||{}).forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.value=value;});
     pendingCategories=Array.isArray(draft.categories)?draft.categories:[];pendingGallery=Array.isArray(draft.gallery)?draft.gallery:[];pendingColors=Array.isArray(draft.colors)?draft.colors:[];
-    document.getElementById('p-ondemand').checked=!!draft.onDemand;document.getElementById('p-customizable').checked=!!draft.customizable;document.getElementById('p-no-consignment').checked=!!draft.noConsignment;document.getElementById('p-active').checked=draft.active!==false;
+    document.getElementById('p-ondemand').checked=!!draft.onDemand;document.getElementById('p-customizable').checked=!!draft.customizable;document.getElementById('p-no-consignment').checked=!!draft.noConsignment;document.getElementById('p-video-sound').checked=!!draft.videoSound;document.getElementById('p-active').checked=draft.active!==false;
     updateConsignmentFieldState();
     document.getElementById('p-customizable-minqty-wrap').style.display=draft.customizable?'flex':'none';
     editingProductCode=draft.editingProductCode&&PRODUCTS.some(p=>p.code===draft.editingProductCode)?draft.editingProductCode:null;
@@ -4535,7 +4542,18 @@
     const quarterTurn=Math.abs(imageCropState.rotation%180)===90;
     const width=quarterTurn?imageCropState.image.naturalHeight:imageCropState.image.naturalWidth;
     const height=quarterTurn?imageCropState.image.naturalWidth:imageCropState.image.naturalHeight;
-    return Math.max(800/width,800/height);
+    return imageCropState.fit==='contain'?Math.min(800/width,800/height):Math.max(800/width,800/height);
+  }
+  function updateImageCropFitButtons(){
+    const contain=imageCropState?.fit==='contain';
+    document.getElementById('image-crop-cover').classList.toggle('active',!contain);
+    document.getElementById('image-crop-contain').classList.toggle('active',contain);
+    document.getElementById('image-crop-title').nextElementSibling.textContent=contain?'A fotografia inteira será centralizada no quadro, sem cortar as bordas.':'Arraste a imagem para posicioná-la. A área quadrada será usada no catálogo.';
+  }
+  function setImageCropFit(fit){
+    if(!imageCropState)return;
+    imageCropState.fit=fit;imageCropState.zoom=1;imageCropState.offsetX=0;imageCropState.offsetY=0;
+    document.getElementById('image-crop-zoom').value='1';updateImageCropFitButtons();drawImageCrop();
   }
   function constrainImageCrop(){
     if(!imageCropState)return;
@@ -4562,7 +4580,7 @@
   function resetImageCrop(){
     if(!imageCropState)return;
     imageCropState.rotation=0;imageCropState.zoom=1;imageCropState.offsetX=0;imageCropState.offsetY=0;
-    document.getElementById('image-crop-zoom').value='1';drawImageCrop();
+    document.getElementById('image-crop-zoom').value='1';updateImageCropFitButtons();drawImageCrop();
   }
   function finishImageCrop(result,error){
     if(!imageCropState)return;
@@ -4573,9 +4591,9 @@
   function openImageCropper(file){
     if(file.type==='image/gif')return Promise.resolve(file);
     return loadImageForOptimization(file).then(image=>new Promise((resolve,reject)=>{
-      imageCropState={file,image,rotation:0,zoom:1,offsetX:0,offsetY:0,resolve,reject,pointerId:null,lastX:0,lastY:0};
+      imageCropState={file,image,rotation:0,zoom:1,offsetX:0,offsetY:0,fit:'cover',resolve,reject,pointerId:null,lastX:0,lastY:0};
       const modal=document.getElementById('image-crop-modal');modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
-      document.getElementById('image-crop-zoom').value='1';drawImageCrop();document.getElementById('image-crop-confirm').focus();
+      document.getElementById('image-crop-zoom').value='1';updateImageCropFitButtons();drawImageCrop();document.getElementById('image-crop-confirm').focus();
     }));
   }
   async function exportImageCrop(){
@@ -4594,6 +4612,8 @@
   }
   document.getElementById('image-crop-left').addEventListener('click',()=>{if(!imageCropState)return;imageCropState.rotation=(imageCropState.rotation+270)%360;imageCropState.offsetX=0;imageCropState.offsetY=0;drawImageCrop();});
   document.getElementById('image-crop-right').addEventListener('click',()=>{if(!imageCropState)return;imageCropState.rotation=(imageCropState.rotation+90)%360;imageCropState.offsetX=0;imageCropState.offsetY=0;drawImageCrop();});
+  document.getElementById('image-crop-cover').addEventListener('click',()=>setImageCropFit('cover'));
+  document.getElementById('image-crop-contain').addEventListener('click',()=>setImageCropFit('contain'));
   document.getElementById('image-crop-reset').addEventListener('click',resetImageCrop);
   document.getElementById('image-crop-zoom').addEventListener('input',event=>{if(!imageCropState)return;imageCropState.zoom=Number(event.target.value)||1;drawImageCrop();});
   document.getElementById('image-crop-cancel').addEventListener('click',()=>finishImageCrop(null,new Error('Envio cancelado.')));
@@ -5324,6 +5344,7 @@
       document.getElementById('p-price').value = p.price != null ? p.price : '';
       document.getElementById('p-img').value = p.image || '';
       document.getElementById('p-video').value = p.video || '';
+      document.getElementById('p-video-sound').checked = p.videoMuted === false;
       document.getElementById('p-desc').value = p.description || '';
       document.getElementById('p-ondemand').checked = !!p.onDemand;
       document.getElementById('p-customizable').checked = !!p.customizable;
@@ -5798,6 +5819,7 @@
     document.getElementById('p-ondemand').checked = false;
     document.getElementById('p-customizable').checked = false;
     document.getElementById('p-no-consignment').checked = false;
+    document.getElementById('p-video-sound').checked = false;
     updateConsignmentFieldState();
     document.getElementById('p-active').checked = true;
     document.getElementById('p-customizable-minqty').value = '';
@@ -5886,6 +5908,7 @@
     const promoPrice = promoPriceRaw.trim() === '' ? null : parseFloat(promoPriceRaw);
     const image = document.getElementById('p-img').value.trim();
     const video = document.getElementById('p-video').value.trim();
+    const videoMuted = !document.getElementById('p-video-sound').checked;
     const descriptionRaw = document.getElementById('p-desc').value.trim();
     const onDemand = document.getElementById('p-ondemand').checked;
     const customizable = document.getElementById('p-customizable').checked;
@@ -5946,6 +5969,7 @@
       p.promoPrice = promoPrice;
       p.image = image;
       p.video = video;
+      p.videoMuted = videoMuted;
       p.description = synced.description;
       p.gallery = [...pendingGallery];
       p.onDemand = onDemand;
@@ -5985,7 +6009,7 @@
     }
     PRODUCTS.push((()=>{
       const synced = applyCustomizableSync(descriptionRaw, [...pendingCategories], customizable, customizableMinQty);
-      return {code, name, categories: synced.categories, price:Number.isFinite(price)?price:0, publicPrice, promoPrice, image, video, description: synced.description, onDemand, customizable, customizableMinQty: customizable ? customizableMinQty : null, consignmentAvailable, colors, gallery:[...pendingGallery], active, createdAt: Date.now(), updatedAt:Date.now()};
+      return {code, name, categories: synced.categories, price:Number.isFinite(price)?price:0, publicPrice, promoPrice, image, video, videoMuted, description: synced.description, onDemand, customizable, customizableMinQty: customizable ? customizableMinQty : null, consignmentAvailable, colors, gallery:[...pendingGallery], active, createdAt: Date.now(), updatedAt:Date.now()};
     })());
     await setJSON('products', PRODUCTS);
     await saveProductCostLink(code);
@@ -6102,14 +6126,31 @@
     const priceMode=e.target.value==='price';document.querySelectorAll('.bulk-price-field').forEach(field=>field.style.display=priceMode?'flex':'none');invalidateBulkPreview();
   });
 
+  function nextPartnerCode(clients=CLIENTS){
+    const highest=(Array.isArray(clients)?clients:[]).reduce((max,client)=>{
+      const match=/^HL(\d{4})$/i.exec(String(client?.code||'').trim());
+      return match?Math.max(max,Number(match[1])):max;
+    },0);
+    if(highest>=9999)throw new Error('A sequência de códigos HL chegou ao limite de 9999.');
+    return `HL${String(highest+1).padStart(4,'0')}`;
+  }
+  function updateNewClientCode(){
+    if(editingClientCode)return;
+    const input=document.getElementById('c-code');
+    if(!input)return;
+    try{input.value=nextPartnerCode();}
+    catch(error){input.value='';document.getElementById('c-msg').innerHTML=`<div class="msg err">${escapeHtml(error.message)}</div>`;}
+  }
   function resetClientForm(){
     editingClientCode = null;
     ['c-code','c-name','c-contact','c-responsavel','c-document','c-notes','c-pin'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('c-pin').type='password';
     document.getElementById('c-code').disabled = false;
+    document.getElementById('c-code').readOnly = true;
     document.getElementById('c-form-title').textContent = 'Novo cliente';
     document.getElementById('c-add-btn').textContent = 'Adicionar cliente';
     document.getElementById('c-cancel-edit-btn').style.display = 'none';
+    updateNewClientCode();
   }
   document.getElementById('c-cancel-edit-btn').addEventListener('click', ()=>{
     resetClientForm();
@@ -6139,7 +6180,7 @@
   function showPartnerActivationCode(code,name,activationCode){
     const msg=document.getElementById('c-msg');
     const invite=`Olá, ${name}! Seu acesso à Área do Parceiro da Heitor Labs foi criado. Código do parceiro: ${code}. Código de ativação: ${activationCode}. No primeiro acesso, escolha a opção “Primeiro acesso” e crie seu PIN pessoal. O código de ativação é descartável e válido por 30 dias.`;
-    msg.innerHTML=`<div class="msg ok"><strong>Cliente salvo. Código de ativação:</strong> <span class="mono" style="font-size:16px;">${escapeHtml(activationCode)}</span><br><span style="font-size:11px;">Válido por 30 dias e utilizado uma única vez.</span><div style="margin-top:9px;display:flex;gap:7px;flex-wrap:wrap;"><button type="button" class="btn secondary" id="c-copy-activation-btn">Copiar mensagem de acesso</button></div></div>`;
+    msg.innerHTML=`<div class="msg ok"><strong>Cliente salvo.</strong><br>Código do parceiro: <strong class="mono" style="font-size:16px;">${escapeHtml(code)}</strong><br>Código de ativação: <strong class="mono" style="font-size:16px;">${escapeHtml(activationCode)}</strong><br><span style="font-size:11px;">O código de ativação é válido por 30 dias e utilizado uma única vez.</span><div style="margin-top:9px;display:flex;gap:7px;flex-wrap:wrap;"><button type="button" class="btn secondary" id="c-copy-activation-btn">Copiar mensagem de acesso</button></div></div>`;
     document.getElementById('c-copy-activation-btn').addEventListener('click',async event=>{try{await navigator.clipboard.writeText(invite);event.currentTarget.textContent='Mensagem copiada';}catch(e){window.prompt('Copie a mensagem abaixo:',invite);}});
   }
   async function adminRemovePartnerPin(code){
@@ -6148,7 +6189,7 @@
   }
 
   document.getElementById('c-add-btn').addEventListener('click', async ()=>{
-    const code = document.getElementById('c-code').value.trim().toUpperCase();
+    let code = document.getElementById('c-code').value.trim().toUpperCase();
     const name = document.getElementById('c-name').value.trim();
     const contact = document.getElementById('c-contact').value.trim();
     const responsavel = document.getElementById('c-responsavel').value.trim();
@@ -6156,7 +6197,7 @@
     const notes = document.getElementById('c-notes').value.trim();
     const pin = document.getElementById('c-pin').value.trim();
     const msg = document.getElementById('c-msg');
-    if(!code || !name){ msg.innerHTML = '<div class="msg err">Preencha código e nome.</div>'; return; }
+    if(!name){ msg.innerHTML = '<div class="msg err">Preencha o nome ou a razão social.</div>'; return; }
     if(pin&&!/^\d{4,8}$/.test(pin)){msg.innerHTML='<div class="msg err">O PIN deve conter somente 4 a 8 números.</div>';return;}
 
     if(editingClientCode){
@@ -6211,7 +6252,10 @@
       return;
     }
 
-    if(CLIENTS.some(c=>c.code===code)){ msg.innerHTML = '<div class="msg err">Já existe um cliente com esse código.</div>'; return; }
+    CLIENTS = await getJSON('clients', CLIENTS);
+    try{code=nextPartnerCode(CLIENTS);document.getElementById('c-code').value=code;}
+    catch(error){msg.innerHTML=`<div class="msg err">${escapeHtml(error.message)}</div>`;return;}
+    if(CLIENTS.some(c=>c.code===code)){ msg.innerHTML = '<div class="msg err">Não foi possível reservar o próximo código. Atualize a página e tente novamente.</div>'; return; }
     let activationCode='';
     try{activationCode=await adminCreatePartnerActivation(code);}catch(error){msg.innerHTML=`<div class="msg err">${escapeHtml(error.message||'Não foi possível gerar o código de ativação.')}</div>`;return;}
     CLIENTS.push({code, name, contact, responsavel, document: document_, notes, status:'Ativo',pinConfigured:false,activationPending:true});
