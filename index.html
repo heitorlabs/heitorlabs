@@ -1665,7 +1665,7 @@
           <div class="admin-mobile-nav">
             <label for="admin-section-select">Escolha a seção administrativa</label>
             <select id="admin-section-select">
-              <option value="produtos">Catálogo · Produtos</option><option value="estoque">Catálogo · Estoque rápido</option><option value="qualidade">Catálogo · Qualidade</option><option value="midia">Catálogo · Mídia</option><option value="clientes">Parceiros · Clientes</option><option value="entregas">Parceiros · Entregas</option><option value="devolucoes">Parceiros · Devoluções</option><option value="acertos">Financeiro · Acertos</option><option value="venda-direta">Financeiro · Venda direta</option><option value="pedidos">Pedidos · Reposição</option><option value="relatorio">Gestão · Relatório</option><option value="documentos">Gestão · Documentos</option>
+              <option value="produtos">Catálogo · Produtos</option><option value="estoque">Catálogo · Estoque rápido</option><option value="qualidade">Catálogo · Qualidade</option><option value="midia">Catálogo · Mídia</option><option value="clientes">Parceiros · Clientes</option><option value="entregas">Parceiros · Entregas</option><option value="devolucoes">Parceiros · Devoluções</option><option value="acertos">Financeiro · Acertos</option><option value="venda-direta">Financeiro · Venda direta</option><option value="pedidos">Pedidos · Reposição</option><option value="vendas-parceiros">Pedidos · Vendas informadas</option><option value="relatorio">Gestão · Relatório</option><option value="documentos">Gestão · Documentos</option>
             </select>
           </div>
           <aside class="admin-sidebar" aria-label="Menu administrativo">
@@ -1674,7 +1674,7 @@
               <div class="admin-nav-group"><span>Catálogo</span><button data-admin-tab="produtos" class="active"><b>◇</b> Produtos</button><button data-admin-tab="estoque"><b>▦</b> Estoque rápido</button><button data-admin-tab="qualidade"><b>✓</b> Qualidade</button><button data-admin-tab="midia"><b>▧</b> Mídia</button></div>
               <div class="admin-nav-group"><span>Parceiros</span><button data-admin-tab="clientes"><b>○</b> Clientes</button><button data-admin-tab="entregas"><b>↓</b> Entregas</button><button data-admin-tab="devolucoes"><b>↩</b> Devoluções</button></div>
               <div class="admin-nav-group"><span>Financeiro</span><button data-admin-tab="acertos"><b>$</b> Acertos</button><button data-admin-tab="venda-direta"><b>+</b> Venda direta</button></div>
-              <div class="admin-nav-group"><span>Pedidos</span><button data-admin-tab="pedidos"><b>□</b> Reposição <span id="pedidos-badge" class="badge pendente" style="display:none;margin-left:auto;">0</span></button></div>
+              <div class="admin-nav-group"><span>Pedidos</span><button data-admin-tab="pedidos"><b>□</b> Reposição <span id="pedidos-badge" class="badge pendente" style="display:none;margin-left:auto;">0</span></button><button data-admin-tab="vendas-parceiros"><b>$</b> Vendas informadas <span id="partner-sales-badge" class="badge pendente" style="display:none;margin-left:auto;">0</span></button></div>
               <div class="admin-nav-group"><span>Gestão</span><button data-admin-tab="relatorio"><b>▥</b> Relatório</button><button data-admin-tab="documentos"><b>⌑</b> Documentos</button></div>
             </div>
           </aside>
@@ -2025,7 +2025,11 @@
             </div>
             <div id="req-list"></div>
           </div>
-          <div class="panel" style="margin-top:20px;"><h3 style="font-size:14px;margin-bottom:6px;">Vendas informadas pelos parceiros</h3><p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Confira antes de transformar a comunicação em acerto.</p><div id="partner-sales-admin-list"></div></div>
+        </div>
+
+        <!-- VENDAS INFORMADAS PELOS PARCEIROS -->
+        <div class="admin-tab" data-tab="vendas-parceiros" style="display:none;">
+          <div class="panel"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;"><div><h3 style="font-size:14px;margin-bottom:6px;">Vendas informadas pelos parceiros</h3><p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Confira cada comunicação antes de transformar a venda em acerto e reduzir o saldo do parceiro.</p></div><button class="btn secondary" type="button" id="partner-sales-refresh-btn">↻ Atualizar</button></div><div id="partner-sales-admin-list"></div></div>
         </div>
 
         <!-- RELATÓRIO -->
@@ -4336,6 +4340,7 @@
     acertos:{group:'Financeiro',title:'Lançar acerto',description:'Registre vendas informadas pelo parceiro e a situação do pagamento.'},
     'venda-direta':{group:'Financeiro',title:'Venda direta',description:'Registre compras avulsas pagas pelo parceiro fora do estoque consignado.'},
     pedidos:{group:'Pedidos',title:'Reposição',description:'Analise e aprove os pedidos de reposição enviados pelos parceiros.'},
+    'vendas-parceiros':{group:'Pedidos',title:'Vendas informadas',description:'Confira e aprove as vendas comunicadas diretamente pelos parceiros.'},
     relatorio:{group:'Gestão',title:'Relatório',description:'Consolide saldos, vendas e valores por parceiro.'},
     documentos:{group:'Gestão',title:'Documentos',description:'Envie contratos e comprovantes para a área individual dos parceiros.'}
   };
@@ -4390,6 +4395,10 @@
     refreshAdminSelects();
     renderAdminLists();
     btn.disabled = false; btn.textContent = '↻ Atualizar';
+  });
+  document.getElementById('partner-sales-refresh-btn').addEventListener('click',async()=>{
+    const btn=document.getElementById('partner-sales-refresh-btn');btn.disabled=true;btn.textContent='Atualizando…';
+    try{await refreshData();refreshAdminSelects();renderAdminLists();}finally{btn.disabled=false;btn.textContent='↻ Atualizar';}
   });
 
   let entregaProductCategory='';
@@ -5867,6 +5876,8 @@
     `).join('') : `<div class="empty">Nenhum pedido de reposição por enquanto.</div>`;
 
     const saleReports=PARTNER_ACTIONS.filter(a=>a.type==='sale_report').slice().reverse();
+    const pendingSaleReports=saleReports.filter(r=>r.status==='Pendente').length,saleBadge=document.getElementById('partner-sales-badge');
+    saleBadge.style.display=pendingSaleReports?'inline-block':'none';saleBadge.textContent=pendingSaleReports;
     document.getElementById('partner-sales-admin-list').innerHTML=saleReports.length?saleReports.map(r=>`<div class="list-row"><span class="mono">${r.id} · ${fmtDate(r.date)} · ${clientLinkHtml(r.clientCode)}<br>${r.qty}x ${escapeHtml(productName(r.productCode))}${r.color?' ('+escapeHtml(r.color)+')':''}${r.note?'<br>Observação: '+escapeHtml(r.note):''}</span><span class="actions"><span class="badge ${r.status==='Pendente'?'pendente':r.status==='Aprovado'?'aprovado':'recusado'}">${r.status}</span>${r.status==='Pendente'?`<button data-approve-sale="${r.id}">Aprovar e lançar</button><button data-refuse-sale="${r.id}">Recusar</button>`:''}</span></div>`).join(''):'<div class="empty">Nenhuma venda comunicada.</div>';
 
     root.querySelectorAll('[data-del-entrega]').forEach(b=>b.addEventListener('click', async ()=>{
