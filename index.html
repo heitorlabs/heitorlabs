@@ -1251,6 +1251,29 @@
   #portal-root .stock-history{max-height:420px;overflow:auto;margin-top:12px;}
   #portal-root .stock-history-row{display:grid;grid-template-columns:125px 1.4fr 1fr 90px;gap:8px;padding:9px 4px;border-bottom:1px solid var(--line);font-size:12px;}
   @media(max-width:760px){#portal-root .stock-summary{grid-template-columns:1fr 1fr;}#portal-root .stock-toolbar{grid-template-columns:1fr;}#portal-root .stock-variant{grid-template-columns:1fr auto;}#portal-root .stock-variant>input{width:100%;}#portal-root .stock-actions{grid-column:1/-1;}#portal-root .stock-quick-price{grid-template-columns:1fr 1fr;}#portal-root .stock-quick-price .btn{grid-column:1/-1;}#portal-root .stock-history-row{grid-template-columns:95px 1fr;}#portal-root .stock-history-row>*:nth-child(n+3){padding-left:103px;grid-column:1/-1;}}
+  /* PACOTE 5 — central operacional do parceiro */
+  #portal-root .partner-center{margin:0 0 24px;padding:18px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,color-mix(in srgb,var(--violet) 7%,var(--panel)),var(--panel));}
+  #portal-root .partner-center-head,#portal-root .partner-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  #portal-root .partner-alerts{display:grid;gap:9px;margin-top:14px;}
+  #portal-root .partner-alert{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--mustard);border-radius:12px;background:var(--panel-2);font-size:13px;}
+  #portal-root .partner-alert.good{border-left-color:var(--teal)}
+  #portal-root .partner-actions-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px;}
+  #portal-root .partner-action-card{padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel-2);}
+  #portal-root .partner-action-card strong{display:block;font:700 13px 'Space Grotesk';margin-bottom:5px;}
+  #portal-root .partner-action-card p{color:var(--muted);font-size:11px;line-height:1.45;margin:0 0 10px;}
+  #portal-root .partner-report{margin:0 0 22px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel);}
+  #portal-root .partner-period{display:flex;gap:7px;flex-wrap:wrap;}
+  #portal-root .partner-period button{padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel-2);color:var(--muted);font:700 11px 'Space Grotesk';cursor:pointer;}
+  #portal-root .partner-period button.active{background:var(--violet);border-color:var(--violet);color:#fff;}
+  #portal-root .partner-mini-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:13px;}
+  #portal-root .partner-mini-stat{padding:12px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line);}
+  #portal-root .partner-mini-stat span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em;}
+  #portal-root .partner-mini-stat b{display:block;margin-top:5px;font:700 18px 'Space Grotesk';}
+  #portal-root .partner-sale-form{display:none;margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel-2);}
+  #portal-root .partner-sale-form.open{display:block;}
+  #portal-root .delivery-confirm{margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  #portal-root .doc-read{font-size:10px;color:var(--muted);margin-top:3px;}
+  @media(max-width:760px){#portal-root .partner-actions-grid,#portal-root .partner-mini-stats{grid-template-columns:1fr;}#portal-root .partner-alert{flex-direction:column;}#portal-root .partner-center{padding:14px;}}
 </style>
 </head>
 <body>
@@ -1493,6 +1516,27 @@
         </div>
         <p style="color:var(--muted);font-size:11px;margin:-14px 0 22px 0;">* Lucro estimado com base no preço sugerido ao público menos o preço consignado — como você define seu preço final de venda, o valor real pode ser diferente.</p>
 
+        <section class="partner-center" aria-labelledby="partner-center-title">
+          <div class="partner-center-head"><div><h3 id="partner-center-title" style="font-size:16px;margin:0 0 4px;">Central do parceiro</h3><p style="font-size:12px;color:var(--muted);margin:0;">Pendências, vendas, entregas e suporte em um só lugar.</p></div><a id="partner-support-btn" class="btn whatsapp" target="_blank" rel="noopener">Falar com a HL</a></div>
+          <div id="partner-alerts" class="partner-alerts"></div>
+          <div class="partner-actions-grid">
+            <div class="partner-action-card"><strong>Registrar uma venda</strong><p>Informe o item vendido para a HL conferir e lançar o acerto.</p><button type="button" class="btn" id="partner-sale-toggle">Informar venda</button></div>
+            <div class="partner-action-card"><strong>Pedir reposição</strong><p>Abra o catálogo, escolha cores e acompanhe a situação do pedido.</p><a class="btn secondary" href="#consig-catalog-section">Abrir catálogo</a></div>
+            <div class="partner-action-card"><strong>Meus documentos</strong><p>Consulte termos, comprovantes e contratos disponíveis.</p><a class="btn secondary" href="#client-documents">Ver documentos</a></div>
+          </div>
+          <div id="partner-sale-form" class="partner-sale-form">
+            <div class="row"><div class="field"><label>Produto vendido</label><select id="partner-sale-product"></select></div><div class="field"><label>Cor / variação</label><select id="partner-sale-color"></select></div></div>
+            <div class="row"><div class="field"><label>Quantidade</label><input id="partner-sale-qty" type="number" min="1" max="1000" value="1"></div><div class="field"><label>Data da venda</label><input id="partner-sale-date" type="date"></div></div>
+            <div class="field"><label>Observação (opcional)</label><input id="partner-sale-note" maxlength="300" placeholder="Ex.: venda realizada no balcão"></div>
+            <div id="partner-sale-msg"></div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn" id="partner-sale-submit">Enviar para conferência</button><button type="button" class="btn secondary" id="partner-sale-cancel">Cancelar</button></div>
+          </div>
+        </section>
+
+        <section class="partner-report">
+          <div class="partner-toolbar"><div><h3 style="font-size:15px;margin:0 0 3px;">Resumo por período</h3><p style="font-size:11px;color:var(--muted);margin:0;">Vendas registradas, repasse e estoque atual.</p></div><div class="partner-period" id="partner-period"><button data-months="1" class="active">30 dias</button><button data-months="3">3 meses</button><button data-months="6">6 meses</button><button data-months="0">Todo período</button></div></div>
+          <div id="partner-period-summary" class="partner-mini-stats"></div>
+        </section>
+
         <h3 style="margin-bottom:12px;font-size:16px;">Saldo por produto</h3>
         <div class="panel" style="padding:0;overflow-x:auto;">
           <table>
@@ -1514,6 +1558,7 @@
         <div class="divider"></div>
         <h3 style="margin-bottom:4px;font-size:16px;">Meus documentos</h3>
         <p style="color:var(--muted);font-size:12px;margin-bottom:16px;">Contrato assinado e comprovantes de entrega, devolução e acerto.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"><button type="button" class="btn secondary" id="partner-download-docs">Baixar todos</button><span id="partner-docs-summary" style="align-self:center;color:var(--muted);font-size:11px;"></span></div>
         <div id="client-documents"></div>
 
         <div class="divider" id="consig-catalog-section" style="scroll-margin-top:20px;"></div>
@@ -1980,6 +2025,7 @@
             </div>
             <div id="req-list"></div>
           </div>
+          <div class="panel" style="margin-top:20px;"><h3 style="font-size:14px;margin-bottom:6px;">Vendas informadas pelos parceiros</h3><p style="color:var(--muted);font-size:12px;margin-bottom:14px;">Confira antes de transformar a comunicação em acerto.</p><div id="partner-sales-admin-list"></div></div>
         </div>
 
         <!-- RELATÓRIO -->
@@ -2222,7 +2268,7 @@
     return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} às ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
 
-  let PRODUCTS = [], CLIENTS = [], ENTREGAS = [], DEVOLUCOES = [], ACERTOS = [], PEDIDOS = [], DOCUMENTS = [], VENDAS = [], CALCULATIONS = [], PRODUCT_COST_LINKS = [], STOCK_MOVEMENTS = [], PRODUCT_DIRECT_COSTS = {};
+  let PRODUCTS = [], CLIENTS = [], ENTREGAS = [], DEVOLUCOES = [], ACERTOS = [], PEDIDOS = [], DOCUMENTS = [], VENDAS = [], PARTNER_ACTIONS = [], CALCULATIONS = [], PRODUCT_COST_LINKS = [], STOCK_MOVEMENTS = [], PRODUCT_DIRECT_COSTS = {};
   let PUBLIC_PRODUCTS = [], PUBLIC_CATEGORIES = [], PUBLIC_SALES = [];
   let currentClientCode = null;
   let modalSelectedColor = null;
@@ -2280,6 +2326,7 @@
     PEDIDOS=Array.isArray(payload.pedidos)?payload.pedidos:[];
     DOCUMENTS=Array.isArray(payload.documents)?payload.documents:[];
     VENDAS=Array.isArray(payload.vendas)?payload.vendas:[];
+    PARTNER_ACTIONS=Array.isArray(payload.partnerActions)?payload.partnerActions:[];
     currentClientCode=payload.client.code;
     return true;
   }
@@ -2305,7 +2352,7 @@
     const { data: { session } } = await supabaseClient.auth.getSession();
     if(!INTERNAL_ADMIN_MODE||!session){
       await loadPublicCatalog();
-      CLIENTS=[];ENTREGAS=[];DEVOLUCOES=[];PEDIDOS=[];DOCUMENTS=[];VENDAS=[];
+      CLIENTS=[];ENTREGAS=[];DEVOLUCOES=[];PEDIDOS=[];DOCUMENTS=[];VENDAS=[];PARTNER_ACTIONS=[];
       return;
     }
     await refreshData();
@@ -2350,6 +2397,7 @@
     KNOWN_CATEGORIES = await getJSON('categories', KNOWN_CATEGORIES);
     DOCUMENTS = await getJSON('documents', DOCUMENTS);
     VENDAS = await getJSON('vendas', VENDAS);
+    PARTNER_ACTIONS = await getJSON('partner_actions', PARTNER_ACTIONS);
     CALCULATIONS = await getJSON(CALCULATIONS_KEY, CALCULATIONS);
     PRODUCT_COST_LINKS = await getJSON(PRODUCT_COST_LINKS_KEY, PRODUCT_COST_LINKS);
     STOCK_MOVEMENTS = await getJSON(STOCK_MOVEMENTS_KEY, STOCK_MOVEMENTS);
@@ -3390,6 +3438,65 @@
     ];
     return items.sort((a,b)=> (b.date||'').localeCompare(a.date||''));
   }
+
+  function partnerAction(type,targetId){
+    return PARTNER_ACTIONS.find(a=>a.type===type&&String(a.targetId||'')===String(targetId||''));
+  }
+  async function submitPartnerAction(type,payload={}){
+    if(!currentPartnerToken)throw new Error('Sessão expirada. Entre novamente.');
+    const {data,error}=await supabaseClient.rpc('partner_submit_action_secure',{p_access_token:currentPartnerToken,p_action_type:type,p_payload:payload});
+    if(error)throw error;
+    await loadPartnerSnapshot(currentClientCode);
+    return typeof data==='string'?JSON.parse(data):data;
+  }
+  function deliveryBatches(code){
+    const batches={};
+    ENTREGAS.filter(e=>e.clientCode===code).forEach(e=>{
+      const key=e.batchId||('single-'+e.id);
+      if(!batches[key])batches[key]={id:key,date:e.date,items:[]};
+      batches[key].items.push(e);
+    });
+    return Object.values(batches).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  }
+  function renderPartnerCenter(code){
+    const alerts=document.getElementById('partner-alerts');
+    const batches=deliveryBatches(code),unconfirmed=batches.filter(b=>!partnerAction('delivery_confirmed',b.id));
+    const pendingOrders=PEDIDOS.filter(p=>p.clientCode===code&&p.status==='Pendente');
+    const reportedSales=PARTNER_ACTIONS.filter(a=>a.clientCode===code&&a.type==='sale_report'&&a.status==='Pendente');
+    const unreadDocs=DOCUMENTS.filter(d=>d.clientCode===code&&!partnerAction('document_read',d.id));
+    const pending=ACERTOS.filter(a=>a.clientCode===code&&a.status!=='Pago');
+    const oldest=pending.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''))[0];
+    const deadlineDays=Number(CLIENTS.find(c=>c.code===code)?.settlementDays)||7;
+    const deadline=oldest?new Date(oldest.date+'T12:00:00'):null;if(deadline)deadline.setDate(deadline.getDate()+deadlineDays);
+    const dueAlert=deadline&&Date.now()>=deadline.getTime()-2*86400000;
+    const rows=[];
+    unconfirmed.forEach(batch=>rows.push(`<div class="partner-alert"><div><strong>Nova entrega disponível</strong><br><span>${fmtDate(batch.date)} · ${batch.items.reduce((s,i)=>s+Number(i.qty),0)} peça(s) em ${batch.items.length} item(ns)</span></div><button class="btn secondary" data-confirm-delivery="${escapeHtml(batch.id)}">Confirmar recebimento</button></div>`));
+    if(unreadDocs.length)rows.push(`<div class="partner-alert"><div><strong>${unreadDocs.length} documento(s) ainda não confirmado(s)</strong><br><span>Abra o documento e marque a leitura.</span></div><a class="btn secondary" href="#client-documents">Consultar</a></div>`);
+    if(dueAlert)rows.push(`<div class="partner-alert"><div><strong>Prazo de acerto ${Date.now()>deadline.getTime()?'vencido':'próximo'}</strong><br><span>Referência: ${fmtDate(deadline.toISOString().slice(0,10))} · ${fmtMoney(pending.reduce((s,a)=>s+Number(a.qty)*productPrice(a.productCode),0))}</span></div><a class="btn whatsapp" href="https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Quero verificar meu acerto de consignação. Código: '+code)}" target="_blank" rel="noopener">Conversar</a></div>`);
+    if(pendingOrders.length)rows.push(`<div class="partner-alert good"><div><strong>${pendingOrders.length} pedido(s) em acompanhamento</strong><br><span>A situação aparece na seção “Meus pedidos”.</span></div><a class="btn secondary" href="#client-requests">Ver pedidos</a></div>`);
+    if(reportedSales.length)rows.push(`<div class="partner-alert good"><div><strong>${reportedSales.length} venda(s) aguardando conferência</strong><br><span>A HL recebeu sua comunicação. O estoque será atualizado após a aprovação.</span></div></div>`);
+    alerts.innerHTML=rows.length?rows.join(''):`<div class="partner-alert good"><div><strong>Tudo em dia</strong><br><span>Não há novas confirmações ou avisos no momento.</span></div></div>`;
+    alerts.querySelectorAll('[data-confirm-delivery]').forEach(btn=>btn.addEventListener('click',async()=>{
+      btn.disabled=true;btn.textContent='Confirmando…';
+      try{await submitPartnerAction('delivery_confirmed',{targetId:btn.dataset.confirmDelivery});renderPartnerCenter(code);renderClientDocuments(code);logPartnerActivity('delivery_confirmed','historico',0,{batchId:btn.dataset.confirmDelivery});}
+      catch(error){alert(isMissingSecurityFunction(error)?'Execute o SQL atualizado do Pacote 5 no Supabase.':'Não foi possível confirmar agora. Tente novamente.');btn.disabled=false;btn.textContent='Confirmar recebimento';}
+    }));
+    const saleProducts=clientStats(code).products.filter(r=>r.saldo>0);
+    const select=document.getElementById('partner-sale-product');
+    select.innerHTML='<option value="">Selecione…</option>'+saleProducts.map(r=>`<option value="${escapeHtml(r.code)}" data-color="${escapeHtml(r.color||'')}">${escapeHtml(r.name)} · ${escapeHtml(r.color||'Sem cor')} (${r.saldo} em posse)</option>`).join('');
+    document.getElementById('partner-sale-date').value=todayISO();
+    document.getElementById('partner-support-btn').href=`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${encodeURIComponent('Olá! Preciso de ajuda na Área do Parceiro. Código: '+code)}`;
+    renderPartnerPeriod(code,Number(document.querySelector('#partner-period button.active')?.dataset.months||1));
+  }
+  function renderPartnerPeriod(code,months){
+    const cutoff=months?new Date(new Date().setMonth(new Date().getMonth()-months)):null;
+    const inPeriod=item=>!cutoff||new Date((item.date||todayISO())+'T12:00:00')>=cutoff;
+    const sales=ACERTOS.filter(a=>a.clientCode===code&&inPeriod(a));
+    const sold=sales.reduce((s,a)=>s+Number(a.qty||0),0);
+    const transfer=sales.reduce((s,a)=>s+Number(a.qty||0)*productPrice(a.productCode),0);
+    const stock=clientStats(code).totals.saldo;
+    document.getElementById('partner-period-summary').innerHTML=`<div class="partner-mini-stat"><span>Peças vendidas</span><b>${sold}</b></div><div class="partner-mini-stat"><span>Valor de repasse</span><b>${fmtMoney(transfer)}</b></div><div class="partner-mini-stat"><span>Estoque em posse</span><b>${stock} peça(s)</b></div>`;
+  }
   function productName(code){ const p = PRODUCTS.find(p=>p.code===code); return p ? p.name : code; }
   function clientName(code){ const c = CLIENTS.find(c=>c.code===code); return c ? c.name : code; }
   function clientLinkHtml(code){
@@ -3699,7 +3806,7 @@
     PRODUCTS=PUBLIC_PRODUCTS;
     KNOWN_CATEGORIES=PUBLIC_CATEGORIES;
     ACERTOS=PUBLIC_SALES;
-    CLIENTS=[];ENTREGAS=[];DEVOLUCOES=[];PEDIDOS=[];DOCUMENTS=[];VENDAS=[];
+    CLIENTS=[];ENTREGAS=[];DEVOLUCOES=[];PEDIDOS=[];DOCUMENTS=[];VENDAS=[];PARTNER_ACTIONS=[];
     currentPartnerToken=null;
     try{ sessionStorage.removeItem(CLIENT_SESSION_KEY);localStorage.removeItem('hl_client_code'); }catch(e){}
     renderPortfolio();
@@ -3769,6 +3876,7 @@
     renderConsignadoCatalog();
     renderCart();
     renderClientDocuments(client.code);
+    renderPartnerCenter(client.code);
   }
 
   function renderClientDocuments(code){
@@ -3776,9 +3884,12 @@
     if(!wrap) return;
     const docs = DOCUMENTS.filter(d=>d.clientCode===code).slice().reverse();
     if(docs.length === 0){
+      document.getElementById('partner-docs-summary').textContent='Nenhum documento disponível';
       wrap.innerHTML = `<div class="empty"><div class="glyph">◇</div>Nenhum documento disponível ainda.</div>`;
       return;
     }
+    const readCount=docs.filter(d=>partnerAction('document_read',d.id)).length;
+    document.getElementById('partner-docs-summary').textContent=`${readCount} de ${docs.length} com leitura confirmada`;
     wrap.innerHTML = docs.map(d=>`
       <div class="doc-card">
         <div class="doc-info">
@@ -3787,13 +3898,19 @@
             <div class="doc-title">${d.title || d.type}</div>
             <div class="doc-meta">${d.type} · ${fmtDate(d.date)}</div>
             ${d.uploadedAt ? `<div class="doc-meta" style="opacity:.75;">Enviado em ${fmtDateTime(d.uploadedAt)}</div>` : ''}
+            <div class="doc-read">${partnerAction('document_read',d.id)?'✓ Leitura confirmada em '+fmtDateTime(partnerAction('document_read',d.id).createdAt):'Leitura ainda não confirmada'}</div>
           </div>
         </div>
-        <button data-open-client-doc="${d.id}" class="btn secondary" style="padding:7px 14px;font-size:11px;">Baixar / Abrir</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;"><button data-open-client-doc="${d.id}" class="btn secondary" style="padding:7px 14px;font-size:11px;">Baixar / Abrir</button>${partnerAction('document_read',d.id)?'':`<button data-read-client-doc="${d.id}" class="btn" style="padding:7px 14px;font-size:11px;">Confirmar leitura</button>`}</div>
       </div>`).join('');
     wrap.querySelectorAll('[data-open-client-doc]').forEach(btn=>btn.addEventListener('click', ()=>{
       const doc = DOCUMENTS.find(d=>d.id===btn.dataset.openClientDoc);
       if(doc) openDocument(doc);
+    }));
+    wrap.querySelectorAll('[data-read-client-doc]').forEach(btn=>btn.addEventListener('click',async()=>{
+      btn.disabled=true;btn.textContent='Confirmando…';
+      try{await submitPartnerAction('document_read',{targetId:btn.dataset.readClientDoc});renderClientDocuments(code);renderPartnerCenter(code);logPartnerActivity('document_read','documentos',0,{documentId:btn.dataset.readClientDoc});}
+      catch(error){alert(isMissingSecurityFunction(error)?'Execute o SQL atualizado do Pacote 5 no Supabase.':'Não foi possível confirmar a leitura agora.');btn.disabled=false;btn.textContent='Confirmar leitura';}
     }));
   }
 
@@ -4098,6 +4215,34 @@
   });
   document.getElementById('client-logout-top-btn').addEventListener('click', doClientLogout);
   document.getElementById('partner-help-btn').addEventListener('click',()=>openPartnerTour(true));
+  document.getElementById('partner-period').addEventListener('click',event=>{
+    const btn=event.target.closest('button[data-months]');if(!btn||!currentClientCode)return;
+    document.querySelectorAll('#partner-period button').forEach(b=>b.classList.toggle('active',b===btn));renderPartnerPeriod(currentClientCode,Number(btn.dataset.months));
+  });
+  document.getElementById('partner-sale-toggle').addEventListener('click',()=>{
+    document.getElementById('partner-sale-form').classList.add('open');document.getElementById('partner-sale-product').focus();
+  });
+  document.getElementById('partner-sale-cancel').addEventListener('click',()=>document.getElementById('partner-sale-form').classList.remove('open'));
+  document.getElementById('partner-sale-product').addEventListener('change',event=>{
+    const opt=event.target.selectedOptions[0],color=opt?.dataset.color||'';
+    document.getElementById('partner-sale-color').innerHTML=`<option value="${escapeHtml(color)}">${escapeHtml(color||'Sem cor')}</option>`;
+  });
+  document.getElementById('partner-sale-submit').addEventListener('click',async()=>{
+    const select=document.getElementById('partner-sale-product'),opt=select.selectedOptions[0],productCode=select.value,color=opt?.dataset.color||'',qty=Math.floor(Number(document.getElementById('partner-sale-qty').value)),date=document.getElementById('partner-sale-date').value,note=document.getElementById('partner-sale-note').value.trim(),msg=document.getElementById('partner-sale-msg'),btn=document.getElementById('partner-sale-submit');
+    const available=clientStats(currentClientCode).products.find(r=>r.code===productCode&&(r.color||'')===color)?.saldo||0;
+    if(!productCode||!date||qty<1){msg.innerHTML='<div class="msg err">Selecione o produto, a data e uma quantidade válida.</div>';return;}
+    if(qty>available){msg.innerHTML=`<div class="msg err">Você possui ${available} unidade(s) dessa variação.</div>`;return;}
+    btn.disabled=true;btn.textContent='Enviando…';msg.innerHTML='';
+    try{await submitPartnerAction('sale_report',{productCode,color,qty,date,note});msg.innerHTML='<div class="msg ok">Venda enviada para conferência da HL. Ela será incluída no saldo após a aprovação.</div>';document.getElementById('partner-sale-qty').value=1;document.getElementById('partner-sale-note').value='';logPartnerActivity('sale_report','resumo',0,{productCode,qty});renderPartnerCenter(currentClientCode);}
+    catch(error){msg.innerHTML=`<div class="msg err">${isMissingSecurityFunction(error)?'Execute o SQL atualizado do Pacote 5 no Supabase.':'Não foi possível enviar agora. Tente novamente.'}</div>`;}
+    finally{btn.disabled=false;btn.textContent='Enviar para conferência';}
+  });
+  document.getElementById('partner-download-docs').addEventListener('click',async()=>{
+    const docs=DOCUMENTS.filter(d=>d.clientCode===currentClientCode);if(!docs.length){alert('Não há documentos disponíveis.');return;}
+    if(!confirm(`Baixar ${docs.length} documento(s)? O navegador poderá solicitar autorização para vários downloads.`))return;
+    for(let i=0;i<docs.length;i++){await openDocument(docs[i]);await new Promise(resolve=>setTimeout(resolve,350));}
+    logPartnerActivity('documents_download','documentos',0,{count:docs.length});
+  });
   document.getElementById('partner-tour-close').addEventListener('click',closePartnerTour);
   document.getElementById('partner-tour-prev').addEventListener('click',()=>{if(partnerTourStep>0){partnerTourStep--;renderPartnerTourStep();}});
   document.getElementById('partner-tour-next').addEventListener('click',()=>{
@@ -5721,6 +5866,9 @@
       </div>
     `).join('') : `<div class="empty">Nenhum pedido de reposição por enquanto.</div>`;
 
+    const saleReports=PARTNER_ACTIONS.filter(a=>a.type==='sale_report').slice().reverse();
+    document.getElementById('partner-sales-admin-list').innerHTML=saleReports.length?saleReports.map(r=>`<div class="list-row"><span class="mono">${r.id} · ${fmtDate(r.date)} · ${clientLinkHtml(r.clientCode)}<br>${r.qty}x ${escapeHtml(productName(r.productCode))}${r.color?' ('+escapeHtml(r.color)+')':''}${r.note?'<br>Observação: '+escapeHtml(r.note):''}</span><span class="actions"><span class="badge ${r.status==='Pendente'?'pendente':r.status==='Aprovado'?'aprovado':'recusado'}">${r.status}</span>${r.status==='Pendente'?`<button data-approve-sale="${r.id}">Aprovar e lançar</button><button data-refuse-sale="${r.id}">Recusar</button>`:''}</span></div>`).join(''):'<div class="empty">Nenhuma venda comunicada.</div>';
+
     root.querySelectorAll('[data-del-entrega]').forEach(b=>b.addEventListener('click', async ()=>{
       if(!confirm('Remover esta entrega? Isso NÃO devolve automaticamente o estoque nem desfaz outros cálculos — use apenas para corrigir lançamentos errados (ex.: dados de teste).')) return;
       ENTREGAS = await getJSON('entregas', ENTREGAS);
@@ -5755,6 +5903,20 @@
       PEDIDOS = PEDIDOS.filter(r=>r.id!==b.dataset.delPedido);
       await setJSON('pedidos', PEDIDOS);
       renderAdminLists();
+    }));
+    root.querySelectorAll('[data-approve-sale]').forEach(b=>b.addEventListener('click',async()=>{
+      if(!confirm('Aprovar esta venda e criar um acerto pendente?'))return;
+      PARTNER_ACTIONS=await getJSON('partner_actions',PARTNER_ACTIONS);ACERTOS=await getJSON('acertos',ACERTOS);
+      const report=PARTNER_ACTIONS.find(a=>a.id===b.dataset.approveSale);if(!report||report.status!=='Pendente')return;
+      const next=Math.max(0,...ACERTOS.map(a=>Number(String(a.id||'').match(/\d+/)?.[0]||0)))+1;
+      ACERTOS.push({id:'ACE-'+String(next).padStart(3,'0'),date:report.date,clientCode:report.clientCode,productCode:report.productCode,color:report.color||'',qty:Number(report.qty),status:'Pendente',sourcePartnerAction:report.id});
+      report.status='Aprovado';report.reviewedAt=new Date().toISOString();
+      await setJSON('acertos',ACERTOS);await setJSON('partner_actions',PARTNER_ACTIONS);renderAdminLists();
+    }));
+    root.querySelectorAll('[data-refuse-sale]').forEach(b=>b.addEventListener('click',async()=>{
+      if(!confirm('Recusar esta comunicação de venda?'))return;
+      PARTNER_ACTIONS=await getJSON('partner_actions',PARTNER_ACTIONS);const report=PARTNER_ACTIONS.find(a=>a.id===b.dataset.refuseSale);if(!report||report.status!=='Pendente')return;
+      report.status='Recusado';report.reviewedAt=new Date().toISOString();await setJSON('partner_actions',PARTNER_ACTIONS);renderAdminLists();
     }));
 
     root.querySelectorAll('[data-approve-req]').forEach(b=>b.addEventListener('click', async ()=>{
