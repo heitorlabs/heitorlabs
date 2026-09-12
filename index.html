@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -2400,7 +2399,7 @@
       return;
     }
     await refreshData();
-    await ensureHistoricalPriceSnapshots();
+    await safeEnsureHistoricalPriceSnapshots();
 
     if(PRODUCTS.length === 0 && CLIENTS.length === 0){
       // seed inicial de demonstração, consistente com o contrato e a planilha
@@ -2512,7 +2511,9 @@
         if(String(error.message||'').includes('HL_VERSION_CONFLICT'))throw new Error('Os dados foram alterados em outro aparelho ou aba. Recarregue antes de repetir esta operação.');
         throw new Error(`Não foi possível concluir a ${reason}. Nenhuma alteração foi aplicada.`);
       }
-      structuredBackend=false;
+      // A função de lote pode ainda não ter entrado no cache da API. Nesse caso,
+      // mantém a camada estruturada disponível e tenta cada chave com hl_set_data.
+      structuredBackend=null;
     }
     for(const [key] of entries)before[key]=await getJSON(key,null);
     const written=[];
@@ -3672,6 +3673,16 @@
     }else await setJSON(HISTORICAL_SNAPSHOT_KEY,markerValue);
     historicalSnapshotsChecked=true;
   }
+  async function safeEnsureHistoricalPriceSnapshots(){
+    try{return await ensureHistoricalPriceSnapshots();}
+    catch(error){
+      historicalSnapshotsChecked=true;
+      console.error('Proteção histórica pendente; administração liberada.',error);
+      setSaveState('','Pronto');
+      showToast('A área administrativa foi carregada. A proteção dos registros antigos ficou pendente, mas novos lançamentos continuarão registrando seus valores.','error');
+      return false;
+    }
+  }
 
   function buildClientReport(clientCode){
     const client = CLIENTS.find(c=>c.code===clientCode);
@@ -4446,7 +4457,7 @@
       document.getElementById('admin-gate').style.display = 'none';
       document.getElementById('admin-dashboard').style.display = 'block';
       await refreshData();
-      await ensureHistoricalPriceSnapshots();
+      await safeEnsureHistoricalPriceSnapshots();
       refreshAdminSelects();
       renderAdminLists();
     } else {
@@ -4471,7 +4482,7 @@
     document.getElementById('admin-gate').style.display = 'none';
     document.getElementById('admin-dashboard').style.display = 'block';
     await refreshData();
-    await ensureHistoricalPriceSnapshots();
+    await safeEnsureHistoricalPriceSnapshots();
     refreshAdminSelects();
     renderAdminLists();
   });
