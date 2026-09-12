@@ -1273,7 +1273,30 @@
   #portal-root .partner-sale-form.open{display:block;}
   #portal-root .delivery-confirm{margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   #portal-root .doc-read{font-size:10px;color:var(--muted);margin-top:3px;}
+  #portal-root .save-state{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--muted);font:700 10px 'Space Grotesk';white-space:nowrap;}
+  #portal-root .save-state.saving{color:var(--mustard);border-color:color-mix(in srgb,var(--mustard) 45%,var(--line));}
+  #portal-root .save-state.saved{color:var(--teal);border-color:color-mix(in srgb,var(--teal) 45%,var(--line));}
+  #portal-root .save-state.error{color:var(--coral);border-color:color-mix(in srgb,var(--coral) 50%,var(--line));}
+  #portal-root .toast-region{position:fixed;z-index:300;right:16px;bottom:18px;display:grid;gap:9px;width:min(390px,calc(100vw - 32px));}
+  #portal-root .ui-toast{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:13px 14px;border:1px solid color-mix(in srgb,var(--teal) 50%,var(--line));border-radius:13px;background:var(--panel);color:var(--ink);box-shadow:0 16px 38px rgba(0,0,0,.2);font-size:12px;}
+  #portal-root .ui-toast.error{border-color:color-mix(in srgb,var(--coral) 60%,var(--line));}
+  #portal-root .ui-toast button{border:0;background:transparent;color:var(--muted);font-size:18px;cursor:pointer;}
+  #portal-root .admin-mode-chip{padding:7px 10px;border-radius:999px;background:color-mix(in srgb,var(--violet) 14%,var(--panel));color:var(--violet);font:700 10px 'Space Grotesk';}
+  #portal-root .admin-drawer-open{display:none;width:100%;justify-content:space-between;align-items:center;min-height:44px;}
+  #portal-root .admin-drawer-backdrop{display:none;position:fixed;inset:0;z-index:250;background:rgba(10,10,13,.56);}
+  #portal-root .admin-drawer{position:fixed;z-index:251;left:10px;right:10px;bottom:10px;max-height:min(76vh,620px);overflow:auto;padding:16px;border:1px solid var(--line);border-radius:20px;background:var(--panel);box-shadow:0 24px 60px rgba(0,0,0,.32);transform:translateY(calc(100% + 30px));transition:transform .22s ease;}
+  #portal-root .admin-drawer.open{transform:translateY(0)}#portal-root .admin-drawer-backdrop.open{display:block;}
+  #portal-root .admin-drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}#portal-root .admin-drawer-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  #portal-root .admin-drawer-list button{padding:12px;border:1px solid var(--line);border-radius:11px;background:var(--panel-2);color:var(--ink);font:650 11px 'Space Grotesk';text-align:left;cursor:pointer;}#portal-root .admin-drawer-list button.active{border-color:var(--violet);color:var(--violet);}
+  #portal-root .client-product-cards{display:none;gap:9px;}
+  #portal-root .client-product-card{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden;}
+  #portal-root .client-product-card summary{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:13px;cursor:pointer;list-style:none;}
+  #portal-root .client-product-card summary::-webkit-details-marker{display:none}.client-product-card summary small{display:block;margin-top:4px;color:var(--muted);font-size:10px;}
+  #portal-root .client-product-card-body{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:0 13px 13px;}.client-product-metric{padding:9px;border-radius:10px;background:var(--panel-2);}.client-product-metric span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;}.client-product-metric b{display:block;margin-top:3px;font-size:13px;}
   @media(max-width:760px){#portal-root .partner-actions-grid,#portal-root .partner-mini-stats{grid-template-columns:1fr;}#portal-root .partner-alert{flex-direction:column;}#portal-root .partner-center{padding:14px;}}
+  @media(max-width:760px){
+    #portal-root .admin-mobile-nav label,#portal-root .admin-mobile-nav select{display:none;}#portal-root .admin-drawer-open{display:flex;}#portal-root .client-product-table-panel{display:none;}#portal-root .client-product-cards{display:grid;}#portal-root .toast-region{bottom:calc(78px + env(safe-area-inset-bottom));}
+  }
 </style>
 </head>
 <body>
@@ -1288,6 +1311,7 @@
       </div>
     </div>
     <div class="topbar-actions">
+      <span id="global-save-state" class="save-state" aria-live="polite">Pronto</span>
       <nav aria-label="Navegação principal">
         <button type="button" data-view="portfolio" class="active" aria-current="page"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></span><span>Produtos</span></button>
         <button type="button" data-view="client"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c.7-4.2 3.3-6.5 8-6.5s7.3 2.3 8 6.5"/></svg></span><span>Área do Parceiro</span></button>
@@ -1538,12 +1562,13 @@
         </section>
 
         <h3 style="margin-bottom:12px;font-size:16px;">Saldo por produto</h3>
-        <div class="panel" style="padding:0;overflow-x:auto;">
+        <div class="panel client-product-table-panel" style="padding:0;overflow-x:auto;">
           <table>
             <thead><tr><th>Produto</th><th>Cor</th><th>Entregue</th><th>Devolvido</th><th>Vendido</th><th>Em posse</th><th>Devido</th><th>Pago</th><th>Pendente</th></tr></thead>
             <tbody id="client-product-table"></tbody>
           </table>
         </div>
+        <div id="client-product-cards" class="client-product-cards"></div>
 
         <div class="divider"></div>
         <h3 style="margin-bottom:12px;font-size:16px;">Meus pedidos</h3>
@@ -1667,6 +1692,7 @@
             <select id="admin-section-select">
               <option value="produtos">Catálogo · Produtos</option><option value="estoque">Catálogo · Estoque rápido</option><option value="qualidade">Catálogo · Qualidade</option><option value="midia">Catálogo · Mídia</option><option value="clientes">Parceiros · Clientes</option><option value="entregas">Parceiros · Entregas</option><option value="devolucoes">Parceiros · Devoluções</option><option value="acertos">Financeiro · Acertos</option><option value="venda-direta">Financeiro · Venda direta</option><option value="pedidos">Pedidos · Reposição</option><option value="vendas-parceiros">Pedidos · Vendas informadas</option><option value="relatorio">Gestão · Relatório</option><option value="documentos">Gestão · Documentos</option>
             </select>
+            <button type="button" class="btn secondary admin-drawer-open" id="admin-drawer-open"><span>Escolher área administrativa</span><b>☰</b></button>
           </div>
           <aside class="admin-sidebar" aria-label="Menu administrativo">
             <div class="admin-sidebar-title"><span>HL</span><div><strong>Administração</strong><small>Central de operação</small></div></div>
@@ -1682,6 +1708,8 @@
             <div class="admin-section-context">
               <div><span id="admin-section-group">Catálogo</span><h2 id="admin-section-title">Produtos</h2><p id="admin-section-description">Cadastre, organize e publique os produtos exibidos no catálogo.</p></div>
               <div class="admin-section-actions">
+                <span class="admin-mode-chip" id="admin-mode-chip">Consulta</span>
+                <span class="save-state" id="admin-save-state" aria-live="polite">Pronto</span>
                 <button type="button" class="btn secondary" id="admin-menu-toggle-btn" aria-expanded="false">Usar menu lateral</button>
                 <button type="button" class="btn secondary" id="admin-section-top-btn" style="display:none;">Voltar ao início</button>
               </div>
@@ -2220,6 +2248,9 @@
     <img id="lightbox-gif" alt="Animação ampliada do produto" style="max-width:92vw;max-height:88vh;background:#000;display:none;">
     <img id="lightbox-image" class="lightbox-zoomable" alt="Imagem ampliada do produto" style="max-width:96vw;max-height:92vh;object-fit:contain;display:none;cursor:zoom-in;">
   </div>
+  <div id="admin-drawer-backdrop" class="admin-drawer-backdrop" aria-hidden="true"></div>
+  <div id="admin-drawer" class="admin-drawer" role="dialog" aria-modal="true" aria-label="Menu administrativo" aria-hidden="true"><div class="admin-drawer-head"><strong>Área administrativa</strong><button type="button" class="btn secondary" id="admin-drawer-close">Fechar</button></div><div id="admin-drawer-list" class="admin-drawer-list"></div></div>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
 </div>
 
 <script>
@@ -2423,15 +2454,28 @@
     }catch(e){ console.error('Falha ao carregar', key, e); throw new Error(`Não foi possível carregar ${key}. Verifique sua conexão e tente novamente.`); }
   }
   async function setJSON(key, value){
+    setSaveState('saving','Salvando…');
     try{
       const { error } = await supabaseClient.from('kv_store').upsert({ key, value, updated_at: new Date().toISOString() });
       if(error) throw error;
+      setSaveState('saved','Salvo');
       return true;
-    }catch(e){ console.error('Falha ao salvar', key, e); throw new Error(`Não foi possível salvar ${key}. Os dados preenchidos foram mantidos.`); }
+    }catch(e){ setSaveState('error','Falha ao salvar');console.error('Falha ao salvar', key, e); throw new Error(`Não foi possível salvar ${key}. Os dados preenchidos foram mantidos.`); }
   }
   window.addEventListener('unhandledrejection',event=>{
     if(event.reason instanceof Error){event.preventDefault();alert(event.reason.message);}
   });
+  let saveStateTimer=null;
+  function setSaveState(state,text){
+    clearTimeout(saveStateTimer);document.querySelectorAll('#global-save-state,#admin-save-state').forEach(el=>{el.className=`save-state ${state||''}`;el.textContent=text||'Pronto';});
+    if(state==='saved')saveStateTimer=setTimeout(()=>document.querySelectorAll('#global-save-state,#admin-save-state').forEach(el=>{el.className='save-state';el.textContent='Pronto';}),2400);
+  }
+  function showToast(message,type='ok'){
+    const region=document.getElementById('toast-region');if(!region)return;
+    const toast=document.createElement('div');toast.className=`ui-toast ${type==='error'?'error':''}`;toast.setAttribute('role',type==='error'?'alert':'status');
+    const copy=document.createElement('span');copy.textContent=String(message);const close=document.createElement('button');close.type='button';close.setAttribute('aria-label','Fechar aviso');close.textContent='×';close.addEventListener('click',()=>toast.remove());toast.append(copy,close);region.appendChild(toast);setTimeout(()=>toast.remove(),5200);
+  }
+  window.alert=message=>showToast(message,/erro|não foi possível|incorret|inválid|falh/i.test(String(message))?'error':'ok');
 
   // ---------- navegação principal ----------
   function switchPublicView(viewName, shouldScroll = true){
@@ -3842,6 +3886,8 @@
       <td>${fmtMoney(r.devido)}</td><td>${fmtMoney(r.pago)}</td>
       <td style="color:${r.pendente>0?'var(--mustard)':'inherit'};font-weight:${r.pendente>0?'600':'400'};">${fmtMoney(r.pendente)}</td></tr>
     `).join('') : `<tr><td colspan="9" style="text-align:center;color:var(--muted);">Nenhuma movimentação registrada ainda.</td></tr>`;
+    const cards=document.getElementById('client-product-cards');
+    cards.innerHTML=products.length?products.map(r=>`<details class="client-product-card"><summary><span><strong>${escapeHtml(r.name)}</strong><small>${escapeHtml(r.color||'Sem cor')} · toque para ver detalhes</small></span><span class="badge ${r.saldo>0?'entrega':'pendente'}">${r.saldo} em posse</span></summary><div class="client-product-card-body"><div class="client-product-metric"><span>Entregue</span><b>${r.entregue}</b></div><div class="client-product-metric"><span>Vendido</span><b>${r.vendido}</b></div><div class="client-product-metric"><span>Devolvido</span><b>${r.devolvido}</b></div><div class="client-product-metric"><span>Pendente</span><b style="color:${r.pendente>0?'var(--mustard)':'inherit'}">${fmtMoney(r.pendente)}</b></div><div class="client-product-metric"><span>Devido</span><b>${fmtMoney(r.devido)}</b></div><div class="client-product-metric"><span>Pago</span><b style="color:var(--teal)">${fmtMoney(r.pago)}</b></div></div></details>`).join(''):'<div class="empty">Nenhuma movimentação registrada ainda.</div>';
 
     renderClientRequests(client.code);
 
@@ -4344,6 +4390,13 @@
     relatorio:{group:'Gestão',title:'Relatório',description:'Consolide saldos, vendas e valores por parceiro.'},
     documentos:{group:'Gestão',title:'Documentos',description:'Envie contratos e comprovantes para a área individual dos parceiros.'}
   };
+  const adminDrawer=document.getElementById('admin-drawer'),adminDrawerBackdrop=document.getElementById('admin-drawer-backdrop');
+  function setAdminDrawer(open){adminDrawer?.classList.toggle('open',open);adminDrawerBackdrop?.classList.toggle('open',open);adminDrawer?.setAttribute('aria-hidden',String(!open));adminDrawerBackdrop?.setAttribute('aria-hidden',String(!open));if(open)document.getElementById('admin-drawer-close')?.focus();}
+  function buildAdminDrawer(){
+    const list=document.getElementById('admin-drawer-list');if(!list)return;list.innerHTML=Object.entries(ADMIN_SECTIONS).map(([id,meta])=>`<button type="button" data-drawer-tab="${id}"><small>${meta.group}</small><br>${meta.title}</button>`).join('');
+    list.querySelectorAll('[data-drawer-tab]').forEach(button=>button.addEventListener('click',()=>{switchAdminTab(button.dataset.drawerTab);setAdminDrawer(false);}));
+  }
+  buildAdminDrawer();document.getElementById('admin-drawer-open')?.addEventListener('click',()=>setAdminDrawer(true));document.getElementById('admin-drawer-close')?.addEventListener('click',()=>setAdminDrawer(false));adminDrawerBackdrop?.addEventListener('click',()=>setAdminDrawer(false));document.addEventListener('keydown',event=>{if(event.key==='Escape')setAdminDrawer(false);});
   async function switchAdminTab(tab,refresh=true,scroll=true){
     const meta=ADMIN_SECTIONS[tab];if(!meta)return;
     const productPanel=root.querySelector('.admin-tab[data-tab="produtos"]');
@@ -4358,6 +4411,9 @@
     document.getElementById('admin-section-group').textContent=meta.group;
     document.getElementById('admin-section-title').textContent=meta.title;
     document.getElementById('admin-section-description').textContent=meta.description;
+    document.querySelectorAll('[data-drawer-tab]').forEach(button=>button.classList.toggle('active',button.dataset.drawerTab===tab));
+    const openButton=document.getElementById('admin-drawer-open');if(openButton)openButton.querySelector('span').textContent=`${meta.group} · ${meta.title}`;
+    const mode=document.getElementById('admin-mode-chip');if(mode)mode.textContent=['relatorio','qualidade','midia','documentos'].includes(tab)?'Consulta':'Cadastro';
     if(refresh){await refreshData();refreshAdminSelects();renderAdminLists();}
     if(tab==='qualidade')renderQualityPanel();
     if(tab==='estoque')renderStockCenter();
