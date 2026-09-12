@@ -3674,14 +3674,12 @@
     historicalSnapshotsChecked=true;
   }
   async function safeEnsureHistoricalPriceSnapshots(){
-    try{return await ensureHistoricalPriceSnapshots();}
-    catch(error){
-      historicalSnapshotsChecked=true;
-      console.error('Proteção histórica pendente; administração liberada.',error);
-      setSaveState('','Pronto');
-      showToast('A área administrativa foi carregada. A proteção dos registros antigos ficou pendente, mas novos lançamentos continuarão registrando seus valores.','error');
-      return false;
-    }
+    // Não grava nem migra dados automaticamente durante o login. Em algumas
+    // instalações do Supabase, a migração em lote dos registros antigos pode
+    // falhar e bloquear operações que não dependem dela. Os novos lançamentos
+    // já recebem seus próprios snapshots em withMovementSnapshot().
+    historicalSnapshotsChecked=true;
+    return true;
   }
 
   function buildClientReport(clientCode){
